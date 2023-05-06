@@ -19,6 +19,11 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
     vsync: this,
     value: App.themeNotifier.value == ThemeMode.system ? 0 : 1,
   );
+  late AnimationController brokenRecentsSwitchControler = AnimationController(
+    duration: const Duration(milliseconds: 200),
+    vsync: this,
+    value: _maxRecents > 1 ? 1 : 0,
+  );
 
   int _maxRecents = App.prefs.maxRecentFiles;
 
@@ -34,10 +39,9 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text("Vzhled", style: Theme.of(context).textTheme.titleMedium),
           ),
-          // const Divider(),
           SwitchListTile(
             value: App.themeNotifier.value == ThemeMode.system,
-            onChanged: (auto) {
+            onChanged: (auto) => setState(() {
               if (auto) {
                 changeThemeMode(ThemeMode.system, context);
               } else if (Theme.of(context).brightness == Brightness.light) {
@@ -47,11 +51,11 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
               }
 
               if (auto) {
-                themeModeSwitchControler.reverse(from: 1);
+                themeModeSwitchControler.reverse();
               } else {
-                themeModeSwitchControler.forward(from: 0);
+                themeModeSwitchControler.forward();
               }
-            },
+            }),
             title: const Text("Tmavý režim dle systému"),
             secondary: const Icon(Icons.auto_awesome),
           ),
@@ -62,34 +66,59 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
             ),
             child: SwitchListTile(
               value: App.themeNotifier.value == ThemeMode.dark,
-              onChanged: (dark) {
-                changeThemeMode(dark ? ThemeMode.dark : ThemeMode.light, context);
-                // App.themeNotifier.value = dark ? ThemeMode.dark : ThemeMode.light;
-                // dark = App.themeNotifier.value == ThemeMode.system ? false : App.themeNotifier.value == ThemeMode.dark;
-              },
+              onChanged: (dark) => changeThemeMode(dark ? ThemeMode.dark : ThemeMode.light, context),
               title: const Text("Tmavý režim"),
               secondary: const Icon(Icons.lightbulb_outline),
             ),
           ),
+          const Divider(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text("Chování", style: Theme.of(context).textTheme.titleMedium),
+            child: Text("Nedávno otevřené soubory", style: Theme.of(context).textTheme.titleMedium),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-            child: Text("Nedávno otevřené soubory", style: Theme.of(context).textTheme.labelLarge),
+          ListTile(
+            leading: const Icon(Icons.clear_all),
+            title: Row(
+              children: [
+                const Text("Kapacita"),
+                Expanded(
+                  child: Slider(
+                    value: _maxRecents.toDouble(),
+                    max: 20,
+                    min: 1,
+                    divisions: 19,
+                    label: _maxRecents == 1 ? " Nezobrazovat " : _maxRecents.toString(),
+                    onChanged: (value) => setState(() {
+                      if (value > 1) {
+                        brokenRecentsSwitchControler.forward();
+                      } else {
+                        brokenRecentsSwitchControler.reverse();
+                      }
+                      // if ((_maxRecents > 1) == (value > 1)) {
+                      // }
+
+                      _maxRecents = value.floor();
+                    }),
+                    onChangeEnd: (value) {
+                      App.prefs.maxRecentFiles = value.floor();
+                      _maxRecents = App.prefs.maxRecentFiles;
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-          Slider(
-            value: _maxRecents.toDouble(),
-            max: 20,
-            min: 1,
-            divisions: 19,
-            label: _maxRecents == 1 ? " Nezobrazovat " : _maxRecents.toString(),
-            onChanged: (value) => setState(() => _maxRecents = value.floor()),
-            onChangeEnd: (value) {
-              App.prefs.maxRecentFiles = value.floor();
-              setState(() => _maxRecents = App.prefs.maxRecentFiles); // dbg
-            },
+          SizeTransition(
+            sizeFactor: CurvedAnimation(
+              parent: brokenRecentsSwitchControler,
+              curve: Curves.easeInOutCubic,
+            ),
+            child: SwitchListTile(
+              value: App.prefs.saveBrokenRecentFiles,
+              onChanged: (value) => setState(() => App.prefs.saveBrokenRecentFiles = value),
+              title: const Text("Pamatovat si rozbité soubory"),
+              secondary: const Icon(Icons.broken_image_outlined),
+            ),
           ),
         ],
       ),
@@ -136,6 +165,12 @@ class Preferences {
   int get maxRecentFiles => max(1, _sharedPrefs!.getInt(_maxRecentFilesKey) ?? 3);
   set maxRecentFiles(int value) {
     _sharedPrefs!.setInt(_maxRecentFilesKey, value);
-    // recentFiles = safeSublist(recentFiles, 0, value) as List<String>;
+    recentFiles = safeSublist(recentFiles, 0, value) as List<String>;
+  }
+  
+  static const _saveBrokenRecentFilesKey = "saveBrokenRecentFiles";
+  bool get saveBrokenRecentFiles => _sharedPrefs!.getBool(_saveBrokenRecentFilesKey) ?? false;
+  set saveBrokenRecentFiles(bool value) {
+    _sharedPrefs!.setBool(_saveBrokenRecentFilesKey, value);
   }
 }

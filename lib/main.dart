@@ -1,3 +1,4 @@
+import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,16 +10,14 @@ void main() async {
 
   const App app = App();
   runApp(app);
-
-  print(App.prefs.maxRecentFiles);
 }
 
 class App extends StatelessWidget {
   const App({super.key});
 
-
   static late Preferences prefs;
   static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
+  static Pedigree? pedigree;
 
   // This widget is the root of your application.
   @override

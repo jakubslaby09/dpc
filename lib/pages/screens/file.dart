@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/preferences.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:dpc/pages/log.dart';
 
 class FileScreen extends StatefulWidget {
   const FileScreen({super.key});
@@ -18,32 +20,21 @@ class _FileScreenState extends State<FileScreen> {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        // Row(
-        //   children: [
-        //     IconButton(
-        //       icon: const Icon(Icons.settings_outlined),
-        //       // child: const Text("Předvolby"),
-        //       onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-        //         builder: (context) => PreferencesPage(),
-        //       )),
-        //     ),
-        //   ],
-        // ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              Card(
+              if (App.pedigree != null) Card(
                 child: ListTile(
                   leading: Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onBackground),
                   title: Row(
-                    children: const [
-                      Expanded(child: Text("Lorem Ipsum")),
-                      Icon(Icons.people_outlined),
-                      Text("65"),
-                      VerticalDivider(),
-                      Icon(Icons.sd_storage_outlined),
-                      Text("19KiB"),
+                    children: [
+                      Expanded(child: Text(App.pedigree?.name ?? "Lorem Ipsum")),
+                      const Icon(Icons.people_outlined),
+                      const Text("65"),
+                      const VerticalDivider(),
+                      const Icon(Icons.sd_storage_outlined),
+                      const Text("19KiB"),
                     ],
                   ),
                   subtitle: const Text("github.com/dolor-sit/amet", overflow: TextOverflow.ellipsis),
@@ -55,16 +46,32 @@ class _FileScreenState extends State<FileScreen> {
                   // ),
                   
                 ),
+              ) else const Card(
+                // shape: RoundedRectangleBorder( // TODO: dashed borders
+                //   borderRadius: BorderRadius.all(Radius.circular(8)),
+                //   side: BorderSide(
+                //     color: Theme.of(context).colorScheme.onBackground,
+                //   )
+                // ),
+                child: ListTile(
+                  leading: Icon(Icons.clear),
+                  title: Center(child: Text("Nic tu není...")),
+                ),
               ),
-              Card(
+              ...(App.pedigree == null ? App.prefs.recentFiles : App.prefs.recentFiles.length > 1 ? App.prefs.recentFiles.sublist(1) : []).map((file) => Card(
                 elevation: 0,
                 child: ListTile(
                   leading: const Icon(Icons.file_copy_outlined),
+                  onTap: () {
+                    openFile(context, file);
+                  },
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   title: Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      const Expanded(child: Text("Consecteur")),
+                      // const Icon(Icons.file_copy_outlined),
+                      Expanded(child: Text(file)),
                       IconButton(
                         color: Theme.of(context).colorScheme.onBackground,
                         icon: const Icon(Icons.clear),
@@ -77,36 +84,15 @@ class _FileScreenState extends State<FileScreen> {
                       ),
                     ],
                   ),
-                  subtitle: const Text("/adiscipling/Elit/", overflow: TextOverflow.ellipsis),
-                  // trailing: Row(
-                  //   children: const [
-                  //     Icon(Icons.people_alt_outlined),
-                  //     Text("11")
-                  //   ],
-                  // ),
-                  // trailing: Row(
-                  //   children: [
-                  //     IconButton(
-                  //       color: Theme.of(context).colorScheme.onBackground,
-                  //       icon: const Icon(Icons.open_in_browser_outlined),
-                  //       onPressed: () {},
-                  //     ),
-                  //     IconButton(
-                  //       color: Theme.of(context).colorScheme.onBackground,
-                  //       icon: const Icon(Icons.open_in_browser_outlined),
-                  //       onPressed: () {},
-                  //     ),
-                  //   ],
-                  // ),
-                  
+                  // subtitle: const Text("/adiscipling/Elit/", overflow: TextOverflow.ellipsis),
                 ),
-              ),
+              )),
             ],
           ),
         ),
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.settings_outlined),
+          leading: const Icon(Icons.file_upload_outlined),
           title: const Text("Otevřít soubor"),
           onTap: () => openFile(context),
         ),
@@ -114,36 +100,66 @@ class _FileScreenState extends State<FileScreen> {
           leading: const Icon(Icons.settings_outlined),
           title: const Text("Předvolby"),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => PreferencesPage(),
+            builder: (context) => const PreferencesPage(),
           )),
         ),
       ],
     );
   }
 
-  void openFile(BuildContext context) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      withReadStream: true,
-    );
+  void openFile(BuildContext context, [String? path]) async {
+    String file;
 
-    if (result == null) return;
-    if (result.files.single.path == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Nelze přečíst cestu k vybranému souboru"),
-      ));
-      return;
-    }
-    if (result.files.single.readStream == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Vybraný soubor se nepodařilo přečíst"),
-      ));
-      return;
+    if (path != null) {
+      try {
+        file = await File(path).readAsString();
+      } on FileSystemException catch(e) {
+        if (e.osError?.errorCode == 36) {
+          showException(context, "Soubor již neexistuje! Možná jste ho přesunuli, nebo smazali.", e);
+          return;
+        }
+        showException(context, "Nelze přečíst soubor!", e);
+        return;
+      } on Exception catch (e) {
+        showException(context, "Nelze přečíst soubor!", e);
+        return;
+      }
+    } else {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        withReadStream: true,
+      );
+
+      if (result == null) return;
+      if (result.files.single.path == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Nelze přečíst cestu k vybranému souboru"),
+        ));
+        return;
+      }
+      path = result.files.single.path!;
+      if (result.files.single.readStream == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Vybraný soubor se nepodařilo přečíst"),
+        ));
+        return;
+      }
+      file = await utf8.decodeStream(result.files.single.readStream!);
     }
 
-    dynamic file = json.decode(await utf8.decodeStream(result.files.single.readStream!));
+    try {
+      dynamic values = json.decode(file);
+      App.pedigree = Pedigree.parse(values);
+      // [][0]; // dbg
+    } on Exception catch (e) {
+      showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e);
+      if (!App.prefs.saveBrokenRecentFiles) {
+        // return;
+      }
+    }
 
     final recents = App.prefs.recentFiles;
-    recents.removeWhere((path) => path == result.files.single.path);
-    recents.insert(0, result.files.single.path!);
+    recents.removeWhere((recentPath) => recentPath == path);
+    recents.insert(0, path);
+    App.prefs.recentFiles = recents;
   }
 }
