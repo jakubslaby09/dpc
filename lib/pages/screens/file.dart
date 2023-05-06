@@ -142,21 +142,22 @@ class _FileScreenState extends State<FileScreen> {
       }
       file = await utf8.decodeStream(result.files.single.readStream!);
     }
-
+    
+    bool broken = false;
     try {
       dynamic values = json.decode(file);
       App.pedigree = Pedigree.parse(values);
-      // [][0]; // dbg
     } on Exception catch (e) {
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e);
       if (!App.prefs.saveBrokenRecentFiles) {
-        // return;
+        return;
       }
+      broken = true;
     }
 
     final recents = App.prefs.recentFiles;
     recents.removeWhere((recentPath) => recentPath == path);
-    recents.insert(0, path);
+    recents.insert(broken && App.pedigree != null && recents.isNotEmpty ? 1 : 0, path);
     App.prefs.recentFiles = recents;
   }
 }
