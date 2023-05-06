@@ -1,7 +1,6 @@
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/pages/screens/list.dart';
 import 'package:flutter/material.dart';
-import 'preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

@@ -58,29 +58,26 @@ class _FileScreenState extends State<FileScreen> {
                   title: Center(child: Text("Nic tu není...")),
                 ),
               ),
-              ...(App.pedigree == null ? App.prefs.recentFiles : App.prefs.recentFiles.length > 1 ? App.prefs.recentFiles.sublist(1) : []).map((file) => Card(
+              ...(App.pedigree == null ? App.prefs.recentFiles : App.prefs.recentFiles.length > 1 ? App.prefs.recentFiles.sublist(1) : []).map((filePath) => Card(
                 elevation: 0,
                 child: ListTile(
                   leading: const Icon(Icons.file_copy_outlined),
-                  onTap: () {
-                    openFile(context, file);
-                  },
+                  onTap: () => openFile(context, filePath).then((_) => setState(() {})),
                   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   title: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       // const Icon(Icons.file_copy_outlined),
-                      Expanded(child: Text(file)),
+                      Expanded(child: Text(filePath)),
                       IconButton(
                         color: Theme.of(context).colorScheme.onBackground,
                         icon: const Icon(Icons.clear),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        color: Theme.of(context).colorScheme.onBackground,
-                        icon: const Icon(Icons.open_in_browser_outlined),
-                        onPressed: () {},
+                        onPressed: () => setState(() {
+                          final recents = App.prefs.recentFiles;
+                          recents.removeWhere((recentPath) => recentPath == filePath);
+                          App.prefs.recentFiles = recents;
+                        }),
                       ),
                     ],
                   ),
@@ -94,20 +91,20 @@ class _FileScreenState extends State<FileScreen> {
         ListTile(
           leading: const Icon(Icons.file_upload_outlined),
           title: const Text("Otevřít soubor"),
-          onTap: () => openFile(context),
+          onTap: () => openFile(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
           title: const Text("Předvolby"),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => const PreferencesPage(),
-          )),
+          )).then((_) => setState(() {})),
         ),
       ],
     );
   }
 
-  void openFile(BuildContext context, [String? path]) async {
+  Future<void> openFile(BuildContext context, [String? path]) async {
     String file;
 
     if (path != null) {
