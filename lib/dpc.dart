@@ -1,83 +1,86 @@
-import 'package:dpc/main.dart';
-import 'package:json_annotation/json_annotation.dart';
-
-part 'dpc.g.dart';
-
-// in the case of changes, run: flutter pub run build_runner build --delete-conflicting-outputs
-@JsonSerializable()
 class Pedigree {
-  Pedigree({
-    required this.version,
-    required this.name,
-    required this.people,
-    required this.chronicle,
-  });
+  Pedigree.parse(Map<String, dynamic> json)
+    : version = json['version'],
+      name = json['name'],
+      people = (json['people'] as List<dynamic>).map((person) => Person.parse(person)).toList(),
+      chronicle = (json['chronicle'] as List<dynamic>).map((chronicle) => Chronicle.parse(chronicle)).toList() {
+        if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
+        if (version < maxVersion) throw UnimplementedError("Upgrading pedigree versions has yet to be implemented."); // TODO: Implement pedigree version upgrades
+        people.asMap().forEach((key, value) {
+          if (value.id != key) throw Exception("${value.id} != $key");
+        });
+  }
+
+  Pedigree.empty(this.name)
+    : version = 3,
+      people = [],
+      chronicle = [];
 
   int version;
   String name;
   List<Person> people;
   List<Chronicle> chronicle;
 
-  factory Pedigree.parse(Map<String, dynamic> json) => _$PedigreeFromJson(json);
-
-  // static Result<Pedigree, dynamic>  parse(dynamic value) {
-  //   print(value);
-  //     return Result(Pedigree(
-  //       version: value.version,
-  //       name: value.name,
-  //     ));
-  //   try {
-  //   } catch (e) {
-  //     return Result.error(e);
-  //   }
-  // }
+  static const maxVersion = 3;
 }
 
-@JsonSerializable()
 class Person {
-  Person({
-    required this.id,
-    required this.name,
-    required this.sex,
-    this.birth,
-    this.death,
-    required this.father,
-    required this.mother,
-    required this.children,
-  });
+  Person.parse(Map<String, dynamic> json)
+    : id = json['id'],
+      name = json['name'],
+      birth = json['birth'],
+      death = json['death'],
+      father = json['father'],
+      mother = json['mother'],
+      children = parseIdList(json['children'])! {
+    switch (json['sex']) {
+      case 'male':
+        sex = Sex.male;
+        break;
+      case 'female':
+        sex = Sex.female;
+        break;
+      default:
+        throw Exception("The `sex` parameter supports two parameters: `male`, `female`");
+    }
+  }
 
   int id;
   String name;
-  Sex sex;
+  late Sex sex;
   String? birth;
   String? death;
   int father;
   int mother;
   List<double> children;
-
-  factory Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
 }
 
-@JsonSerializable()
 class Chronicle {
-  Chronicle({
-    required this.name,
-    required this.mime,
-    required this.file,
-    required this.files,
-    required this.authors,
-  });
+  Chronicle.parse(Map<String, dynamic> json)
+    : name = json['name'],
+      mime = json['mime'],
+      file = json['file'],
+      files = parseStringList(json['files']),
+      authors = parseIdList(json['authors'])! {
+    if ((file == null) == (files == null)) throw Exception("Either `file` or `files` field should be set.");
+  }
   
   String name;
   String mime;
   String? file;
   List<String>? files;
-  List<double> authors; 
-
-  factory Chronicle.fromJson(Map<String, dynamic> json) => _$ChronicleFromJson(json);
+  List<double> authors;
 }
 
 enum Sex {
-  @JsonValue("male") male,
-  @JsonValue("female") female,
+  male,
+  female,
+}
+
+List<double>? parseIdList(List<dynamic>? list) {
+  return list?.map((value) => (value as num).toDouble()).toList();
+}
+
+List<String>? parseStringList(List<dynamic>? list) {
+  return list?.map((value) => (value as String)).toList();
 }
