@@ -1,7 +1,6 @@
 import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'pages/home.dart';
 
@@ -25,7 +24,7 @@ class App extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, ThemeMode themeMode, __) => MaterialApp(
-        title: 'Flutter Demo',
+        // title: 'Flutter Demo',
         theme: ThemeData(
         // This is the theme of your application.
         //
