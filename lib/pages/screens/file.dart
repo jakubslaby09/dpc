@@ -29,12 +29,12 @@ class _FileScreenState extends State<FileScreen> {
                   leading: Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onBackground),
                   title: Row(
                     children: [
-                      Expanded(child: Text(App.pedigree?.name ?? "Lorem Ipsum")),
+                      Expanded(child: Text(App.pedigree!.name)),
                       const Icon(Icons.people_outlined),
-                      const Text("65"),
+                      Text(App.pedigree!.people.length.toString()),
                       const VerticalDivider(),
-                      const Icon(Icons.sd_storage_outlined),
-                      const Text("19KiB"),
+                      // const Icon(Icons.sd_storage_outlined),
+                      // const Text("19KiB"),
                     ],
                   ),
                   subtitle: const Text("github.com/dolor-sit/amet", overflow: TextOverflow.ellipsis),
@@ -147,6 +147,7 @@ class _FileScreenState extends State<FileScreen> {
     try {
       dynamic values = json.decode(file);
       App.pedigree = Pedigree.parse(values);
+      App.unchangedPedigree = App.pedigree!.clone();
     } on Exception catch (e) {
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e);
       if (!App.prefs.saveBrokenRecentFiles) {

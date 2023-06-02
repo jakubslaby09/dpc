@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Pedigree {
   Pedigree.parse(Map<String, dynamic> json)
     : version = json['version'],
@@ -6,8 +8,8 @@ class Pedigree {
       chronicle = (json['chronicle'] as List<dynamic>).map((chronicle) => Chronicle.parse(chronicle)).toList() {
         if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
         if (version < maxVersion) throw UnimplementedError("Upgrading pedigree versions has yet to be implemented."); // TODO: Implement pedigree version upgrades
-        people.asMap().forEach((key, value) {
-          if (value.id != key) throw Exception("${value.id} != $key");
+        people.asMap().forEach((index, person) {
+          if (person.id != index) throw Exception("${person.id} != $index");
         });
   }
 
@@ -15,6 +17,13 @@ class Pedigree {
     : version = 3,
       people = [],
       chronicle = [];
+  
+  Pedigree.clone(Pedigree pedigree)
+    : version = pedigree.version,
+    name = pedigree.name,
+    people = pedigree.people.map((person) => Person.clone(person)).toList(),
+    chronicle = pedigree.chronicle.map((chronicle) => Chronicle.clone(chronicle)).toList();
+    
 
   int version;
   String name;
@@ -22,6 +31,10 @@ class Pedigree {
   List<Chronicle> chronicle;
 
   static const maxVersion = 3;
+
+  Pedigree clone() {
+    return Pedigree.clone(this);
+  }
 }
 
 class Person {
@@ -45,6 +58,16 @@ class Person {
     }
   }
 
+  Person.clone(Person person)
+  : id = person.id,
+  name = person.name,
+  sex = person.sex,
+  birth = person.birth,
+  death = person.death,
+  father = person.father,
+  mother = person.mother,
+  children = [...person.children];
+
   int id;
   String name;
   late Sex sex;
@@ -64,6 +87,13 @@ class Chronicle {
       authors = parseIdList(json['authors'])! {
     if ((file == null) == (files == null)) throw Exception("Either `file` or `files` field should be set.");
   }
+
+  Chronicle.clone(Chronicle chronicle)
+  : name = chronicle.name,
+  mime = chronicle.mime,
+  file = chronicle.file,
+  files = [...chronicle.files ?? []],
+  authors = [...chronicle.authors];
   
   String name;
   String mime;
@@ -75,6 +105,16 @@ class Chronicle {
 enum Sex {
   male,
   female,
+}
+
+extension SexExtension on Sex? {
+  String get string {
+    return this == null ? "osoba" : this == Sex.male ? "muž" : "žena";
+  }
+  
+  IconData get icon {
+    return this == null ? Icons.face : this == Sex.male ? Icons.face_6 : Icons.face_3;
+  }
 }
 
 List<double>? parseIdList(List<dynamic>? list) {

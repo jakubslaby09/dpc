@@ -1,43 +1,86 @@
 import 'dart:ui';
+import 'package:dpc/main.dart';
+import 'package:dpc/widgets/person_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../dpc.dart';
 
 class PersonPage extends StatefulWidget {
-  PersonPage(this.person, {super.key});
-
-  final Person person;
+  const PersonPage(this.id, {super.key});
+  final int id;
 
   @override
   State<PersonPage> createState() => _PersonPageState();
 }
 
 class _PersonPageState extends State<PersonPage> {
-  late Person newPerson = widget.person; // TODO: copy object
+  late final Person person = App.pedigree!.people[widget.id];
+  late final Person unchangedPerson = App.unchangedPedigree!.people[widget.id];
+
+  late TextEditingController nameController = TextEditingController(text: person.name);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.person.name),
+        title: Text(person.name),
       ),
       body: ListView(
         children: [
           ListTile(
-            // leading: Icon(person.sex == Sex.male ? Icons.face : Icons.face_3),
-            title: TextFormField(
+            title: TextField(
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 labelText: "Jméno",
-                icon: Icon(widget.person.sex == Sex.male ? Icons.face : Icons.face_3),
+                icon: IconButton(
+                  icon: Icon(person.sex.icon),
+                  onPressed: () => setState(() {
+                    person.sex == Sex.male ? person.sex = Sex.female : person.sex = Sex.male;
+                  }),
+                  padding: EdgeInsets.zero, // TODO: make it work
+                ),
               ),
-              initialValue: widget.person.name,
-              onChanged: (name) => newPerson.name = name,
+              controller: nameController,
+              onChanged: (name) => setState(() => person.name = name),
             ),
             trailing: IconButton(
               icon: const Icon(Icons.backspace_outlined),
-              onPressed: () => setState(() => newPerson.name = widget.person.name),
+              onPressed: person.name != unchangedPerson.name || person.sex != unchangedPerson.sex ? () => setState(() {
+                person.name = unchangedPerson.name;
+                person.sex = unchangedPerson.sex;
+                nameController = TextEditingController(text: person.name);
+              }) : null,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ),
+          Divider(height: 16, color: Colors.transparent),
+          ListTile(
+            title: PersonField(
+              labelText: "Otec",
+              sex: Sex.male,
+              initialId: person.father != -1 ? person.father : null,
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.backspace_outlined),
+              onPressed: person.father != unchangedPerson.father ? () => setState(() {
+                person.father = unchangedPerson.father;
+              }) : null,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ),
+          ListTile(
+            title: PersonField(
+              labelText: "Matka",
+              sex: Sex.female,
+              initialId: person.mother != -1 ? person.mother : null,
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.backspace_outlined),
+              onPressed: person.mother != unchangedPerson.mother ? () => setState(() {
+                person.mother = unchangedPerson.mother;
+              }) : null,
+              color: Theme.of(context).colorScheme.onBackground,
             ),
           ),
         ],

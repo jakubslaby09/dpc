@@ -16,6 +16,7 @@ class App extends StatelessWidget {
 
   static late Preferences prefs;
   static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
+  static Pedigree? unchangedPedigree;
   static Pedigree? pedigree;
 
   // This widget is the root of your application.

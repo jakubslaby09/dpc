@@ -12,7 +12,7 @@ class ListScreen extends StatefulWidget {
 
 class _ListScreenState extends State<ListScreen> {
   _ListScreenState() {
-    people = App.pedigree?.people;
+    people = App.pedigree?.clone().people;
     sortPeople(0, true);
   }
 
@@ -42,6 +42,7 @@ class _ListScreenState extends State<ListScreen> {
         if (people != null) DataTable(
           sortAscending: sortAscending,
           sortColumnIndex: sortedColumn,
+          showCheckboxColumn: false,
           columns: [
             DataColumn(label: const Text("Jméno"), onSort: (i, a) => sortPeople(i, a).then((_) => setState(() {}))),
             DataColumn(label: const Text("Narození"), onSort: (i, a) => sortPeople(i, a).then((_) => setState(() {}))),
@@ -51,9 +52,9 @@ class _ListScreenState extends State<ListScreen> {
               DataCell(Text(person.name)),
               DataCell(Text(person.birth?.toString() ?? "chybí"), placeholder: person.birth == null),
             ],
-            onLongPress: () {
+            onSelectChanged: (value) {
               Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => PersonPage(person),
+                builder: (context) => PersonPage(person.id),
               ));
             },
           )).toList(),
