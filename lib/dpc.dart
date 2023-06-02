@@ -113,7 +113,7 @@ extension SexExtension on Sex? {
   }
   
   IconData get icon {
-    return this == null ? Icons.face : this == Sex.male ? Icons.face_6 : Icons.face_3;
+    return this == null ? Icons.face_outlined : this == Sex.male ? Icons.face_6_outlined : Icons.face_3_outlined;
   }
 }
 
