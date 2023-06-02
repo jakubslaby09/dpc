@@ -12,11 +12,11 @@ class ListScreen extends StatefulWidget {
 
 class _ListScreenState extends State<ListScreen> {
   _ListScreenState() {
-    people = App.pedigree?.clone().people;
+    sortedPeople = App.pedigree?.clone().people;
     sortPeople(0, true);
   }
 
-  List<Person>? people;
+  List<Person>? sortedPeople;
   String filter = "";
   late bool sortAscending;
   late int sortedColumn;
@@ -28,7 +28,7 @@ class _ListScreenState extends State<ListScreen> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: TextField(
-            enabled: people != null,
+            enabled: sortedPeople != null,
             decoration: const InputDecoration(
               icon: Icon(Icons.search),
               // hintText: "",
@@ -39,23 +39,24 @@ class _ListScreenState extends State<ListScreen> {
             }),
           ),
         ),
-        if (people != null) DataTable(
+        if (sortedPeople != null) DataTable(
           sortAscending: sortAscending,
           sortColumnIndex: sortedColumn,
           showCheckboxColumn: false,
           columns: [
-            DataColumn(label: const Text("Jméno"), onSort: (i, a) => sortPeople(i, a).then((_) => setState(() {}))),
-            DataColumn(label: const Text("Narození"), onSort: (i, a) => sortPeople(i, a).then((_) => setState(() {}))),
+            DataColumn(label: const Text("Jméno"), onSort: (i, a) => setState(() => sortPeople(i, a))),
+            DataColumn(label: const Text("Narození"), onSort: (i, a) => setState(() => sortPeople(i, a))),
           ],
           rows: filterPeople()!.map((person) => DataRow(
             cells: [
               DataCell(Text(person.name)),
               DataCell(Text(person.birth?.toString() ?? "chybí"), placeholder: person.birth == null),
             ],
-            onSelectChanged: (value) {
-              Navigator.of(context).push(MaterialPageRoute(
+            onSelectChanged: (value) async {
+              await Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => PersonPage(person.id),
               ));
+              setState(() => { sortPeople(sortedColumn, sortAscending) });
             },
           )).toList(),
         ),
@@ -63,9 +64,10 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  Future<void> sortPeople(int columnIndex, bool ascending) async {
+  void sortPeople(int columnIndex, bool ascending) {
     final direction = ascending ? 1 : -1;
-    people?.sort((a, b) {
+    sortedPeople = App.pedigree?.clone().people;
+    sortedPeople?.sort((a, b) {
       switch (columnIndex) {
         case 1:
           return (a.birth != null ? direction * (b.birth != null ? (a.birth!).compareTo(b.birth!) : -1) : 1);
@@ -80,6 +82,6 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   Iterable<Person>? filterPeople() {
-    return people?.where((person) => person.name.toLowerCase().contains(filter.toLowerCase()));
+    return sortedPeople?.where((person) => person.name.toLowerCase().contains(filter.toLowerCase()));
   }
 }
