@@ -19,6 +19,8 @@ class _PersonPageState extends State<PersonPage> {
   late final Person unchangedPerson = App.unchangedPedigree!.people[widget.id];
 
   late TextEditingController nameController = TextEditingController(text: person.name);
+  late TextEditingController birthController = TextEditingController(text: person.birth);
+  late TextEditingController deathController = TextEditingController(text: person.death);
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,48 @@ class _PersonPageState extends State<PersonPage> {
               color: Theme.of(context).colorScheme.onBackground,
             ),
           ),
-          Divider(height: 16, color: Colors.transparent),
+          const Divider(height: 16, color: Colors.transparent),
+          ListTile(
+            title: TextField(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Narození",
+                icon: Icon(Icons.today_outlined),
+              ),
+              controller: birthController,
+              onChanged: (birth) => setState(() => person.birth = birth),
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.backspace_outlined),
+              onPressed: person.birth != unchangedPerson.birth ? () => setState(() {
+                person.birth = unchangedPerson.birth;
+                person.sex = unchangedPerson.sex;
+                birthController = TextEditingController(text: person.birth);
+              }) : null,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ),
+          ListTile(
+            title: TextField(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Úmrtí",
+                icon: Icon(Icons.event_outlined),
+              ),
+              controller: deathController,
+              onChanged: (death) => setState(() => person.death = death),
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.backspace_outlined),
+              onPressed: person.death != unchangedPerson.death ? () => setState(() {
+                person.death = unchangedPerson.death;
+                person.sex = unchangedPerson.sex;
+                deathController = TextEditingController(text: person.death);
+              }) : null,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+          ),
+          const Divider(height: 16, color: Colors.transparent),
           ListTile(
             title: PersonField(
               labelText: "Otec",
