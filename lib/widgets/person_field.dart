@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +77,7 @@ class _PersonPickerState extends State<PersonPicker> {
           ),
         ),
         SizedBox(
-          height: MediaQuery.of(context).size.height / 2 - 10.5 /* Search field */,
+          height: max(MediaQuery.of(context).size.height / 2 - 50, 0) /* Search field */,
           child: ListView.builder(
             // shrinkWrap: true,
             itemCount: filtered.length,
@@ -83,7 +85,7 @@ class _PersonPickerState extends State<PersonPicker> {
               // leading: Icon(filtered[index].sex.icon),
               title: Text(filtered[index].name),
               trailing: Text(
-                "${filtered[index].birth ?? "?"} / ${filtered[index].death ?? "?"}",
+                "${filtered[index].birth ?? "?"} - ${filtered[index].death ?? "?"}",
                 style: TextStyle(
                   color: Theme.of(context).disabledColor,
                 ),
