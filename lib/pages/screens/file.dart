@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
@@ -62,7 +63,7 @@ class _FileScreenState extends State<FileScreen> {
                 elevation: 0,
                 child: ListTile(
                   leading: const Icon(Icons.file_copy_outlined),
-                  onTap: () => openFile(context, filePath).then((_) => setState(() {})),
+                  onTap: () => openRepo(context, filePath).then((_) => setState(() {})),
                   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   title: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -90,8 +91,8 @@ class _FileScreenState extends State<FileScreen> {
         const Divider(),
         ListTile(
           leading: const Icon(Icons.file_upload_outlined),
-          title: const Text("Otevřít soubor"),
-          onTap: () => openFile(context).then((_) => setState(() {})),
+          title: const Text("Otevřít repozitář"),
+          onTap: () => openRepo(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
@@ -104,48 +105,36 @@ class _FileScreenState extends State<FileScreen> {
     );
   }
 
-  Future<void> openFile(BuildContext context, [String? path]) async {
-    String file;
+  Future<void> openRepo(BuildContext context, [String? directory]) async {
+    File index;
 
-    if (path != null) {
-      try {
-        file = await File(path).readAsString();
-      } on FileSystemException catch(e) {
-        if (e.osError?.errorCode == 36) {
-          showException(context, "Soubor již neexistuje! Možná jste ho přesunuli, nebo smazali.", e);
-          return;
-        }
-        showException(context, "Nelze přečíst soubor!", e);
-        return;
-      } on Exception catch (e) {
-        showException(context, "Nelze přečíst soubor!", e);
+    if (directory != null) {
+      // index = await File(path).readAsString();
+      index = File(join(directory, "index.dpc"));
+      if (!await index.exists()) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("V uloženém repozitáři se nepodařilo přečíst index. Možná jste ho přesunuli, nebo smazali."),
+        ));
         return;
       }
     } else {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        withReadStream: true,
+      directory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: "Otevřít repozitář",
       );
 
-      if (result == null) return;
-      if (result.files.single.path == null) {
+      if (directory == null) return;
+      index = File(join(directory, "index.dpc"));
+      if (!await index.exists()) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Nelze přečíst cestu k vybranému souboru"),
+          content: Text("Ve vybraném repozitáři se nepodařilo přečíst index. Vybrali jste správný soubor?"),
         ));
         return;
       }
-      path = result.files.single.path!;
-      if (result.files.single.readStream == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Vybraný soubor se nepodařilo přečíst"),
-        ));
-        return;
-      }
-      file = await utf8.decodeStream(result.files.single.readStream!);
     }
     
     bool broken = false;
     try {
-      dynamic values = json.decode(file);
+      dynamic values = json.decode(await index.readAsString());
       App.pedigree = Pedigree.parse(values);
       App.unchangedPedigree = App.pedigree!.clone();
     } on Exception catch (e) {
@@ -157,8 +146,8 @@ class _FileScreenState extends State<FileScreen> {
     }
 
     final recents = App.prefs.recentFiles;
-    recents.removeWhere((recentPath) => recentPath == path);
-    recents.insert(broken && App.pedigree != null && recents.isNotEmpty ? 1 : 0, path);
+    recents.removeWhere((recentPath) => recentPath == directory);
+    recents.insert(broken && App.pedigree != null && recents.isNotEmpty ? 1 : 0, directory);
     App.prefs.recentFiles = recents;
   }
 }
