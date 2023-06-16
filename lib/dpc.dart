@@ -1,7 +1,10 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:git2dart_binaries/git2dart_binaries.dart';
 
 class Pedigree {
-  Pedigree.parse(Map<String, dynamic> json)
+  Pedigree.parse(Map<String, dynamic> json, this.repo)
     : version = json['version'],
       name = json['name'],
       people = (json['people'] as List<dynamic>).map((person) => Person.parse(person)).toList(),
@@ -13,7 +16,7 @@ class Pedigree {
         });
   }
 
-  Pedigree.empty(this.name)
+  Pedigree.empty(this.name, this.repo)
     : version = 3,
       people = [],
       chronicle = [];
@@ -22,13 +25,16 @@ class Pedigree {
     : version = pedigree.version,
     name = pedigree.name,
     people = pedigree.people.map((person) => Person.clone(person)).toList(),
-    chronicle = pedigree.chronicle.map((chronicle) => Chronicle.clone(chronicle)).toList();
+    chronicle = pedigree.chronicle.map((chronicle) => Chronicle.clone(chronicle)).toList(),
+    repo = pedigree.repo;
     
 
   int version;
   String name;
   List<Person> people;
   List<Chronicle> chronicle;
+  // TODO: free when closing file
+  Pointer<Pointer<git_repository>> repo;
 
   static const maxVersion = 3;
 

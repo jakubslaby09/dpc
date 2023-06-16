@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
+import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:path/path.dart';
 
 import 'package:dpc/dpc.dart';
@@ -126,16 +129,44 @@ class _FileScreenState extends State<FileScreen> {
       index = File(join(directory, "index.dpc"));
       if (!await index.exists()) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Ve vybraném repozitáři se nepodařilo přečíst index. Vybrali jste správný soubor?"),
+          content: Text("Ve vybraném repozitáři se nepodařilo přečíst index. Vybrali jste správnou složku?"),
         ));
         return;
       }
     }
+
+    Libgit2 git = Libgit2(DynamicLibrary.open(join(Directory.current.path, "lib/libgit/build/libgit2.so")));
+
+    if(git.git_libgit2_init() > 1) {
+      git.git_libgit2_shutdown();
+    }
+
+    Pointer<Pointer<git_repository>> repo = calloc();
+    switch (git.git_repository_open(repo, directory.toNativeUtf8().cast())) {
+      case 0:
+        break;
+      case -3:
+        // TODO: verify the meaning of -3
+        showException(context, "Vybraná složka není Git repozitář. Vybrali jste správnou složku? Možná jste smazali skrytou podsložku `.git`.");
+        return;
+      default:
+        showException(context, "Git repozitář se nepodařilo otevřít. Skrytá podsložka `.git` je možná poškozená.");
+        return;
+    }
+
+    // Pointer<Pointer<git_index>> gitIndex = calloc();
+    // git.git_repository_index(gitIndex, repo.value);
+
+    // git.git_index_add_bypath(gitIndex.value, "index.dpc".toNativeUtf8().cast());
+
+    // git.git_index_write(gitIndex.value);
+
+    // calloc.free(gitIndex);
     
     bool broken = false;
     try {
       dynamic values = json.decode(await index.readAsString());
-      App.pedigree = Pedigree.parse(values);
+      App.pedigree = Pedigree.parse(values, repo);
       App.unchangedPedigree = App.pedigree!.clone();
     } on Exception catch (e) {
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e);

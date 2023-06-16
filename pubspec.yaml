@@ -37,6 +37,8 @@ dependencies:
   # cupertino_icons: ^1.0.2
   file_picker: ^5.2.11
   shared_preferences: ^2.1.0
+  git2dart_binaries: ^0.2.0
+  ffi: ^2.0.2
 
 dev_dependencies:
   flutter_test:
