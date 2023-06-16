@@ -10,7 +10,7 @@ class PersonField extends StatelessWidget {
   final Sex? sex;
   final String? labelText;
   final int? initialId;
-  late int? id = initialId;
+  late final int? id = initialId;
 
   late final TextEditingController controller = TextEditingController(text: person?.name);
   final Function(int value)? onPick;

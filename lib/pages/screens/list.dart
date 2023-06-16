@@ -56,7 +56,7 @@ class _ListScreenState extends State<ListScreen> {
               await Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => PersonPage(person.id),
               ));
-              setState(() => { sortPeople(sortedColumn, sortAscending) });
+              setState(() => sortPeople(sortedColumn, sortAscending) );
             },
           )).toList(),
         ),
