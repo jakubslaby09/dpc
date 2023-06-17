@@ -1,3 +1,4 @@
+import 'package:dpc/pages/screens/commit.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/pages/screens/list.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class _HomePageState extends State<HomePage> {
   static final List<Widget> _screens = [
     const FileScreen(),
     const ListScreen(),
+    const CommitScreen(),
   ];
 
   int _viewedScreen = 0;
@@ -61,6 +63,10 @@ class _HomePageState extends State<HomePage> {
               //   icon: Icon(Icons.source_outlined),
               //   // activeIcon: Icon(Icons.source),
               // ),
+              NavigationRailDestination(
+                label: Text("Změny"),
+                icon: Icon(Icons.commit),
+              ),
             ],
             selectedIndex: _viewedScreen,
             onDestinationSelected: (screen) => setState(() => _viewedScreen = screen),
@@ -97,6 +103,10 @@ class _HomePageState extends State<HomePage> {
               //   icon: Icon(Icons.source_outlined),
               //   activeIcon: Icon(Icons.source),
               // ),
+              BottomNavigationBarItem(
+                label: "Změny",
+                icon: Icon(Icons.commit),
+              ),
             ],
             currentIndex: _viewedScreen,
             onTap: (screen) => setState(() => _viewedScreen = screen),
