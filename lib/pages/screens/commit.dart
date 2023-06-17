@@ -1,9 +1,16 @@
+import 'package:dpc/dpc.dart';
+import 'package:dpc/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-class CommitScreen extends StatelessWidget {
+class CommitScreen extends StatefulWidget {
   const CommitScreen({super.key});
 
+  @override
+  State<CommitScreen> createState() => _CommitScreenState();
+}
+
+class _CommitScreenState extends State<CommitScreen> {
   @override
   Widget build(BuildContext context) {
     // ScaffoldMessenger.of(context).
@@ -23,76 +30,61 @@ class CommitScreen extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              Card(
+              ...?App.pedigree?.people.indexed.map(
+                (person) => (person.$1, person.$2, person.$2.compare(App.unchangedPedigree!.people[person.$1]))
+              ).where(
+                (person) => !person.$3.same()
+              ).map((person) => Card(
                 child: Column(
                   children: [
-                    const ListTile(
-                      leading: Icon(Icons.face_6_outlined),
-                      title: Text("Lorem Ipsum"),
-                    ),
                     ListTile(
+                      leading: Icon(person.$2.sex.icon),
+                      title: Text(person.$2.name),
+                      trailing: person.$3.name == null && person.$3.sex == null ? null : IconButton(
+                        icon: const Icon(Icons.backspace_outlined),
+                        onPressed: () => setState(() {
+                            person.$2.sex = App.unchangedPedigree!.people[person.$1].sex;
+                            person.$2.name = App.unchangedPedigree!.people[person.$1].name;
+                        }),
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
+                    if (person.$3.birth != null) ListTile(
                       leading: const Icon(Icons.today_outlined),
-                      title: const Text("1. 1. 1999"),
+                      title: Text(person.$3.birth!),
                       trailing: IconButton(
                         icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () {},
+                        onPressed: () => setState(() {
+                          person.$2.birth = App.unchangedPedigree!.people[person.$1].birth;
+                        }),
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
+                    if (person.$3.death != null) ListTile(
+                      leading: const Icon(Icons.event_outlined),
+                      title: Text(person.$3.death!),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.backspace_outlined),
+                        onPressed: () => setState(() {
+                          person.$2.death = App.unchangedPedigree!.people[person.$1].death;
+                        }),
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
+                    if (person.$3.death != null) ListTile(
+                      leading: const Icon(Icons.event_outlined),
+                      title: Text(person.$3.death!),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.backspace_outlined),
+                        onPressed: () => setState(() {
+                          person.$2.death = App.unchangedPedigree!.people[person.$1].death;
+                        }),
                         color: Theme.of(context).colorScheme.onBackground,
                       ),
                     ),
                   ],
                 ),
-              ),
-              Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.face_3_outlined),
-                      title: const Text("Dolor Sit"),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outlined),
-                        onPressed: () {},
-                        color: Theme.of(context).colorScheme.onBackground,
-                      ),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.today_outlined),
-                      title: const Text("1. 1. 1999"),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () {},
-                        color: Theme.of(context).colorScheme.onBackground,
-                      ),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.today_outlined),
-                      title: const Text("1. 1. 1989"),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () {},
-                        color: Theme.of(context).colorScheme.onBackground,
-                      ),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.face_6_outlined),
-                      title: const Text("Amet Sit"),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () {},
-                        color: Theme.of(context).colorScheme.onBackground,
-                      ),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.face_3_outlined),
-                      title: const Text("Consecteur Elit"),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () {},
-                        color: Theme.of(context).colorScheme.onBackground,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              )),
             ],
           ),
         ),
@@ -101,6 +93,7 @@ class CommitScreen extends StatelessWidget {
         //   padding: const EdgeInsets.symmetric(vertical: 8),
         //   child: Text("Soubory", style: Theme.of(context).textTheme.titleMedium),
         // ),
+        // TODO: implement files
         ListTile(
           leading: const Icon(Icons.file_upload_outlined),
           // isThreeLine: true,
@@ -125,5 +118,4 @@ class CommitScreen extends StatelessWidget {
       ],
     );
   }
-
 }

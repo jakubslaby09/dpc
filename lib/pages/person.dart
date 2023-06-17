@@ -101,7 +101,10 @@ class _PersonPageState extends State<PersonPage> {
               labelText: "Otec",
               sex: Sex.male,
               initialId: person.father != -1 ? person.father : null,
-              onPick: (fatherId) => setState(() => person.father = fatherId),
+              onPick: (fatherId) => setState(() {
+                person.father = fatherId;
+                // TODO: Update children
+              }),
             ),
             trailing: IconButton(
               icon: const Icon(Icons.backspace_outlined),
@@ -116,7 +119,10 @@ class _PersonPageState extends State<PersonPage> {
               labelText: "Matka",
               sex: Sex.female,
               initialId: person.mother != -1 ? person.mother : null,
-              onPick: (motherId) => setState(() => person.mother = motherId),
+              onPick: (motherId) => setState(() {
+                person.mother = motherId;
+                // TODO: Update children
+              }),
             ),
             trailing: IconButton(
               icon: const Icon(Icons.backspace_outlined),

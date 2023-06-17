@@ -82,6 +82,46 @@ class Person {
   int father;
   int mother;
   List<double> children;
+
+  PersonDiff compare(Person other) {
+    return PersonDiff(
+      id == other.id ? null : id,
+      name == other.name ? null : name,
+      sex == other.sex ? null : sex,
+      birth == other.birth ? null : birth,
+      death == other.death ? null : death,
+      father == other.father ? null : father,
+      mother == other.mother ? null : mother,
+      [
+        ...children.where((childId) => !other.children.contains(childId)).map((child) => (true, child)),
+        ...other.children.where((childId) => !children.contains(childId)).map((child) => (false, child)),
+      ],
+    );
+  }
+}
+
+class PersonDiff {
+  PersonDiff(this.id, this.name, this.sex, this.birth, this.death, this.father, this.mother, this.children);
+
+  int? id;
+  String? name;
+  Sex? sex;
+  String? birth;
+  String? death;
+  int? father;
+  int? mother;
+  late List<(bool, double)> children;
+
+  bool same() {
+    return id == null &&
+    name == null &&
+    sex == null &&
+    birth == null &&
+    death == null &&
+    father == null &&
+    mother == null &&
+    children.isEmpty;
+  }
 }
 
 class Chronicle {
