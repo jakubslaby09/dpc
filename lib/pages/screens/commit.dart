@@ -1,13 +1,31 @@
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
+import 'package:dpc/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-class CommitScreen extends StatefulWidget {
+class CommitScreen extends StatefulWidget implements FABScreen {
   const CommitScreen({super.key});
 
   @override
   State<CommitScreen> createState() => _CommitScreenState();
+  
+  @override
+  Widget get fab => OrientationBuilder(
+    builder: (context, orientation) => orientation == Orientation.portrait ? FloatingActionButton(
+        onPressed: commit,
+        tooltip: "Zveřejnit",
+        child: const Icon(Icons.cloud_upload_outlined),
+      ) : FloatingActionButton.extended(
+        onPressed: commit,
+        icon: const Icon(Icons.cloud_upload_outlined),
+        label: const Text("Zveřejnit"),
+      ),
+  );
+
+  void commit() {
+    // TODO: implement commit and push
+  }
 }
 
 class _CommitScreenState extends State<CommitScreen> {
@@ -114,6 +132,10 @@ class _CommitScreenState extends State<CommitScreen> {
             onPressed: () {},
           ),
           onTap: () {},
+        ),
+        // Space for FAB
+        const Padding(
+          padding: EdgeInsets.only(bottom: 85)
         ),
       ],
     );

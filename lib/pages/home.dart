@@ -11,10 +11,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static final List<Widget> _screens = [
-    const FileScreen(),
-    const ListScreen(),
-    const CommitScreen(),
+  static const List<Destination> _destinations = [
+    Destination(
+      label: "Soubor",
+      screen: FileScreen(),
+      icon: Icons.file_open_outlined,
+      activeIcon: Icons.file_open,
+    ),
+    Destination(
+      label: "Seznam",
+      screen: ListScreen(),
+      icon: Icons.list,
+    ),
+    Destination(
+      label: "Změny",
+      screen: CommitScreen(),
+      icon: Icons.commit,
+    ),
   ];
 
   int _viewedScreen = 0;
@@ -43,76 +56,52 @@ class _HomePageState extends State<HomePage> {
         children: [
           if (MediaQuery.of(context).orientation == Orientation.landscape) NavigationRail(
             labelType: NavigationRailLabelType.selected,
-            destinations: const [
+            destinations: _destinations.map((destination) => 
               NavigationRailDestination(
-                label: Text("Soubor"),
-                icon: Icon(Icons.file_open_outlined),
-                // activeIcon: Icon(Icons.file_open),
+                icon: Icon(destination.icon),
+                label: Text(destination.label),
               ),
-              NavigationRailDestination(
-                label: Text("Seznam"),
-                icon: Icon(Icons.list),
-              ),
-              // NavigationRailDestination(
-              //   label: Text("Rodokmen"),
-              //   icon: Icon(Icons.auto_stories),
-              //   // activeIcon: Icon(Icons.auto_stories_outlined),
-              // ),
-              // NavigationRailDestination(
-              //   label: Text("Kronika"),
-              //   icon: Icon(Icons.source_outlined),
-              //   // activeIcon: Icon(Icons.source),
-              // ),
-              NavigationRailDestination(
-                label: Text("Změny"),
-                icon: Icon(Icons.commit),
-              ),
-            ],
+            ).toList(),
             selectedIndex: _viewedScreen,
             onDestinationSelected: (screen) => setState(() => _viewedScreen = screen),
           ),
           // const VerticalDivider(thickness: 1, width: 1),
           SizedBox(
             width: MediaQuery.of(context).size.width - (MediaQuery.of(context).orientation == Orientation.landscape ? 80 : 0),
-            child: _screens[_viewedScreen],
+            child: _destinations[_viewedScreen].screen,
           ),
         ],
       ),
-      
       bottomNavigationBar: OrientationBuilder(
         builder: (context, orientation) => Visibility(
           visible: orientation == Orientation.portrait,
           child: BottomNavigationBar(
-            items: const [
+            items: _destinations.map((destination) => 
               BottomNavigationBarItem(
-                label: "Soubor",
-                icon: Icon(Icons.file_open_outlined),
-                activeIcon: Icon(Icons.file_open),
+                label: destination.label,
+                icon: Icon(destination.icon),
+                activeIcon: destination.activeIcon != null ? Icon(destination.activeIcon) : null,
               ),
-              BottomNavigationBarItem(
-                label: "Seznam",
-                icon: Icon(Icons.list),
-              ),
-              // BottomNavigationBarItem(
-              //   label: "Rodokmen",
-              //   icon: Icon(Icons.auto_stories),
-              //   activeIcon: Icon(Icons.auto_stories_outlined),
-              // ),
-              // BottomNavigationBarItem(
-              //   label: "Kronika",
-              //   icon: Icon(Icons.source_outlined),
-              //   activeIcon: Icon(Icons.source),
-              // ),
-              BottomNavigationBarItem(
-                label: "Změny",
-                icon: Icon(Icons.commit),
-              ),
-            ],
+            ).toList(),
             currentIndex: _viewedScreen,
             onTap: (screen) => setState(() => _viewedScreen = screen),
           ),
         ),
       ),
+      floatingActionButton: _destinations[_viewedScreen].screen is FABScreen ? (_destinations[_viewedScreen].screen as FABScreen).fab : null,
     );
   }
+}
+
+class Destination {
+  const Destination({ required this.screen, required this.label, required this.icon, this.activeIcon, });
+
+  final Widget screen;
+  final String label;
+  final IconData icon;
+  final IconData? activeIcon;
+}
+
+abstract class FABScreen {
+  Widget get fab;
 }
