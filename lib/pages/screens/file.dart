@@ -134,15 +134,9 @@ class _FileScreenState extends State<FileScreen> {
         return;
       }
     }
-
-    Libgit2 git = Libgit2(DynamicLibrary.open(join(Directory.current.path, "lib/libgit/build/libgit2.so")));
-
-    if(git.git_libgit2_init() > 1) {
-      git.git_libgit2_shutdown();
-    }
-
+    
     Pointer<Pointer<git_repository>> repo = calloc();
-    switch (git.git_repository_open(repo, directory.toNativeUtf8().cast())) {
+    switch (App.git.git_repository_open(repo, directory.toNativeUtf8().cast())) {
       case 0:
         break;
       case -3:
@@ -153,15 +147,6 @@ class _FileScreenState extends State<FileScreen> {
         showException(context, "Git repozitář se nepodařilo otevřít. Skrytá podsložka `.git` je možná poškozená.");
         return;
     }
-
-    // Pointer<Pointer<git_index>> gitIndex = calloc();
-    // git.git_repository_index(gitIndex, repo.value);
-
-    // git.git_index_add_bypath(gitIndex.value, "index.dpc".toNativeUtf8().cast());
-
-    // git.git_index_write(gitIndex.value);
-
-    // calloc.free(gitIndex);
     
     bool broken = false;
     try {

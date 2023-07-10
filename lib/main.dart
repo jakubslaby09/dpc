@@ -1,6 +1,11 @@
+import 'dart:ffi';
+import 'dart:io';
+
 import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:git2dart_binaries/git2dart_binaries.dart';
+import 'package:path/path.dart';
 
 import 'pages/home.dart';
 
@@ -18,6 +23,7 @@ class App extends StatelessWidget {
   static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
   static Pedigree? unchangedPedigree;
   static Pedigree? pedigree;
+  static final Libgit2 git = _init_libgit2();
 
   // This widget is the root of your application.
   @override
@@ -46,6 +52,12 @@ class App extends StatelessWidget {
         home: const HomePage(),
       )
     );
+  }
+
+  static Libgit2 _init_libgit2() {
+    Libgit2 git = Libgit2(DynamicLibrary.open(join(Directory.current.path, "lib/libgit/build/libgit2.so")));
+    git.git_libgit2_init();
+    return git;
   }
 }
 

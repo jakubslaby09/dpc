@@ -1,6 +1,7 @@
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/home.dart';
+import 'package:dpc/widgets/commit_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -13,18 +14,18 @@ class CommitScreen extends StatefulWidget implements FABScreen {
   @override
   Widget get fab => OrientationBuilder(
     builder: (context, orientation) => orientation == Orientation.portrait ? FloatingActionButton(
-        onPressed: commit,
+        onPressed: () => commit(context),
         tooltip: "Zveřejnit",
         child: const Icon(Icons.cloud_upload_outlined),
       ) : FloatingActionButton.extended(
-        onPressed: commit,
+        onPressed: () => commit(context),
         icon: const Icon(Icons.cloud_upload_outlined),
         label: const Text("Zveřejnit"),
       ),
   );
 
-  void commit() {
-    // TODO: implement commit and push
+  void commit(BuildContext context) {
+    showCommitSheet(context);
   }
 }
 
