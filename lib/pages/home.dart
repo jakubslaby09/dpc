@@ -1,3 +1,4 @@
+import 'package:dpc/pages/screens/chronicle.dart';
 import 'package:dpc/pages/screens/commit.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/pages/screens/list.dart';
@@ -22,6 +23,12 @@ class _HomePageState extends State<HomePage> {
       label: "Seznam",
       screen: ListScreen(),
       icon: Icons.list,
+    ),
+    Destination(
+      label: "Kronika",
+      screen: ChronicleScreen(),
+      icon: Icons.history_edu,
+      // activeIcon: Icons.library_books,
     ),
     Destination(
       label: "Změny",
@@ -59,6 +66,7 @@ class _HomePageState extends State<HomePage> {
             destinations: _destinations.map((destination) => 
               NavigationRailDestination(
                 icon: Icon(destination.icon),
+                selectedIcon: destination.activeIcon != null ? Icon(destination.activeIcon) : null,
                 label: Text(destination.label),
               ),
             ).toList(),
@@ -76,6 +84,7 @@ class _HomePageState extends State<HomePage> {
         builder: (context, orientation) => Visibility(
           visible: orientation == Orientation.portrait,
           child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
             items: _destinations.map((destination) => 
               BottomNavigationBarItem(
                 label: destination.label,

@@ -127,25 +127,48 @@ class PersonDiff {
 class Chronicle {
   Chronicle.parse(Map<String, dynamic> json)
     : name = json['name'],
-      mime = json['mime'],
-      file = json['file'],
-      files = parseStringList(json['files']),
-      authors = parseIdList(json['authors'])! {
-    if ((file == null) == (files == null)) throw Exception("Either `file` or `files` field should be set.");
-  }
+      mime = mimeFromString(json['mime']),
+      files = parseChronicleFiles(json['files'], json['file']),
+      authors = parseIdList(json['authors'])!;
 
   Chronicle.clone(Chronicle chronicle)
   : name = chronicle.name,
   mime = chronicle.mime,
-  file = chronicle.file,
-  files = [...chronicle.files ?? []],
+  files = [...chronicle.files],
   authors = [...chronicle.authors];
+
+  bool compare(Chronicle other) {
+    return name == other.name &&
+    mime == other.mime &&
+    // TODO: use firstWhere
+    files.where((element) => other.files.contains(element)).isEmpty &&
+    authors.where((element) => other.authors.contains(element)).isEmpty;
+  }
   
   String name;
-  String mime;
-  String? file;
-  List<String>? files;
+  ChronicleMime mime;
+  List<String> files;
   List<double> authors;
+}
+
+List<double>? parseIdList(List<dynamic>? list) {
+  return list?.map((value) => (value as num).toDouble()).toList();
+}
+
+List<String>? parseStringList(List<dynamic>? list) {
+  return list?.map((value) => (value as String)).toList();
+}
+
+List<String> parseChronicleFiles(List<dynamic>? files, dynamic file) {
+  if((file == null) == (files == null)) {
+    throw Exception("Either `file` or `files` field should be set.");
+  }
+
+  if(file != null) {
+    return [file];
+  } else {
+    return parseStringList(files)!;
+  }
 }
 
 enum Sex {
@@ -163,10 +186,38 @@ extension SexExtension on Sex? {
   }
 }
 
-List<double>? parseIdList(List<dynamic>? list) {
-  return list?.map((value) => (value as num).toDouble()).toList();
+enum ChronicleMime {
+  applicationPdf,
+  textPlain,
+  textMarkdown,
+  other,
+}
+extension ChronicleMimeExtension on ChronicleMime {
+  IconData get icon {
+    return switch (this) {
+      ChronicleMime.applicationPdf => Icons.picture_as_pdf_outlined,
+      ChronicleMime.textPlain => Icons.text_snippet_outlined,
+      ChronicleMime.textMarkdown => Icons.text_snippet_outlined,
+      ChronicleMime.other => Icons.attachment,
+    };
+  }
+
+  bool get openable {
+    return switch (this) {
+      ChronicleMime.applicationPdf => false,
+      ChronicleMime.textPlain => true,
+      ChronicleMime.textMarkdown => true,
+      ChronicleMime.other => false,
+    };
+  }
 }
 
-List<String>? parseStringList(List<dynamic>? list) {
-  return list?.map((value) => (value as String)).toList();
+ChronicleMime mimeFromString(String value) {
+  try {
+    return ChronicleMime.values.firstWhere((element) {
+      return element.toString().split(".").last.toLowerCase() == value.replaceAll("/", "");
+    });
+  } catch (e) {
+    return ChronicleMime.other;
+  }
 }
