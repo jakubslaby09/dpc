@@ -151,7 +151,7 @@ class _FileScreenState extends State<FileScreen> {
     bool broken = false;
     try {
       dynamic values = json.decode(await index.readAsString());
-      App.pedigree = Pedigree.parse(values, repo);
+      App.pedigree = Pedigree.parse(values, directory, repo);
       App.unchangedPedigree = App.pedigree!.clone();
     } on Exception catch (e) {
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e);

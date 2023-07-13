@@ -1,5 +1,6 @@
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
+import 'package:dpc/pages/chronicle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -56,9 +57,9 @@ class ChronicleScreen extends StatelessWidget {
                 // leading: Icon(chronicle.mime.icon, color: Theme.of(context).colorScheme.outline),
                 title: Text(fileName),
                 trailing: chronicle.mime.openable ? const Icon(Icons.navigate_next) : null,
-                onTap: chronicle.mime.openable ? () {
-                  // TODO: make a screen for md files
-                } : null,
+                onTap: chronicle.mime.openable ? () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => ChroniclePage(fileName, context, markdown: chronicle.mime == ChronicleMime.textMarkdown),
+                )) : null,
               ))
             ],
           ),

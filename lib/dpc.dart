@@ -1,31 +1,33 @@
 import 'dart:ffi';
 
+import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 
 class Pedigree {
-  Pedigree.parse(Map<String, dynamic> json, this.repo)
+  Pedigree.parse(Map<String, dynamic> json, this.dir, this.repo)
     : version = json['version'],
-      name = json['name'],
-      people = (json['people'] as List<dynamic>).map((person) => Person.parse(person)).toList(),
-      chronicle = (json['chronicle'] as List<dynamic>).map((chronicle) => Chronicle.parse(chronicle)).toList() {
-        if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
-        if (version < maxVersion) throw UnimplementedError("Upgrading pedigree versions has yet to be implemented."); // TODO: Implement pedigree version upgrades
-        people.asMap().forEach((index, person) {
-          if (person.id != index) throw Exception("${person.id} != $index");
-        });
+    name = json['name'],
+    people = (json['people'] as List<dynamic>).map((person) => Person.parse(person)).toList(),
+    chronicle = (json['chronicle'] as List<dynamic>).map((chronicle) => Chronicle.parse(chronicle)).toList() {
+      if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
+      if (version < maxVersion) throw UnimplementedError("Upgrading pedigree versions has yet to be implemented."); // TODO: Implement pedigree version upgrades
+      people.asMap().forEach((index, person) {
+        if (person.id != index) throw Exception("${person.id} != $index");
+      });
   }
 
-  Pedigree.empty(this.name, this.repo)
+  Pedigree.empty(this.name, this.dir, this.repo)
     : version = 3,
-      people = [],
-      chronicle = [];
+    people = [],
+    chronicle = [];
   
   Pedigree.clone(Pedigree pedigree)
     : version = pedigree.version,
     name = pedigree.name,
     people = pedigree.people.map((person) => Person.clone(person)).toList(),
     chronicle = pedigree.chronicle.map((chronicle) => Chronicle.clone(chronicle)).toList(),
+    dir = pedigree.dir,
     repo = pedigree.repo;
     
 
@@ -33,6 +35,7 @@ class Pedigree {
   String name;
   List<Person> people;
   List<Chronicle> chronicle;
+  String dir;
   // TODO: free when closing file
   Pointer<Pointer<git_repository>> repo;
 
