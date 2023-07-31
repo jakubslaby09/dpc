@@ -10,6 +10,7 @@ import 'package:path/path.dart';
 import 'pages/home.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   App.prefs = await initPrefs();
 
   const App app = App();
