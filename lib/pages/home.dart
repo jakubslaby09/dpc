@@ -83,17 +83,18 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: OrientationBuilder(
         builder: (context, orientation) => Visibility(
           visible: orientation == Orientation.portrait,
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            items: _destinations.map((destination) => 
-              BottomNavigationBarItem(
+          child: NavigationBar(
+            // type: BottomNavigationBarType.fixed,
+            // enableFeedback: true,
+            destinations: _destinations.map((destination) => 
+              NavigationDestination(
                 label: destination.label,
                 icon: Icon(destination.icon),
-                activeIcon: destination.activeIcon != null ? Icon(destination.activeIcon) : null,
+                selectedIcon: destination.activeIcon != null ? Icon(destination.activeIcon) : null,
               ),
             ).toList(),
-            currentIndex: _viewedScreen,
-            onTap: (screen) => setState(() => _viewedScreen = screen),
+            selectedIndex: _viewedScreen,
+            onDestinationSelected: (screen) => setState(() => _viewedScreen = screen),
           ),
         ),
       ),
