@@ -18,7 +18,7 @@ class Pedigree {
   }
 
   Pedigree.empty(this.name, this.dir, this.repo)
-    : version = 3,
+    : version = maxVersion,
     people = [],
     chronicle = [];
   
