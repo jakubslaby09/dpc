@@ -46,6 +46,15 @@ class App extends StatelessWidget {
         // primarySwatch: Colors.blue,
           useMaterial3: true,
           splashFactory: InkRipple.splashFactory,
+          //TODO: add to settings
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFBA9666)).copyWith(
+            // 669DBA
+            // FFD8A6
+            // 6E5431
+            // primary: const Color(0xFF26546E),
+            // secondaryContainer: const Color(0xFF669DBA),
+            // onSecondaryContainer: Colors.white,
+          ),
         ),
         debugShowCheckedModeBanner: false,
         themeMode: themeMode,
