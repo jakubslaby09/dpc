@@ -39,7 +39,7 @@ class Pedigree {
   // TODO: free when closing file
   Pointer<Pointer<git_repository>> repo;
 
-  static const maxVersion = 3;
+  static const maxVersion = 4;
 
   Pedigree clone() {
     return Pedigree.clone(this);
@@ -50,6 +50,7 @@ class Person {
   Person.parse(Map<String, dynamic> json)
     : id = json['id'],
       name = json['name'],
+      image = json['image'],
       birth = json['birth'],
       death = json['death'],
       father = json['father'],
@@ -71,6 +72,7 @@ class Person {
   : id = person.id,
   name = person.name,
   sex = person.sex,
+  image = person.image,
   birth = person.birth,
   death = person.death,
   father = person.father,
@@ -80,6 +82,7 @@ class Person {
   int id;
   String name;
   late Sex sex;
+  String? image;
   String? birth;
   String? death;
   int father;
