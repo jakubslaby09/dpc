@@ -139,8 +139,7 @@ class _FileScreenState extends State<FileScreen> {
     switch (App.git.git_repository_open(repo, directory.toNativeUtf8().cast())) {
       case 0:
         break;
-      case -3:
-        // TODO: verify the meaning of -3
+      case git_error_code.GIT_ENOTFOUND:
         showException(context, "Vybraná složka není Git repozitář. Vybrali jste správnou složku? Možná jste smazali skrytou podsložku `.git`.");
         return;
       default:
