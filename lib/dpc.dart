@@ -53,6 +53,7 @@ class Person {
       image = json['image'],
       birth = json['birth'],
       death = json['death'],
+      pedigreeLink = json['pedigreeLink'] != null ? PedigreeLink.parse(json['pedigreeLink']) : null,
       father = json['father'],
       mother = json['mother'],
       children = parseIdList(json['children'])! {
@@ -75,6 +76,7 @@ class Person {
   image = person.image,
   birth = person.birth,
   death = person.death,
+  pedigreeLink = person.pedigreeLink?.clone(),
   father = person.father,
   mother = person.mother,
   children = [...person.children];
@@ -85,6 +87,7 @@ class Person {
   String? image;
   String? birth;
   String? death;
+  PedigreeLink? pedigreeLink;
   int father;
   int mother;
   List<double> children;
@@ -189,6 +192,32 @@ extension SexExtension on Sex? {
   
   IconData get icon {
     return this == null ? Icons.face_outlined : this == Sex.male ? Icons.face_6_outlined : Icons.face_3_outlined;
+  }
+}
+
+class PedigreeLink {
+  PedigreeLink(this.name, this.date);
+
+  PedigreeLink.parse(Map<String, dynamic> json)
+    : date = json["date"],
+    name = json["name"];
+
+  String? name;
+  String? date;
+
+  PedigreeLink clone() {
+    return PedigreeLink(name, date);
+  }
+
+  Map<String, String?> toJson() {
+    Map<String, String?> result = {
+      "name": name,
+      "date": date,
+    };
+
+    result.removeWhere((_, value) => value == null);
+
+    return result;
   }
 }
 
