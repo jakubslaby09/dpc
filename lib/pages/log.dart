@@ -45,6 +45,7 @@ class LogPage extends StatelessWidget {
   }
 }
 
+// TODO: accept a stack trace
 void showException(BuildContext context, String message, [Exception? exception]) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     content: Text(message),
