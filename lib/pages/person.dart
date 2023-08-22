@@ -185,6 +185,7 @@ class _PersonPageState extends State<PersonPage> {
       if(person.image != null) {
         final file = File(p.join(App.pedigree!.dir, person.image));
         if(!file.existsSync()) {
+          // TODO: try to load from .git/
           // TODO: make some error handling
         }
         imageProvider = FileImage(file);

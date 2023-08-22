@@ -151,7 +151,34 @@ class _FileScreenState extends State<FileScreen> {
     try {
       dynamic values = json.decode(await index.readAsString());
       App.pedigree = Pedigree.parse(values, directory, repo);
-      App.unchangedPedigree = App.pedigree!.clone();
+      try {
+        Pointer<Pointer<git_index>> gitIndex = calloc();
+        Pointer<git_oid> treeOid = calloc();
+        Pointer<Pointer<git_tree>> tree = calloc();
+        Pointer<Pointer<git_tree_entry>> entry = calloc();
+        Pointer<Pointer<git_object>> object = calloc();
+        Pointer<git_oid> objectOid = calloc();
+        Pointer<Pointer<git_blob>> blob = calloc();
+        assert(0 == App.git.git_repository_index(gitIndex, App.pedigree!.repo.value));
+        assert(0 == App.git.git_index_write_tree(treeOid, gitIndex.value));
+        assert(0 == App.git.git_tree_lookup(tree, App.pedigree!.repo.value, treeOid));
+        entry.value = App.git.git_tree_entry_byname(tree.value, "index.dpc".toNativeUtf8().cast());
+        assert(0 == App.git.git_tree_entry_to_object(object, App.pedigree!.repo.value, entry.value));
+        objectOid = App.git.git_object_id(object.value);
+        assert(0 == App.git.git_blob_lookup(blob, App.pedigree!.repo.value, objectOid));
+        Pointer<Void> blobBuffer = App.git.git_blob_rawcontent(blob.value);
+
+        String text = (blobBuffer.cast<Pointer<Utf8>>() as Pointer<Utf8>).toDartString();
+        dynamic values = json.decode(text);
+        
+        // TODO: version upgrades
+        values["version"] = 4; // workaround
+        App.unchangedPedigree = Pedigree.parse(values, directory, repo);
+      } on Exception catch (e) {
+        showException(context, "Nelze porovnat rodokmen s verzí bez aktuálních změn.", e);
+        App.unchangedPedigree = App.pedigree!.clone();
+      }
+
     } on Exception catch (e) {
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e);
       if (!App.prefs.saveBrokenRecentFiles) {
