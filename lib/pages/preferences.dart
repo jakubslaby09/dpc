@@ -26,6 +26,7 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
   );
 
   int _maxRecents = App.prefs.maxRecentFiles;
+  int _saveDelaySeconds = App.prefs.saveDelaySeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +121,35 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
               secondary: const Icon(Icons.broken_image_outlined),
             ),
           ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text("Změny", style: Theme.of(context).textTheme.titleMedium),
+          ),
+          ListTile(
+            leading: const Icon(Icons.timer_outlined),
+            title: Row(
+              children: [
+                const Text("Prodleva před uložením"),
+                Expanded(
+                  child: Slider(
+                    value: _saveDelaySeconds.toDouble(),
+                    max: 30,
+                    min: 0,
+                    divisions: 12,
+                    label: _saveDelaySeconds == 0 ? " Ukládat okamžitě " : "${_saveDelaySeconds}s",
+                    onChanged: (value) => setState(() {
+                      _saveDelaySeconds = value.floor();
+                    }),
+                    onChangeEnd: (value) {
+                      App.prefs.saveDelaySeconds = value.floor();
+                      _saveDelaySeconds = App.prefs.saveDelaySeconds;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -166,6 +196,12 @@ class Preferences {
   set maxRecentFiles(int value) {
     _sharedPrefs!.setInt(_maxRecentFilesKey, value);
     recentFiles = safeSublist(recentFiles, 0, value) as List<String>;
+  }
+  
+  static const _saveDelaySecondsKey = "saveDelaySeconds";
+  int get saveDelaySeconds => max(0, _sharedPrefs!.getInt(_saveDelaySecondsKey) ?? 5);
+  set saveDelaySeconds(int value) {
+    _sharedPrefs!.setInt(_saveDelaySecondsKey, value);
   }
   
   static const _saveBrokenRecentFilesKey = "saveBrokenRecentFiles";

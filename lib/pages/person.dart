@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:dpc/autosave.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:dpc/main.dart';
@@ -55,12 +56,16 @@ class _PersonPageState extends State<PersonPage> {
                         icon: Icon(person.sex.icon),
                         onPressed: () => setState(() {
                           person.sex == Sex.male ? person.sex = Sex.female : person.sex = Sex.male;
+                          scheduleSave(context);
                         }),
                         padding: EdgeInsets.zero, // TODO: make it work
                       ),
                     ),
                     controller: nameController,
-                    onChanged: (name) => setState(() => person.name = name),
+                    onChanged: (name) => setState(() {
+                      person.name = name;
+                      scheduleSave(context);
+                    }),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.backspace_outlined),
@@ -68,6 +73,7 @@ class _PersonPageState extends State<PersonPage> {
                       person.name = unchangedPerson.name;
                       person.sex = unchangedPerson.sex;
                       nameController = TextEditingController(text: person.name);
+                      scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
@@ -81,7 +87,10 @@ class _PersonPageState extends State<PersonPage> {
                       icon: Icon(Icons.today_outlined),
                     ),
                     controller: birthController,
-                    onChanged: (birth) => setState(() => person.birth = birth),
+                    onChanged: (birth) => setState(() {
+                      person.birth = birth.isEmpty ? null : birth;
+                      scheduleSave(context);
+                    }),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.backspace_outlined),
@@ -89,6 +98,7 @@ class _PersonPageState extends State<PersonPage> {
                       person.birth = unchangedPerson.birth;
                       person.sex = unchangedPerson.sex;
                       birthController = TextEditingController(text: person.birth);
+                      scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
@@ -101,7 +111,10 @@ class _PersonPageState extends State<PersonPage> {
                       icon: Icon(Icons.event_outlined),
                     ),
                     controller: deathController,
-                    onChanged: (death) => setState(() => person.death = death),
+                    onChanged: (death) => setState(() {
+                      person.death = death.isEmpty ? null : death;
+                      scheduleSave(context);
+                    }),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.backspace_outlined),
@@ -109,6 +122,7 @@ class _PersonPageState extends State<PersonPage> {
                       person.death = unchangedPerson.death;
                       person.sex = unchangedPerson.sex;
                       deathController = TextEditingController(text: person.death);
+                      scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
@@ -121,13 +135,17 @@ class _PersonPageState extends State<PersonPage> {
                     initialId: person.father != -1 ? person.father : null,
                     onPick: (fatherId) => setState(() {
                       person.father = fatherId;
+
                       // TODO: Update children
+
+                      scheduleSave(context);
                     }),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.backspace_outlined),
                     onPressed: person.father != unchangedPerson.father ? () => setState(() {
                       person.father = unchangedPerson.father;
+                      scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
@@ -139,13 +157,17 @@ class _PersonPageState extends State<PersonPage> {
                     initialId: person.mother != -1 ? person.mother : null,
                     onPick: (motherId) => setState(() {
                       person.mother = motherId;
+
                       // TODO: Update children
+
+                      scheduleSave(context);
                     }),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.backspace_outlined),
                     onPressed: person.mother != unchangedPerson.mother ? () => setState(() {
                       person.mother = unchangedPerson.mother;
+                      scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
@@ -211,10 +233,12 @@ class _PersonPageState extends State<PersonPage> {
                   onPressed: person.image != null ? () {
                     person.image = null;
                     readImage();
+                    scheduleSave(context);
                     setState(() {});
                   } : unchangedPerson.image != null ? () {
                     person.image = unchangedPerson.image;
                     readImage();
+                    scheduleSave(context);
                     setState(() {});
                   } : null
                 ),

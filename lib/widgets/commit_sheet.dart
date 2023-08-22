@@ -38,7 +38,7 @@ class CommitSheet extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: FilledButton(
-              onPressed: onConfirm,
+              onPressed: () => onConfirm(context),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(40),
               ),
@@ -49,10 +49,11 @@ class CommitSheet extends StatelessWidget {
       );
   }
   
-  void onConfirm() {
+  void onConfirm(BuildContext context) {
     // print("running libgit2");
     // TODO: make an exception for it
     if(App.pedigree == null) return;
+    App.pedigree!.save(context);
 
     ffi.Pointer<ffi.Pointer<git_index>> index = ffi.calloc();
     print(App.git.git_repository_index(index, App.pedigree!.repo.value));

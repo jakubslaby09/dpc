@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 
+import 'package:dpc/pages/log.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -43,6 +46,30 @@ class Pedigree {
 
   Pedigree clone() {
     return Pedigree.clone(this);
+  }
+
+  String toJson() {
+    const encoder = JsonEncoder.withIndent("  ");
+    return encoder.convert({
+      "version": version,
+      "name": name,
+      "people": people.map((person) => person.toJson()).toList(),
+      "chronicle": chronicle.map((chronicle) => chronicle.toJson()).toList(),
+    });
+  }
+
+  Future<void> save(BuildContext context) async {
+    final index = File(p.join(dir, "index.dpc"));
+
+    if(!await index.exists()) {
+      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem. Nesmazali jste ho?");
+    }
+
+    try {
+      await index.writeAsString(toJson());
+    } on Exception catch (e) {
+      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem.", e);
+    }
   }
 }
 
@@ -90,7 +117,7 @@ class Person {
   PedigreeLink? pedigreeLink;
   int father;
   int mother;
-  List<double> children;
+  List<num> children;
 
   PersonDiff compare(Person other) {
     return PersonDiff(
@@ -107,6 +134,25 @@ class Person {
       ],
     );
   }
+  
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> result = {
+      "id": id,
+      "name": name,
+      "sex": sex.name,
+      "image": image,
+      "birth": birth,
+      "death": death,
+      "pedigreeLink": pedigreeLink?.toJson(),
+      "father": father,
+      "mother": mother,
+      "children": children/* .map((id) => id % 1 == 0 ? id.toInt() : id).toList() */,
+    };
+
+    result.removeWhere((_, value) => value == null);
+
+    return result;
+  }
 }
 
 class PersonDiff {
@@ -119,7 +165,7 @@ class PersonDiff {
   String? death;
   int? father;
   int? mother;
-  late List<(bool, double)> children;
+  late List<(bool, num)> children;
 
   bool same() {
     return id == null &&
@@ -157,11 +203,27 @@ class Chronicle {
   String name;
   ChronicleMime mime;
   List<String> files;
-  List<double> authors;
+  List<num> authors;
+  
+  Map<String, dynamic> toJson() {
+    Map<String, Object> result = {
+      "name": name,
+      "mime": mime.toMimeString,
+      "authors": authors,
+    };
+
+    if(files.length == 1) {
+      result["file"] = files[0];
+    } else {
+      result["files"] = files;
+    }
+
+    return result;
+  }
 }
 
-List<double>? parseIdList(List<dynamic>? list) {
-  return list?.map((value) => (value as num).toDouble()).toList();
+List<num>? parseIdList(List<dynamic>? list) {
+  return list?.map((value) => value as num).toList();
 }
 
 List<String>? parseStringList(List<dynamic>? list) {
@@ -244,6 +306,14 @@ extension ChronicleMimeExtension on ChronicleMime {
       ChronicleMime.textMarkdown => true,
       ChronicleMime.other => false,
     };
+  }
+
+  String get toMimeString {
+    final capital = name.indexOf(RegExp(r"[A-Z]"));
+    if(capital == -1) {
+      return "other/other";
+    }
+    return name.replaceRange(capital, capital + 1, "/${name[capital].toLowerCase()}");
   }
 }
 
