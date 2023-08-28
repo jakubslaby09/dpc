@@ -188,14 +188,14 @@ class Preferences {
   static const _recentFilesKey = "recentFiles";
   List<String> get recentFiles => _sharedPrefs!.getStringList(_recentFilesKey) ?? [];
   set recentFiles(List<String> value) {
-    _sharedPrefs!.setStringList(_recentFilesKey, safeSublist(value, 0, maxRecentFiles) as List<String>);
+    _sharedPrefs!.setStringList(_recentFilesKey, value.safeSublist(0, maxRecentFiles));
   }
   
   static const _maxRecentFilesKey = "maxRecentFiles";
   int get maxRecentFiles => max(1, _sharedPrefs!.getInt(_maxRecentFilesKey) ?? 3);
   set maxRecentFiles(int value) {
     _sharedPrefs!.setInt(_maxRecentFilesKey, value);
-    recentFiles = safeSublist(recentFiles, 0, value) as List<String>;
+    recentFiles = recentFiles.safeSublist(0, value);
   }
   
   static const _saveDelaySecondsKey = "saveDelaySeconds";

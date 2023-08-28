@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/preferences.dart';
+import 'package:dpc/pages/screens/commit.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:path/path.dart';
@@ -83,13 +84,36 @@ class Result<T, E> {
   }
 }
 
-List<dynamic> safeSublist(List<dynamic> list, int start, int? end) {
-  assert(start <= (end ?? start));
-  if (list.length >= (end ?? start)) {
-    return list.sublist(start, end);
-  } else if (list.length >= start) {
-    return list.sublist(start);
-  } else {
-    return list;
+extension ListExtension<T> on List<T> {
+  List<T> safeSublist(int start, int? end) {
+    if(end != null && end < start) {
+      return [];
+    }
+    if (length >= (end ?? start)) {
+      return sublist(start, end);
+    }
+    if (length >= start) {
+      return sublist(start);
+    }
+
+    return this;
+  }
+
+  T? safeFirstWhere(bool Function(T) test, {T? or, T Function()? orElse}) {
+    try {
+      return firstWhere(test as dynamic, orElse: orElse);
+    } on StateError catch (_) {
+      return or;
+    }
+  }
+}
+
+extension IterableExtension<E> on Iterable<E> {
+  Iterable<T> indexedMap<T>(T Function(E element, int index) toElement) {
+    return indexed.map<T>((e) => toElement(e.$2, e.$1));
+  }
+  
+  Iterable<T> indexedFilteredMap<T>(T? Function(E element, int index) toElement) {
+    return indexed.map<T?>((e) => toElement(e.$2, e.$1)).where((e) => e != null).cast();
   }
 }
