@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:dpc/pages/log.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -196,8 +197,10 @@ class Chronicle {
     return name == other.name &&
     mime == other.mime &&
     // TODO: use firstWhere
-    files.where((element) => other.files.contains(element)).isEmpty &&
-    authors.where((element) => other.authors.contains(element)).isEmpty;
+    files.length == other.files.length &&
+    authors.length == other.authors.length &&
+    files.where((element) => !other.files.contains(element)).isEmpty &&
+    authors.where((element) => !other.authors.contains(element)).isEmpty;
   }
   
   String name;
@@ -219,6 +222,11 @@ class Chronicle {
     }
 
     return result;
+  }
+
+  @override
+  String toString() {
+    return "[Chronicle: $name]";
   }
 }
 
