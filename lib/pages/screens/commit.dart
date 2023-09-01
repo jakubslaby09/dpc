@@ -123,13 +123,18 @@ class _CommitScreenState extends State<CommitScreen> {
                       ListTile(
                         leading: Icon(change.type == ChangeType.removal ? Icons.delete_outline : Icons.auto_stories_outlined),
                         title: Text(chronicle.name),
-                        trailing: change.unchanged != null && changedChronicle?.name == change.unchanged!.name ? null : IconButton(
+                        trailing: change.type == ChangeType.modification && changedChronicle?.name == change.unchanged?.name ? null : IconButton(
                           icon: Icon(change.type == ChangeType.addition ? Icons.delete_forever_outlined : Icons.backspace_outlined),
                           onPressed: () => setState(() {
                             if(change.type == ChangeType.modification) {
                               changedChronicle?.name = change.unchanged!.name;
                             } else if(change.type == ChangeType.removal) {
-                              App.pedigree!.chronicle.insert(change.index, change.unchanged!);
+                              // TODO: fix ordering
+                              try {
+                                App.pedigree!.chronicle.insert(change.index, change.unchanged!);
+                              } on RangeError catch (_) {
+                                App.pedigree!.chronicle.add(change.unchanged!);
+                              }
                             } else if(change.type == ChangeType.addition)  {
                               App.pedigree!.chronicle.removeAt(change.index);
                             }
@@ -150,7 +155,12 @@ class _CommitScreenState extends State<CommitScreen> {
                             if(fileChange.type == ChangeType.addition) {
                               changedChronicle.files.removeAt(fileChange.index);
                             } else if(fileChange.type == ChangeType.removal) {
-                              changedChronicle.files.insert(fileChange.index, fileChange.unchanged!);
+                              // TODO: fix ordering
+                              try {
+                                changedChronicle.files.insert(fileChange.index, fileChange.unchanged!);
+                              } on RangeError catch (_) {
+                                changedChronicle.files.add(fileChange.unchanged!);
+                              }
                             }
                             scheduleSave(context);
                           }),
@@ -238,6 +248,12 @@ List<Change<T>> diff<T>(List<T> original, List<T> changed, bool Function(T a, T 
       // print("removed ${original.sublist(originalIndex)}");
       result.addAll(Change.removals(originalIndex + indexDelta, original.sublist(originalIndex)));
       break;
+    }
+
+    if(originalIndex + indexDelta < 0) {
+      // TODO: debug
+      // print("diff: skipping $originalItem ($originalIndex) -> (${originalIndex + indexDelta})");
+      continue;
     }
     final changedItem = changed[originalIndex + indexDelta];
 
