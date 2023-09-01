@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:dpc/autosave.dart';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/chronicle.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:path/path.dart' as p;
 
 class ChronicleScreen extends StatefulWidget {
   const ChronicleScreen({super.key});
@@ -20,6 +23,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
       return Text("none");
     }
 
+    // TODO: make the title and authors editable
     return ListView(
       children: App.pedigree!.chronicle.indexedMap((chronicle, chronicleIndex) => Padding(
         padding: const EdgeInsets.all(8),
@@ -34,15 +38,16 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
           child: Column(
             children: [
               ListTile(
-                leading: Icon(chronicle.mime.icon, color: Theme.of(context).colorScheme.outline),
+                iconColor: Theme.of(context).colorScheme.outline,
+                leading: Icon(chronicle.mime.icon),
                 title: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(child: Text(chronicle.name)),
-                    IconButton(
+                    if(chronicle.files.isNotEmpty) IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
-                        // TODO: implement adding files a to chronicle
+                        addFile(context, chronicle).then((_) => setState(() {}));
                       },
                     ),
                     IconButton(
@@ -76,8 +81,8 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                   )).toList(),
                 ),
               ),
-              const Divider(),
-              ...chronicle.files.map((fileName) => ListTile(
+              Divider(height: chronicle.files.length <= 1 ? 2 : null),
+              ...chronicle.files.indexedMap((fileName, index) => ListTile(
                 // leading: Icon(chronicle.mime.icon, color: Theme.of(context).colorScheme.outline),
                 title: Row(
                   children: [
@@ -86,20 +91,70 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                     const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      onPressed: () {
-                        // TODO: implement removing files from a chronicle
-                      },
+                      onPressed: () => setState(() {
+                        chronicle.files.removeAt(index);
+                        scheduleSave(context);
+                      }),
                     )
                   ],
                 ),
                 onTap: chronicle.mime.openable ? () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => ChroniclePage(fileName, context, markdown: chronicle.mime == ChronicleMime.textMarkdown),
                 )) : null,
-              ))
+              )),
+              if(chronicle.files.isEmpty) ListTile(
+                iconColor: Theme.of(context).colorScheme.outline,
+                title: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: Icon(Icons.add),
+                    ),
+                    Text("Přidat soubory", textAlign: TextAlign.center),
+                  ],
+                ),
+                onTap: () => addFile(context, chronicle).then((_) => setState(() {})),
+              )
             ],
           ),
         ),
       )).toList(),
     );
+  }
+}
+
+Future<void> addFile(BuildContext context, Chronicle chronicle) async {
+  // TODO: use allowedExtensions
+  final picked = await FilePicker.platform.pickFiles(
+    dialogTitle: "Vybrat soubory do kroniky",
+    allowMultiple: true,
+  );
+
+  if(picked == null) {
+    return;
+  }
+
+  for (final platformFile in picked.files) {
+    if(platformFile.path == null) {
+      // TODO: examine when it happens
+      continue;
+    }
+
+    final sourceFile = File(platformFile.path!);
+    File file;
+    final repoDir = Directory(App.pedigree!.dir);
+    // TODO: debug with mounted subdirs
+    if(p.isWithin(repoDir.absolute.path, sourceFile.absolute.path)) {
+      file = sourceFile;
+    } else {
+      // TODO: display a dialog
+      file = File(p.join(repoDir.path, "test", p.basename(sourceFile.path)));
+      await file.create(recursive: true);
+      await sourceFile.copy(file.path);
+    }
+
+    chronicle.files.add(p.relative(file.absolute.path, from: repoDir.absolute.path));
+    // TODO: fix ordering
   }
 }
