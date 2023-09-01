@@ -4,6 +4,7 @@ import 'package:dpc/autosave.dart';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/chronicle.dart';
+import 'package:dpc/widgets/file_import_sheet.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -143,18 +144,20 @@ Future<void> addFile(BuildContext context, Chronicle chronicle) async {
 
     final sourceFile = File(platformFile.path!);
     File file;
-    final repoDir = Directory(App.pedigree!.dir);
     // TODO: debug with mounted subdirs
-    if(p.isWithin(repoDir.absolute.path, sourceFile.absolute.path)) {
+    if(p.isWithin(App.pedigree!.dir, sourceFile.path)) {
       file = sourceFile;
     } else {
-      // TODO: display a dialog
-      file = File(p.join(repoDir.path, "test", p.basename(sourceFile.path)));
+      final filePath = await showFileImportSheet(context, sourceFile.path, "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění");
+      if(filePath == null) {
+        return;
+      }
+      file = File(filePath);
       await file.create(recursive: true);
       await sourceFile.copy(file.path);
     }
 
-    chronicle.files.add(p.relative(file.absolute.path, from: repoDir.absolute.path));
+    chronicle.files.add(p.relative(file.path, from: App.pedigree!.dir));
     // TODO: fix ordering
   }
 }
