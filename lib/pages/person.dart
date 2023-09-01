@@ -134,7 +134,8 @@ class _PersonPageState extends State<PersonPage> {
                     sex: Sex.male,
                     initialId: person.father != -1 ? person.father : null,
                     onPick: (fatherId) => setState(() {
-                      person.father = fatherId;
+                      // TODO: let father be null
+                      person.father = fatherId ?? -1;
 
                       // TODO: Update children
 
@@ -156,7 +157,8 @@ class _PersonPageState extends State<PersonPage> {
                     sex: Sex.female,
                     initialId: person.mother != -1 ? person.mother : null,
                     onPick: (motherId) => setState(() {
-                      person.mother = motherId;
+                      // TODO: let mother be null
+                      person.mother = motherId ?? -1;
 
                       // TODO: Update children
 

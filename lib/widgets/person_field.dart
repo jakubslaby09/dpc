@@ -10,10 +10,10 @@ class PersonField extends StatelessWidget {
   final Sex? sex;
   final String? labelText;
   final int? initialId;
-  late final int? id = initialId;
+  late int? id = initialId;
 
   late final TextEditingController controller = TextEditingController(text: person?.name);
-  final Function(int value)? onPick;
+  final Function(int? value)? onPick;
 
   Person? get person {
     if (id == null) return null;
@@ -23,27 +23,38 @@ class PersonField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: TextField(
-        decoration: InputDecoration(
-          icon: Icon(sex.icon),
-          labelText: labelText,
-          // hintText: sex.string,
-          border: const OutlineInputBorder(),
-        ),
-        readOnly: true,
-        controller: controller,
-        onTap: () => showModalBottomSheet(
-          context: context,
-          builder: (context) => PersonPicker(
-            sex: sex,
-            onPick: (id) {
-              Navigator.pop(context);
-              onPick?.call(id);
+    // TODO: listen to ENTER
+    return TextField(
+      mouseCursor: SystemMouseCursors.click,
+      decoration: InputDecoration(
+        icon: Icon(sex.icon),
+        labelText: labelText,
+        // hintText: sex.string,
+        border: const OutlineInputBorder(),
+        suffixIcon: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: id == null ? null : () {
+              id = null;
+              controller.text = "";
+              onPick?.call(null);
             },
-          )
-        ),
+          ),
+        )
+      ),
+      readOnly: true,
+      controller: controller,
+      onTap: () => showModalBottomSheet(
+        context: context,
+        builder: (context) => PersonPicker(
+          sex: sex,
+          onPick: (id) {
+            this.id = id;
+            Navigator.pop(context);
+            onPick?.call(id);
+          },
+        )
       ),
     );
   }
