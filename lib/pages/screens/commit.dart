@@ -33,6 +33,7 @@ class CommitScreen extends StatefulWidget implements FABScreen {
 
 // TODO: make ChangeType more clear in the ui
 // TODO: add a 'no changes' text
+// TODO: add ui for unassigned files
 class _CommitScreenState extends State<CommitScreen> {
   @override
   Widget build(BuildContext context) {

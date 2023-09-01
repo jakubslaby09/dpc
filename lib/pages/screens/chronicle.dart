@@ -21,7 +21,6 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
     }
 
     return ListView(
-      // TODO: add ui for unassigned chronicle files
       children: App.pedigree!.chronicle.indexedMap((chronicle, chronicleIndex) => Padding(
         padding: const EdgeInsets.all(8),
         child: Card(
