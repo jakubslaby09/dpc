@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dpc/pages/log.dart';
-import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -97,6 +97,14 @@ class Person {
     }
   }
 
+  Person.empty(this.id)
+  // TODO: pick a random name from a list
+  : name = "Nové jméno",
+  sex = SexExtension.random(),
+  father = -1,
+  mother = -1,
+  children = [];
+
   Person.clone(Person person)
   : id = person.id,
   name = person.name,
@@ -120,20 +128,17 @@ class Person {
   int mother;
   List<num> children;
 
-  PersonDiff compare(Person other) {
-    return PersonDiff(
-      id == other.id ? null : id,
-      name == other.name ? null : name,
-      sex == other.sex ? null : sex,
-      birth == other.birth ? null : birth,
-      death == other.death ? null : death,
-      father == other.father ? null : father,
-      mother == other.mother ? null : mother,
-      [
-        ...children.where((childId) => !other.children.contains(childId)).map((child) => (true, child)),
-        ...other.children.where((childId) => !children.contains(childId)).map((child) => (false, child)),
-      ],
-    );
+  bool compare(Person other) {
+    return id == other.id &&
+    name == other.name &&
+    sex == other.sex &&
+    birth == other.birth &&
+    death == other.death &&
+    father == other.father &&
+    mother == other.mother &&
+    children.length == other.children.length &&
+    // TODO: use firstWhere
+    children.where((childId) => !other.children.contains(childId)).isEmpty;
   }
   
   Map<String, dynamic> toJson() {
@@ -153,30 +158,6 @@ class Person {
     result.removeWhere((_, value) => value == null);
 
     return result;
-  }
-}
-
-class PersonDiff {
-  PersonDiff(this.id, this.name, this.sex, this.birth, this.death, this.father, this.mother, this.children);
-
-  int? id;
-  String? name;
-  Sex? sex;
-  String? birth;
-  String? death;
-  int? father;
-  int? mother;
-  late List<(bool, num)> children;
-
-  bool same() {
-    return id == null &&
-    name == null &&
-    sex == null &&
-    birth == null &&
-    death == null &&
-    father == null &&
-    mother == null &&
-    children.isEmpty;
   }
 }
 
@@ -262,6 +243,10 @@ extension SexExtension on Sex? {
   
   IconData get icon {
     return this == null ? Icons.face_outlined : this == Sex.male ? Icons.face_6_outlined : Icons.face_3_outlined;
+  }
+
+  static Sex random() {
+    return Sex.values[Random().nextInt(Sex.values.length - 1)];
   }
 }
 

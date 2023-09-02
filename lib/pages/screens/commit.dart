@@ -14,7 +14,7 @@ class CommitScreen extends StatefulWidget implements FABScreen {
   State<CommitScreen> createState() => _CommitScreenState();
   
   @override
-  Widget get fab => OrientationBuilder(
+  Widget fab(_) => OrientationBuilder(
     builder: (context, orientation) => orientation == Orientation.portrait ? FloatingActionButton(
         onPressed: () => commit(context),
         tooltip: "Zveřejnit",
@@ -53,61 +53,75 @@ class _CommitScreenState extends State<CommitScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              ...?App.pedigree?.people.indexed.map(
-                (person) => (person.$1, person.$2, person.$2.compare(App.unchangedPedigree!.people[person.$1]))
-              ).where(
-                (person) => !person.$3.same()
-              ).map((person) => Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(person.$2.sex.icon),
-                      title: Text(person.$2.name),
-                      trailing: person.$3.name == null && person.$3.sex == null ? null : IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () => setState(() {
-                            person.$2.sex = App.unchangedPedigree!.people[person.$1].sex;
-                            person.$2.name = App.unchangedPedigree!.people[person.$1].name;
-                        }),
-                        color: Theme.of(context).colorScheme.onBackground,
+              ...diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b)).map((change) {
+                final person = App.pedigree!.people.elementAtOrNull(change.index) ?? change.unchanged!;
+                  return Card(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(person.sex.icon),
+                        title: Text(person.name),
+                        trailing: change.type == ChangeType.modification && person.name == change.unchanged?.name && person.sex == change.unchanged?.sex ? null : IconButton(
+                          icon: const Icon(Icons.backspace_outlined),
+                          onPressed: () => setState(() {
+                            switch (change.type) {
+                              case ChangeType.modification:
+                                person.sex = App.unchangedPedigree!.people[change.index].sex;
+                                person.name = App.unchangedPedigree!.people[change.index].name;
+                                break;
+                              case ChangeType.addition:
+                                App.pedigree!.people.removeAt(change.index);
+                                break;
+                              case ChangeType.removal:
+                                // TODO: fix ordering
+                                try {
+                                  App.pedigree!.people.insert(change.index, change.unchanged!);
+                                } on RangeError catch (_) {
+                                  App.pedigree!.people.add(change.unchanged!);
+                                }
+                                break;
+                            }
+                          }),
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
                       ),
-                    ),
-                    if (person.$3.birth != null) ListTile(
-                      leading: const Icon(Icons.today_outlined),
-                      title: Text(person.$3.birth!),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () => setState(() {
-                          person.$2.birth = App.unchangedPedigree!.people[person.$1].birth;
-                        }),
-                        color: Theme.of(context).colorScheme.onBackground,
+                      if(change.unchanged != null && person.birth != change.unchanged!.birth) ListTile(
+                        leading: const Icon(Icons.today_outlined),
+                        title: Text(person.birth ?? "-"),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.backspace_outlined),
+                          onPressed: () => setState(() {
+                            person.birth = App.unchangedPedigree!.people[change.index].birth;
+                          }),
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
                       ),
-                    ),
-                    if (person.$3.death != null) ListTile(
-                      leading: const Icon(Icons.event_outlined),
-                      title: Text(person.$3.death!),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () => setState(() {
-                          person.$2.death = App.unchangedPedigree!.people[person.$1].death;
-                        }),
-                        color: Theme.of(context).colorScheme.onBackground,
+                      if(change.unchanged != null && person.death != change.unchanged!.death) ListTile(
+                        leading: const Icon(Icons.event_outlined),
+                        title: Text(person.death ?? "-"),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.backspace_outlined),
+                          onPressed: () => setState(() {
+                            person.death = App.unchangedPedigree!.people[change.index].death;
+                          }),
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
                       ),
-                    ),
-                    if (person.$3.death != null) ListTile(
-                      leading: const Icon(Icons.event_outlined),
-                      title: Text(person.$3.death!),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.backspace_outlined),
-                        onPressed: () => setState(() {
-                          person.$2.death = App.unchangedPedigree!.people[person.$1].death;
-                        }),
-                        color: Theme.of(context).colorScheme.onBackground,
+                      if(change.unchanged != null && person.father != change.unchanged!.father) ListTile(
+                        leading: Icon(Sex.male.icon),
+                        title: Text(App.pedigree!.people.elementAtOrNull(person.father)?.name ?? "-"),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.backspace_outlined),
+                          onPressed: () => setState(() {
+                            person.father = App.unchangedPedigree!.people[change.index].father;
+                          }),
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              )),
+                    ],
+                  ),
+                );
+              }),
               const Divider(color: Color.fromARGB(64, 128, 128, 128)),
               ...diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b)).map((change) {
                 final changedChronicle = App.pedigree!.chronicle.elementAtOrNull(change.index);

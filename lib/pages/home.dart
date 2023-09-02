@@ -12,8 +12,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const List<Destination> _destinations = [
-    Destination(
+  static final List<Destination> _destinations = [
+    const Destination(
       label: "Soubor",
       screen: FileScreen(),
       icon: Icons.file_open_outlined,
@@ -21,16 +21,16 @@ class _HomePageState extends State<HomePage> {
     ),
     Destination(
       label: "Seznam",
-      screen: ListScreen(),
+      screen: ListScreen(key: GlobalKey()),
       icon: Icons.list,
     ),
-    Destination(
+    const Destination(
       label: "Kronika",
       screen: ChronicleScreen(),
       icon: Icons.history_edu,
       // activeIcon: Icons.library_books,
     ),
-    Destination(
+    const Destination(
       label: "Změny",
       screen: CommitScreen(),
       icon: Icons.commit,
@@ -39,6 +39,7 @@ class _HomePageState extends State<HomePage> {
 
   int _viewedScreen = 0;
 
+  // TODO: disable destinations until a pedigree is opened
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,7 +99,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButton: _destinations[_viewedScreen].screen is FABScreen ? (_destinations[_viewedScreen].screen as FABScreen).fab : null,
+      floatingActionButton: _destinations[_viewedScreen].screen is FABScreen ? (_destinations[_viewedScreen].screen as FABScreen).fab(context) : null,
     );
   }
 }
@@ -113,5 +114,5 @@ class Destination {
 }
 
 abstract class FABScreen {
-  Widget get fab;
+  Widget? fab(BuildContext context);
 }

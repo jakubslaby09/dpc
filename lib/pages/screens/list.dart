@@ -1,10 +1,27 @@
+import 'package:dpc/autosave.dart';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
+import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/person.dart';
 import 'package:flutter/material.dart';
 
-class ListScreen extends StatefulWidget {
-  const ListScreen({super.key});
+class ListScreen extends UniqueWidget implements FABScreen {
+  const ListScreen({required super.key});
+
+  @override
+  Widget? fab(BuildContext context) => App.pedigree == null ? null : FloatingActionButton.small(
+    child: const Icon(Icons.add),
+    onPressed: () async {
+      final person = Person.empty(App.pedigree!.people.length);
+      App.pedigree!.people.add(person);
+      scheduleSave(context);
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PersonPage(person.id),
+      ));
+      final state = currentState as _ListScreenState?;
+      state?.setState(() => state.sortPeople(state.sortedColumn, state.sortAscending));
+    },
+  );
 
   @override
   State<ListScreen> createState() => _ListScreenState();
@@ -56,7 +73,7 @@ class _ListScreenState extends State<ListScreen> {
               await Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => PersonPage(person.id),
               ));
-              setState(() => sortPeople(sortedColumn, sortAscending) );
+              setState(() => sortPeople(sortedColumn, sortAscending));
             },
           )).toList(),
         ),

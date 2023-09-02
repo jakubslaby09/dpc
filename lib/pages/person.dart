@@ -19,7 +19,7 @@ class PersonPage extends StatefulWidget {
 
 class _PersonPageState extends State<PersonPage> {
   late final Person person = App.pedigree!.people[widget.id];
-  late final Person unchangedPerson = App.unchangedPedigree!.people[widget.id];
+  late final Person? unchangedPerson = App.unchangedPedigree!.people.elementAtOrNull(widget.id);
 
   late TextEditingController nameController = TextEditingController(text: person.name);
   late TextEditingController birthController = TextEditingController(text: person.birth);
@@ -67,11 +67,11 @@ class _PersonPageState extends State<PersonPage> {
                       scheduleSave(context);
                     }),
                   ),
-                  trailing: IconButton(
+                  trailing: unchangedPerson == null ? null : IconButton(
                     icon: const Icon(Icons.backspace_outlined),
-                    onPressed: person.name != unchangedPerson.name || person.sex != unchangedPerson.sex ? () => setState(() {
-                      person.name = unchangedPerson.name;
-                      person.sex = unchangedPerson.sex;
+                    onPressed: person.name != unchangedPerson!.name || person.sex != unchangedPerson!.sex ? () => setState(() {
+                      person.name = unchangedPerson!.name;
+                      person.sex = unchangedPerson!.sex;
                       nameController = TextEditingController(text: person.name);
                       scheduleSave(context);
                     }) : null,
@@ -92,10 +92,10 @@ class _PersonPageState extends State<PersonPage> {
                       scheduleSave(context);
                     }),
                   ),
-                  trailing: IconButton(
+                  trailing: unchangedPerson == null ? null : IconButton(
                     icon: const Icon(Icons.backspace_outlined),
-                    onPressed: person.birth != unchangedPerson.birth ? () => setState(() {
-                      person.birth = unchangedPerson.birth;
+                    onPressed: person.birth != unchangedPerson!.birth ? () => setState(() {
+                      person.birth = unchangedPerson!.birth;
                       birthController = TextEditingController(text: person.birth);
                       scheduleSave(context);
                     }) : null,
@@ -115,10 +115,10 @@ class _PersonPageState extends State<PersonPage> {
                       scheduleSave(context);
                     }),
                   ),
-                  trailing: IconButton(
+                  trailing: unchangedPerson == null ? null : IconButton(
                     icon: const Icon(Icons.backspace_outlined),
-                    onPressed: person.death != unchangedPerson.death ? () => setState(() {
-                      person.death = unchangedPerson.death;
+                    onPressed: person.death != unchangedPerson!.death ? () => setState(() {
+                      person.death = unchangedPerson!.death;
                       deathController = TextEditingController(text: person.death);
                       scheduleSave(context);
                     }) : null,
@@ -140,10 +140,10 @@ class _PersonPageState extends State<PersonPage> {
                       scheduleSave(context);
                     }),
                   ),
-                  trailing: IconButton(
+                  trailing: unchangedPerson == null ? null : IconButton(
                     icon: const Icon(Icons.backspace_outlined),
-                    onPressed: person.father != unchangedPerson.father ? () => setState(() {
-                      person.father = unchangedPerson.father;
+                    onPressed: person.father != unchangedPerson!.father ? () => setState(() {
+                      person.father = unchangedPerson!.father;
                       scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
@@ -163,10 +163,10 @@ class _PersonPageState extends State<PersonPage> {
                       scheduleSave(context);
                     }),
                   ),
-                  trailing: IconButton(
+                  trailing: unchangedPerson == null ? null : IconButton(
                     icon: const Icon(Icons.backspace_outlined),
-                    onPressed: person.mother != unchangedPerson.mother ? () => setState(() {
-                      person.mother = unchangedPerson.mother;
+                    onPressed: person.mother != unchangedPerson!.mother ? () => setState(() {
+                      person.mother = unchangedPerson!.mother;
                       scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
@@ -230,14 +230,14 @@ class _PersonPageState extends State<PersonPage> {
                   ),
                 ),
                 IconButton.filledTonal(
-                  icon: person.image != unchangedPerson.image ? const Icon(Icons.backspace_outlined) : const Icon(Icons.delete_outline),
+                  icon: person.image != unchangedPerson?.image ? const Icon(Icons.backspace_outlined) : const Icon(Icons.delete_outline),
                   onPressed: person.image != null ? () {
                     person.image = null;
                     readImage();
                     scheduleSave(context);
                     setState(() {});
-                  } : unchangedPerson.image != null ? () {
-                    person.image = unchangedPerson.image;
+                  } : unchangedPerson?.image != null ? () {
+                    person.image = unchangedPerson!.image;
                     readImage();
                     scheduleSave(context);
                     setState(() {});
