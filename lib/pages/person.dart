@@ -96,7 +96,6 @@ class _PersonPageState extends State<PersonPage> {
                     icon: const Icon(Icons.backspace_outlined),
                     onPressed: person.birth != unchangedPerson.birth ? () => setState(() {
                       person.birth = unchangedPerson.birth;
-                      person.sex = unchangedPerson.sex;
                       birthController = TextEditingController(text: person.birth);
                       scheduleSave(context);
                     }) : null,
@@ -120,7 +119,6 @@ class _PersonPageState extends State<PersonPage> {
                     icon: const Icon(Icons.backspace_outlined),
                     onPressed: person.death != unchangedPerson.death ? () => setState(() {
                       person.death = unchangedPerson.death;
-                      person.sex = unchangedPerson.sex;
                       deathController = TextEditingController(text: person.death);
                       scheduleSave(context);
                     }) : null,
