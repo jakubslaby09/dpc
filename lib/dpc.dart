@@ -11,19 +11,40 @@ import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class Pedigree {
+  // TODO: better exceptions and graceful handling
   Pedigree.parse(Map<String, dynamic> json, this.dir, this.repo)
     : version = json['version'],
     name = json['name'],
     people = (json['people'] as List<dynamic>).map((person) => Person.parse(person)).toList(),
     chronicle = (json['chronicle'] as List<dynamic>).map((chronicle) => Chronicle.parse(chronicle)).toList() {
       if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
-      if (version < maxVersion) throw UnimplementedError("Upgrading pedigree versions has yet to be implemented."); // TODO: Implement pedigree version upgrades
+      if (version < maxVersion) throw Exception("Outdated pedigree version $version.${version >= minUpgradableVersion ? " You need to upgrade it first." : ""}");
       people.asMap().forEach((index, person) {
-        // TODO: better exceptions and graceful handling
         if (person.father != null && person.father! < 0) throw Exception("${person.father} < 0");
         if (person.mother != null && person.mother! < 0) throw Exception("${person.mother} < 0");
         if (person.id != index) throw Exception("${person.id} != $index");
       });
+  }
+
+  factory Pedigree.upgrade(Map<String, dynamic> json, dir, repo) {
+    if(json['version'] is! int || json['version'] < minUpgradableVersion || json['version'] > maxVersion) {
+      throw Exception("Unsupported or invalid pedigree version: ${json['version']}");
+    }
+    final version = json['version'];
+
+    assert(minUpgradableVersion == 3);
+    if(version <= 3) {
+      json['people'] = (json['people'] as List).map((person) {
+        if(person['father'] == -1) (person as Map).remove("father");
+        if(person['mother'] == -1) (person as Map).remove("mother");
+        if(person['death'] == "") (person as Map).remove("death");
+        if(person['birth'] == "") (person as Map).remove("birth");
+        return person;
+      }).toList();
+    }
+    assert(maxVersion == 4);
+    json['version'] = maxVersion;
+    return Pedigree.parse(json, dir, repo);
   }
 
   Pedigree.empty(this.name, this.dir, this.repo)
@@ -49,6 +70,7 @@ class Pedigree {
   Pointer<Pointer<git_repository>> repo;
 
   static const maxVersion = 4;
+  static const minUpgradableVersion = 3;
 
   Pedigree clone() {
     return Pedigree.clone(this);

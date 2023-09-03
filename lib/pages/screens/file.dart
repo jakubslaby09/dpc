@@ -171,15 +171,14 @@ class _FileScreenState extends State<FileScreen> {
         String text = (blobBuffer.cast<Pointer<Utf8>>() as Pointer<Utf8>).toDartString();
         dynamic values = json.decode(text);
         
-        // TODO: version upgrades
-        values["version"] = 4; // workaround
-        App.unchangedPedigree = Pedigree.parse(values, directory, repo);
+        App.unchangedPedigree = Pedigree.upgrade(values, directory, repo);
       } on Exception catch (e, t) {
         showException(context, "Nelze porovnat rodokmen s verzí bez aktuálních změn.", e, t);
         App.unchangedPedigree = App.pedigree!.clone();
       }
 
     } on Exception catch (e, t) {
+      // TODO: make a pedigree upgrade dialog
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e, t);
       if (!App.prefs.saveBrokenRecentFiles) {
         return;
