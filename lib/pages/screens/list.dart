@@ -12,7 +12,8 @@ class ListScreen extends UniqueWidget implements FABScreen {
   Widget? fab(BuildContext context) => App.pedigree == null ? null : FloatingActionButton.small(
     child: const Icon(Icons.add),
     onPressed: () async {
-      final person = Person.empty(App.pedigree!.people.length);
+      final sex = SexExtension.random();
+      final person = Person.empty(App.pedigree!.people.length, sex, await sex.randomName());
       App.pedigree!.people.add(person);
       scheduleSave(context);
       await Navigator.of(context).push(MaterialPageRoute(

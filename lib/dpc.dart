@@ -7,6 +7,7 @@ import 'package:dpc/pages/log.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class Pedigree {
   Pedigree.parse(Map<String, dynamic> json, this.dir, this.repo)
@@ -97,11 +98,8 @@ class Person {
     }
   }
 
-  Person.empty(this.id)
-  // TODO: pick a random name from a list
-  : name = "Nové jméno",
-  sex = SexExtension.random(),
-  father = -1,
+  Person.empty(this.id, this.sex, this.name)
+  : father = -1,
   mother = -1,
   children = [];
 
@@ -246,8 +244,35 @@ extension SexExtension on Sex? {
   }
 
   static Sex random() {
-    return Sex.values[Random().nextInt(Sex.values.length - 1)];
+    return Sex.values[Random().nextInt(Sex.values.length)];
   }
+
+  Future<String> randomName() async {
+    List<String> names;
+    switch (this) {
+      case Sex.male:
+        names = (await rootBundle.loadString("assets/randomNames/males.txt")).split("\n");
+        break;
+      case Sex.female:
+        names = (await rootBundle.loadString("assets/randomNames/females.txt")).split("\n");
+        break;
+      case null:
+        names = (await rootBundle.loadString("assets/randomNames/males.txt")).split("\n");
+        names.addAll((await rootBundle.loadString("assets/randomNames/females.txt")).split("\n"));
+        break;
+    }
+
+    const rate = 2.8;
+    final first = sampleFromExponentialDistribution(Random().nextDouble(), names, rate);
+    final last = sampleFromExponentialDistribution(Random().nextDouble(), names, rate);
+    return "$first $last";
+  }
+}
+
+T sampleFromExponentialDistribution<T>(double x, List<T> values, [double rate = 1]) {
+  final index = (pow(e, -rate * x) * values.length).floor();
+  print(index);
+  return values[index];
 }
 
 class PedigreeLink {
