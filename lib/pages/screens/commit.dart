@@ -119,7 +119,17 @@ class _CommitScreenState extends State<CommitScreen> {
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
-                      // TODO: forgot to compare mother
+                      if(change.unchanged != null && person.mother != change.unchanged!.mother) ListTile(
+                        leading: Icon(Sex.female.icon),
+                        title: Text(person.mother == null ? "-" : App.pedigree!.people.elementAtOrNull(person.mother!)?.name ?? "?"),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.backspace_outlined),
+                          onPressed: () => setState(() {
+                            person.mother = App.unchangedPedigree!.people[change.index].mother;
+                          }),
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
+                      ),
                     ],
                   ),
                 );
