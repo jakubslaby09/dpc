@@ -110,7 +110,7 @@ class _CommitScreenState extends State<CommitScreen> {
                       ),
                       if(change.unchanged != null && person.father != change.unchanged!.father) ListTile(
                         leading: Icon(Sex.male.icon),
-                        title: Text(App.pedigree!.people.elementAtOrNull(person.father)?.name ?? "-"),
+                        title: Text(person.father == null ? "-" : App.pedigree!.people.elementAtOrNull(person.father!)?.name ?? "?"),
                         trailing: IconButton(
                           icon: const Icon(Icons.backspace_outlined),
                           onPressed: () => setState(() {
@@ -119,6 +119,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
+                      // TODO: forgot to compare mother
                     ],
                   ),
                 );

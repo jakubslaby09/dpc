@@ -130,10 +130,9 @@ class _PersonPageState extends State<PersonPage> {
                   title: PersonField(
                     labelText: "Otec",
                     sex: Sex.male,
-                    initialId: person.father != -1 ? person.father : null,
+                    initialId: person.father,
                     onPick: (fatherId) => setState(() {
-                      // TODO: let father be null
-                      person.father = fatherId ?? -1;
+                      person.father = fatherId;
 
                       // TODO: Update children
 
@@ -153,10 +152,9 @@ class _PersonPageState extends State<PersonPage> {
                   title: PersonField(
                     labelText: "Matka",
                     sex: Sex.female,
-                    initialId: person.mother != -1 ? person.mother : null,
+                    initialId: person.mother,
                     onPick: (motherId) => setState(() {
-                      // TODO: let mother be null
-                      person.mother = motherId ?? -1;
+                      person.mother = motherId;
 
                       // TODO: Update children
 

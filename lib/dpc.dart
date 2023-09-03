@@ -19,6 +19,9 @@ class Pedigree {
       if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
       if (version < maxVersion) throw UnimplementedError("Upgrading pedigree versions has yet to be implemented."); // TODO: Implement pedigree version upgrades
       people.asMap().forEach((index, person) {
+        // TODO: better exceptions and graceful handling
+        if (person.father != null && person.father! < 0) throw Exception("${person.father} < 0");
+        if (person.mother != null && person.mother! < 0) throw Exception("${person.mother} < 0");
         if (person.id != index) throw Exception("${person.id} != $index");
       });
   }
@@ -100,9 +103,7 @@ class Person {
   }
 
   Person.empty(this.id, this.sex, this.name)
-  : father = -1,
-  mother = -1,
-  children = [];
+  : children = [];
 
   Person.clone(Person person)
   : id = person.id,
@@ -123,8 +124,8 @@ class Person {
   String? birth;
   String? death;
   PedigreeLink? pedigreeLink;
-  int father;
-  int mother;
+  int? father;
+  int? mother;
   List<num> children;
 
   bool compare(Person other) {
