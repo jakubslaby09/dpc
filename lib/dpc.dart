@@ -70,8 +70,8 @@ class Pedigree {
 
     try {
       await index.writeAsString(toJson());
-    } on Exception catch (e) {
-      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem.", e);
+    } on Exception catch (e, t) {
+      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem.", e, t);
     }
   }
 }

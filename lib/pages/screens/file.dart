@@ -174,13 +174,13 @@ class _FileScreenState extends State<FileScreen> {
         // TODO: version upgrades
         values["version"] = 4; // workaround
         App.unchangedPedigree = Pedigree.parse(values, directory, repo);
-      } on Exception catch (e) {
-        showException(context, "Nelze porovnat rodokmen s verzí bez aktuálních změn.", e);
+      } on Exception catch (e, t) {
+        showException(context, "Nelze porovnat rodokmen s verzí bez aktuálních změn.", e, t);
         App.unchangedPedigree = App.pedigree!.clone();
       }
 
-    } on Exception catch (e) {
-      showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e);
+    } on Exception catch (e, t) {
+      showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e, t);
       if (!App.prefs.saveBrokenRecentFiles) {
         return;
       }
