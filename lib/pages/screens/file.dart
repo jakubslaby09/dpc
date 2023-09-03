@@ -31,24 +31,15 @@ class _FileScreenState extends State<FileScreen> {
               if (App.pedigree != null) Card(
                 child: ListTile(
                   leading: Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onBackground),
-                  title: Row(
+                  title: Text(App.pedigree!.name),
+                  subtitle: const Text("github.com/dolor-sit/amet", overflow: TextOverflow.ellipsis),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(child: Text(App.pedigree!.name)),
                       const Icon(Icons.people_outlined),
-                      Text(App.pedigree!.people.length.toString()),
-                      const VerticalDivider(),
-                      // const Icon(Icons.sd_storage_outlined),
-                      // const Text("19KiB"),
+                      Text(App.pedigree!.people.length.toString(), style: Theme.of(context).textTheme.labelLarge),
                     ],
                   ),
-                  subtitle: const Text("github.com/dolor-sit/amet", overflow: TextOverflow.ellipsis),
-                  // trailing: Row(
-                  //   children: const [
-                  //     Icon(Icons.people_alt_outlined),
-                  //     Text("11")
-                  //   ],
-                  // ),
-                  
                 ),
               ) else const Card(
                 // shape: RoundedRectangleBorder( // TODO: dashed borders
