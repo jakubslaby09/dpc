@@ -2,10 +2,16 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LogPage extends StatelessWidget {
   const LogPage(this.log, {this.title, super.key});
 
+  // TODO: add device info
+  Uri get reportUrl => Uri.https("github.com", "/jakubslaby09/dpc/issues/new", {
+    if(title != null) "title": title,
+    "body": "```$title```\n```$log```",
+  });
   final String? title;
   final String log;
 
@@ -46,9 +52,15 @@ class LogPage extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.bug_report_outlined),
-        onPressed: () {}, // TODO: redirect to a new Github issue page
+      floatingActionButton: FutureBuilder(
+        future: canLaunchUrl(reportUrl),
+        builder: (context, canLaunch) => Visibility(
+          visible: canLaunch.data ?? false,
+          child: FloatingActionButton(
+            child: const Icon(Icons.bug_report_outlined),
+            onPressed: () => launchUrl(reportUrl),
+          ),
+        ),
       ),
     );
   }
