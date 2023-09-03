@@ -19,11 +19,6 @@ class ChronicleScreen extends StatefulWidget {
 class _ChronicleScreenState extends State<ChronicleScreen> {
   @override
   Widget build(BuildContext context) {
-    if(App.pedigree == null) {
-      // TODO: make a widget for it
-      return Text("none");
-    }
-
     // TODO: make the title and authors editable
     return ListView(
       children: App.pedigree!.chronicle.indexedMap((chronicle, chronicleIndex) => Padding(

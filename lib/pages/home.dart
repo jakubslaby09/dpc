@@ -1,3 +1,4 @@
+import 'package:dpc/main.dart';
 import 'package:dpc/pages/screens/chronicle.dart';
 import 'package:dpc/pages/screens/commit.dart';
 import 'package:dpc/pages/screens/file.dart';
@@ -18,22 +19,26 @@ class _HomePageState extends State<HomePage> {
       screen: FileScreen(),
       icon: Icons.file_open_outlined,
       activeIcon: Icons.file_open,
+      
     ),
     Destination(
       label: "Seznam",
       screen: ListScreen(key: GlobalKey()),
       icon: Icons.list,
+      needsPedigree: true,
     ),
     const Destination(
       label: "Kronika",
       screen: ChronicleScreen(),
       icon: Icons.history_edu,
       // activeIcon: Icons.library_books,
+      needsPedigree: true,
     ),
     const Destination(
       label: "Změny",
       screen: CommitScreen(),
       icon: Icons.commit,
+      needsPedigree: true,
     ),
   ];
 
@@ -77,7 +82,9 @@ class _HomePageState extends State<HomePage> {
           // const VerticalDivider(thickness: 1, width: 1),
           SizedBox(
             width: MediaQuery.of(context).size.width - (MediaQuery.of(context).orientation == Orientation.landscape ? 80 : 0),
-            child: _destinations[_viewedScreen].screen,
+            child: App.pedigree != null || !_destinations[_viewedScreen].needsPedigree ? _destinations[_viewedScreen].screen : NoPedigreeScreen(
+              onHome: () => setState(() => _viewedScreen = 0),
+            ),
           ),
         ],
       ),
@@ -99,18 +106,56 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButton: _destinations[_viewedScreen].screen is FABScreen ? (_destinations[_viewedScreen].screen as FABScreen).fab(context) : null,
+      floatingActionButton: (App.pedigree != null || !_destinations[_viewedScreen].needsPedigree) && _destinations[_viewedScreen].screen is FABScreen ? (_destinations[_viewedScreen].screen as FABScreen).fab(context) : null,
     );
   }
 }
 
+class NoPedigreeScreen extends StatelessWidget {
+  const NoPedigreeScreen({required this.onHome, super.key});
+
+  final Function() onHome;
+  
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.errorContainer,
+            shape: BoxShape.circle,
+          ),
+          padding: EdgeInsets.all(32),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Icon(
+              Icons.sd_card_alert_rounded,
+              size: 188,
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+          ),
+        ),
+        // TODO: creating a new repo
+        const Text("Nemáte otevřený repozitář s rodokmenem.\nNa první stránce ho můžete otevřít, nebo založit nový.", textAlign: TextAlign.center),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: FilledButton.tonal(onPressed: onHome, child: const Text("Přejít na první stránku")),
+        ),
+      ],
+    );
+  }
+
+}
+
 class Destination {
-  const Destination({ required this.screen, required this.label, required this.icon, this.activeIcon, });
+  const Destination({ required this.screen, required this.label, required this.icon, this.activeIcon, this.needsPedigree = false });
 
   final Widget screen;
   final String label;
   final IconData icon;
   final IconData? activeIcon;
+  final bool needsPedigree;
 }
 
 abstract class FABScreen {
