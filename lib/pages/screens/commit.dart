@@ -81,6 +81,7 @@ class _CommitScreenState extends State<CommitScreen> {
                                 }
                                 break;
                             }
+                            scheduleSave(context);
                           }),
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
