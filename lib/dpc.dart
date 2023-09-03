@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:dpc/main.dart';
 import 'package:dpc/pages/log.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
@@ -135,8 +136,7 @@ class Person {
     father == other.father &&
     mother == other.mother &&
     children.length == other.children.length &&
-    // TODO: use firstWhere
-    children.where((childId) => !other.children.contains(childId)).isEmpty;
+    children.safeFirstWhere((childId) => !other.children.contains(childId)) == null;
   }
   
   Map<String, dynamic> toJson() {
@@ -175,11 +175,10 @@ class Chronicle {
   bool compare(Chronicle other) {
     return name == other.name &&
     mime == other.mime &&
-    // TODO: use firstWhere
     files.length == other.files.length &&
     authors.length == other.authors.length &&
-    files.where((element) => !other.files.contains(element)).isEmpty &&
-    authors.where((element) => !other.authors.contains(element)).isEmpty;
+    files.safeFirstWhere((element) => !other.files.contains(element)) == null &&
+    authors.safeFirstWhere((element) => !other.authors.contains(element)) == null;
   }
   
   String name;
