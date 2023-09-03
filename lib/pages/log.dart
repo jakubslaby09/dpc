@@ -36,7 +36,7 @@ class LogPage extends StatelessWidget {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: title,
+                      text: title != null ? "$title\n" : "",
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     TextSpan(text: log, style: TextStyle(color: Theme.of(context).colorScheme.onBackground.withAlpha(172))),
