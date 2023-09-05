@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'package:dpc/widgets/create_repo_sheet.dart';
 import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -87,6 +88,11 @@ class _FileScreenState extends State<FileScreen> {
           leading: const Icon(Icons.file_upload_outlined),
           title: const Text("Otevřít repozitář"),
           onTap: () => openRepo(context).then((_) => setState(() {})),
+        ),
+        ListTile(
+          leading: const Icon(Icons.create_new_folder_outlined),
+          title: const Text("Založit nový repozitář"),
+          onTap: () => createRepo(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
@@ -181,5 +187,56 @@ class _FileScreenState extends State<FileScreen> {
     recents.removeWhere((recentPath) => recentPath == directory);
     recents.insert(broken && App.pedigree != null && recents.isNotEmpty ? 1 : 0, directory);
     App.prefs.recentFiles = recents;
+  }
+  
+  createRepo(BuildContext context) async {
+    final pickerResult = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: "Vybrat složku pro nový repozitář",
+    );
+    if(pickerResult == null) return;
+
+    Directory directory = Directory(pickerResult);
+    final sheetResult = await CreateRepoSheet.show(context, directory);
+    if(sheetResult == null) return;
+    directory = Directory(sheetResult.dir);
+    await directory.create(recursive: true);
+    
+    try {
+      // TODO: free memory
+      Pointer<Pointer<git_repository>> repo = calloc();
+      Pointer<Pointer<git_signature>> signature = calloc();
+      Pointer<Pointer<git_index>> index = calloc();
+      Pointer<git_oid> treeId = calloc();
+      Pointer<Pointer<git_tree>> tree = calloc();
+      Pointer<git_oid> commitId = calloc();
+      assert(0 == App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
+
+      final pedigree = Pedigree.empty(sheetResult.name, directory.path, repo);
+      await pedigree.save(context, true);
+
+      // TODO: don't use assert because it doesn't get caught
+      assert(0 == App.git.git_signature_now(signature, sheetResult.gitName.toNativeUtf8().cast(), sheetResult.gitEmail.toNativeUtf8().cast()));
+      assert(0 == App.git.git_repository_index(index, repo.value));
+      assert(0 == App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
+      assert(0 == App.git.git_index_write(index.value));
+      assert(0 == App.git.git_index_write_tree(treeId, index.value));
+      assert(0 == App.git.git_tree_lookup(tree, repo.value, treeId));
+      assert(0 == App.git.git_commit_create(
+        commitId,
+        repo.value,
+        "HEAD".toNativeUtf8().cast(),
+        signature.value,
+        signature.value,
+        "UTF-8".toNativeUtf8().cast(),
+        sheetResult.commitMessage.toNativeUtf8().cast(),
+        tree.value,
+        0,
+        nullptr,
+      ));
+    } on Exception catch (e, t) {
+      showException(context, "Nelze pro nový rodokmen založit Git repozitář", e, t);
+    }
+
+    await openRepo(context, directory.path);
   }
 }

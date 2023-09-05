@@ -84,6 +84,7 @@ class CommitSheet extends StatelessWidget {
       // ffi.nullptr,
       signature.value,
       "UTF-8".toNativeUtf8().cast(),
+      // TODO: use the actual commit message
       "test".toNativeUtf8().cast(),
       tree.value,
       1,

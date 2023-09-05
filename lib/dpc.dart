@@ -86,16 +86,18 @@ class Pedigree {
     });
   }
 
-  Future<void> save(BuildContext context) async {
+  Future<void> save(BuildContext context, [bool createFile = false]) async {
     final index = File(p.join(dir, "index.dpc"));
 
-    if(!await index.exists()) {
+    if(!await index.exists() && !createFile) {
       showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem. Nesmazali jste ho?");
     }
 
     try {
+      if(createFile) await index.create();
       await index.writeAsString(toJson());
     } on Exception catch (e, t) {
+      if(createFile) throw Exception("Nelze vytvořit nový soubor s rodokmenem.");
       showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem.", e, t);
     }
   }
