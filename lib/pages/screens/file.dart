@@ -156,13 +156,13 @@ class _FileScreenState extends State<FileScreen> {
         Pointer<Pointer<git_object>> object = calloc();
         Pointer<git_oid> objectOid = calloc();
         Pointer<Pointer<git_blob>> blob = calloc();
-        assert(0 == App.git.git_repository_index(gitIndex, App.pedigree!.repo.value));
-        assert(0 == App.git.git_index_write_tree(treeOid, gitIndex.value));
-        assert(0 == App.git.git_tree_lookup(tree, App.pedigree!.repo.value, treeOid));
+        expectCode(App.git.git_repository_index(gitIndex, App.pedigree!.repo.value));
+        expectCode(App.git.git_index_write_tree(treeOid, gitIndex.value));
+        expectCode(App.git.git_tree_lookup(tree, App.pedigree!.repo.value, treeOid));
         entry.value = App.git.git_tree_entry_byname(tree.value, "index.dpc".toNativeUtf8().cast());
-        assert(0 == App.git.git_tree_entry_to_object(object, App.pedigree!.repo.value, entry.value));
+        expectCode(App.git.git_tree_entry_to_object(object, App.pedigree!.repo.value, entry.value));
         objectOid = App.git.git_object_id(object.value);
-        assert(0 == App.git.git_blob_lookup(blob, App.pedigree!.repo.value, objectOid));
+        expectCode(App.git.git_blob_lookup(blob, App.pedigree!.repo.value, objectOid));
         Pointer<Void> blobBuffer = App.git.git_blob_rawcontent(blob.value);
 
         String text = (blobBuffer.cast<Pointer<Utf8>>() as Pointer<Utf8>).toDartString();
@@ -209,19 +209,18 @@ class _FileScreenState extends State<FileScreen> {
       Pointer<git_oid> treeId = calloc();
       Pointer<Pointer<git_tree>> tree = calloc();
       Pointer<git_oid> commitId = calloc();
-      assert(0 == App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
+      expectCode(App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
 
       final pedigree = Pedigree.empty(sheetResult.name, directory.path, repo);
       await pedigree.save(context, true);
 
-      // TODO: don't use assert because it doesn't get caught
-      assert(0 == App.git.git_signature_now(signature, sheetResult.gitName.toNativeUtf8().cast(), sheetResult.gitEmail.toNativeUtf8().cast()));
-      assert(0 == App.git.git_repository_index(index, repo.value));
-      assert(0 == App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
-      assert(0 == App.git.git_index_write(index.value));
-      assert(0 == App.git.git_index_write_tree(treeId, index.value));
-      assert(0 == App.git.git_tree_lookup(tree, repo.value, treeId));
-      assert(0 == App.git.git_commit_create(
+      expectCode(App.git.git_signature_now(signature, sheetResult.gitName.toNativeUtf8().cast(), sheetResult.gitEmail.toNativeUtf8().cast()));
+      expectCode(App.git.git_repository_index(index, repo.value));
+      expectCode(App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
+      expectCode(App.git.git_index_write(index.value));
+      expectCode(App.git.git_index_write_tree(treeId, index.value));
+      expectCode(App.git.git_tree_lookup(tree, repo.value, treeId));
+      expectCode(App.git.git_commit_create(
         commitId,
         repo.value,
         "HEAD".toNativeUtf8().cast(),
@@ -238,5 +237,22 @@ class _FileScreenState extends State<FileScreen> {
     }
 
     await openRepo(context, directory.path);
+  }
+}
+
+void expectCode(int code, [String? message]) {
+  if(code == 0) return;
+  throw GitException(code, message);
+}
+
+class GitException implements Exception {
+  GitException(this.code, [this.message]);
+
+  int code;
+  String? message;
+
+  @override
+  String toString() {
+    return "Git Exception $code${message != null ? ": $message" : ""}";
   }
 }
