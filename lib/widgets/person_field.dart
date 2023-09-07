@@ -63,6 +63,7 @@ class PersonField extends StatelessWidget {
 class PersonPicker extends StatefulWidget {
   const PersonPicker({super.key, this.onPick, this.sex});
 
+  // TODO: add a filter for exclusion
   final Function(int value)? onPick;
   final Sex? sex;
 

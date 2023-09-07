@@ -170,6 +170,55 @@ class _PersonPageState extends State<PersonPage> {
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
                 ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.add),
+                  title: const Text("Přidat dítě"),
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) => PersonPicker(
+                        onPick: (id) {
+                          // TODO: add child
+                          // TODO: use Navigator.pop return value instead of onPick
+                          Navigator.pop(context);
+                        },
+                      )
+                    );
+                  },
+                ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 8),
+                //   child: Row(
+                //     children: [
+                //       Expanded(child: Text("Děti", style: Theme.of(context).textTheme.titleSmall)),
+                //       IconButton.filledTonal(onPressed: () {}, icon: Icon(Icons.add))
+                //     ],
+                //   ),
+                // ),
+                ...person.getChildren(App.pedigree!).map((child) => ListTile(
+                  leading: const Icon(Icons.child_friendly_outlined),
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(child.name)),
+                      const Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: Icon(Icons.hotel_outlined),
+                      ),
+                      Text(child.otherParent(person, App.pedigree!)?.name ?? "?"),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () {
+                      // TODO: remove child
+                    },
+                  ),
+                  onTap: () {
+                    // TODO: navigate to child
+                  },
+                )),
               ],
             ),
           ),

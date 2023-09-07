@@ -152,6 +152,26 @@ class Person {
   int? mother;
   List<num> children;
 
+  Iterable<Person> getChildren(Pedigree pedigree) {
+    return children.map((childId) {
+      if(childId < 0) return null; // TODO: make a type which can hold these special cases
+      if(childId is! int) childId = childId.floor(); // TODO: make a type which can hold the decimal part of those special cases above
+
+      return pedigree.people[childId];
+    }).where((e) => e != null).cast();
+  }
+
+  Person? otherParent(Person parent, Pedigree pedigree) {
+    switch (parent.sex) {
+      case Sex.male:
+        if(mother == null) return null;
+        return pedigree.people[mother!];
+      case Sex.female:
+        if(father == null) return null;
+        return pedigree.people[father!];
+    }
+  }
+
   bool compare(Person other) {
     return id == other.id &&
     name == other.name &&
