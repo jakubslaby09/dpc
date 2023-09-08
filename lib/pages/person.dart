@@ -201,12 +201,13 @@ class _PersonPageState extends State<PersonPage> {
                   title: Row(
                     children: [
                       Expanded(
-                        child: Text(child.name)),
-                      const Padding(
+                        child: Text(child is Person ? child.name : child is UnknownChildren ? "neznámé děti (${child.subId})" : "neznámé dítě")
+                      ),
+                      if(child is HasOtherParent) const Padding(
                         padding: EdgeInsets.only(right: 12),
                         child: Icon(Icons.hotel_outlined),
                       ),
-                      Text(child.otherParent(person, App.pedigree!)?.name ?? "?"),
+                      if(child is HasOtherParent) Text((child as HasOtherParent).otherParent(person, App.pedigree!)?.name ?? "?"),
                     ],
                   ),
                   trailing: IconButton(

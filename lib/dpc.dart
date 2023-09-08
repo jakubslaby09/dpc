@@ -23,6 +23,9 @@ class Pedigree {
         if (person.father != null && person.father! < 0) throw Exception("${person.father} < 0");
         if (person.mother != null && person.mother! < 0) throw Exception("${person.mother} < 0");
         if (person.id != index) throw Exception("${person.id} != $index");
+        for (var id in person.children) {
+          if(id >= 0 && id is double) throw Exception("Child id $id is not an integer. Only negative child ids can have a decimal part");
+        }
       });
   }
 
@@ -103,7 +106,7 @@ class Pedigree {
   }
 }
 
-class Person {
+class Person implements Child, HasOtherParent {
   Person.parse(Map<String, dynamic> json)
     : id = json['id'],
       name = json['name'],
@@ -141,6 +144,7 @@ class Person {
   mother = person.mother,
   children = [...person.children];
 
+  @override
   int id;
   String name;
   late Sex sex;
@@ -152,15 +156,23 @@ class Person {
   int? mother;
   List<num> children;
 
-  Iterable<Person> getChildren(Pedigree pedigree) {
+  Iterable<Child> getChildren(Pedigree pedigree) {
     return children.map((childId) {
-      if(childId < 0) return null; // TODO: make a type which can hold these special cases
-      if(childId is! int) childId = childId.floor(); // TODO: make a type which can hold the decimal part of those special cases above
-
-      return pedigree.people[childId];
-    }).where((e) => e != null).cast();
+      if(childId == -1) return const UnknownChild();
+      if(childId.toInt() == -2) {
+        if(childId == -2) {
+          return const UnknownChildren();
+        } else {
+          return UnknownChildren(int.parse(childId.toString().split(".")[1]));
+        }
+      }
+      
+      assert(childId is int && childId >= 0, "special child ids should be checked in Pedigree.parse");
+      return pedigree.people[childId as int];
+    });
   }
 
+  @override
   Person? otherParent(Person parent, Pedigree pedigree) {
     switch (parent.sex) {
       case Sex.male:
@@ -342,6 +354,38 @@ class PedigreeLink {
     result.removeWhere((_, value) => value == null);
 
     return result;
+  }
+}
+
+abstract class Child {
+  int get id;
+}
+
+abstract class HasOtherParent {
+  Person? otherParent(Person parent, Pedigree pedigree);
+}
+
+class UnknownChild implements Child {
+  const UnknownChild();
+
+  @override
+  final int id = -1;
+}
+
+class UnknownChildren implements Child, HasOtherParent {
+  const UnknownChildren([this.subId]);
+
+  @override
+  final int id = -2;
+  final int? subId;
+  // TODO: use something faster than double.parse
+  num get wholeId => subId == null ? id : double.parse("$id.$subId");
+
+  @override
+  Person? otherParent(Person parent, Pedigree pedigree) {
+    final otherParents = pedigree.people.where((person) => person.id != parent.id && person.children.contains(wholeId));
+    if(otherParents.length != 1) return null;
+    return otherParents.first;
   }
 }
 
