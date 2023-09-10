@@ -4,57 +4,87 @@ import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:flutter/material.dart';
 
-class PersonField extends StatelessWidget {
-  PersonField({super.key, this.sex, this.labelText, this.initialId, this.onPick});
+class PersonField extends StatefulWidget {
+  PersonField({
+    super.key,
+    this.sex,
+    this.labelText,
+    this.initialId,
+    this.onPick,
+    this.icon,
+    this.enabled = true,
+    ValueNotifier<int?>? controller,
+  }) {
+    idController = controller ?? ValueNotifier(initialId);
+  }
 
   final Sex? sex;
   final String? labelText;
   final int? initialId;
-  late int? id = initialId;
-
-  late final TextEditingController controller = TextEditingController(text: person?.name);
+  final Widget? icon;
+  final bool enabled;
+  late final ValueNotifier<int?> idController;
   final Function(int? value)? onPick;
 
+  @override
+  State<PersonField> createState() => _PersonFieldState();
+}
+
+class _PersonFieldState extends State<PersonField> {
+  late final TextEditingController fieldController = TextEditingController();
+  late int? id = widget.idController.value; // TODO: make it work with just the idController value
+
   Person? get person {
-    if (id == null) return null;
+    if (/* widget.idController.value */ id == null) return null;
     if (App.pedigree == null) return null;
-    return App.pedigree!.people[id!];
+    return App.pedigree!.people[/* widget.idController.value */ id!];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.idController.addListener(() => setState(() {
+      id = widget.idController.value;
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
+    fieldController.text = person?.name ?? "";
+
     // TODO: listen to ENTER
     return TextField(
       mouseCursor: SystemMouseCursors.click,
+      enabled: widget.enabled,
       decoration: InputDecoration(
-        icon: Icon(sex.icon),
-        labelText: labelText,
-        // hintText: sex.string,
+        icon: widget.icon ?? Icon(widget.sex.icon),
+        labelText: widget.labelText,
         border: const OutlineInputBorder(),
         suffixIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: id == null ? null : () {
+            onPressed: /* widget.idController.value */ id == null ? null : () {
               id = null;
-              controller.text = "";
-              onPick?.call(null);
+              widget.idController.value = null;
+              widget.onPick?.call(null);
             },
           ),
         )
       ),
       readOnly: true,
-      controller: controller,
+      controller: fieldController,
       onTap: () => showModalBottomSheet(
         context: context,
         builder: (context) => PersonPicker(
-          sex: sex,
-          onPick: (id) {
+          sex: widget.sex,
+          onPick: (id) => setState(() {
+            widget.idController.value = id;
             this.id = id;
             Navigator.pop(context);
-            onPick?.call(id);
-          },
-        )
+            widget.onPick?.call(id);
+          }),
+        ),
       ),
     );
   }
