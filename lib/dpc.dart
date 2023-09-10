@@ -172,14 +172,63 @@ class Person implements Child, HasOtherParent {
     });
   }
 
+  void addChild(num id, Person? otherParent, Pedigree pedigree) {
+    // TODO: make ui for already added child id
+    // TODO: sort children by birth date
+    children.remove(id);
+    children.add(id);
+
+    if(otherParent != null) {
+      otherParent.addChild(id, null, pedigree);
+    }
+
+    if(id < 0) return;
+    assert(id is int, "positive ids should be checked in Pedigree.parse");
+    final child = pedigree.people.elementAtOrNull(id as int);
+    if(child != null) {
+      switch (sex) {
+        case Sex.male:
+          child.father = this.id;
+          // print("setting ${child.name}'s father to $name");
+          break;
+        case Sex.female:
+          // print("setting ${child.name}'s mother to $name");
+          child.mother = this.id;
+          break;
+      }
+    }
+  }
+
+  void removeChild(num id, Pedigree pedigree) {
+    children.remove(id);
+
+    if(id < 0) return;
+    assert(id is int, "positive ids should be checked in Pedigree.parse");
+    final child = pedigree.people.elementAtOrNull(id as int);
+    if(child == null) return;
+    switch (sex) {
+      case Sex.male:
+        child.father = null;
+        // print("setting ${child.name}'s father to null");
+        break;
+      case Sex.female:
+        // print("setting ${child.name}'s mother to null");
+        child.mother = null;
+        break;
+    }
+  }
+
   @override
   Person? otherParent(Person parent, Pedigree pedigree) {
+    // TODO: handle index errors gracefully
     switch (parent.sex) {
       case Sex.male:
         if(mother == null) return null;
+        // print("other parent of $name is ${pedigree.people[mother!].name}");
         return pedigree.people[mother!];
       case Sex.female:
         if(father == null) return null;
+        // print("other parent of $name is ${pedigree.people[father!].name}");
         return pedigree.people[father!];
     }
   }

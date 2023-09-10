@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:dpc/autosave.dart';
+import 'package:dpc/widgets/add_child_sheet.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:dpc/main.dart';
@@ -134,6 +135,7 @@ class _PersonPageState extends State<PersonPage> {
                     onPick: (fatherId) => setState(() {
                       person.father = fatherId;
 
+                      // TODO: update personField
                       // TODO: Update children
 
                       scheduleSave(context);
@@ -156,6 +158,7 @@ class _PersonPageState extends State<PersonPage> {
                     onPick: (motherId) => setState(() {
                       person.mother = motherId;
 
+                      // TODO: update personField
                       // TODO: Update children
 
                       scheduleSave(context);
@@ -174,17 +177,15 @@ class _PersonPageState extends State<PersonPage> {
                 ListTile(
                   leading: const Icon(Icons.add),
                   title: const Text("Přidat dítě"),
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) => PersonPicker(
-                        onPick: (id) {
-                          // TODO: add child
-                          // TODO: use Navigator.pop return value instead of onPick
-                          Navigator.pop(context);
-                        },
-                      )
-                    );
+                  onTap: () async {
+                    final childId = await AddChildSheet.show(context, person);
+                    if(childId == null) return;
+                    setState(() {
+                    // TODO: make ui for the otherParent argument
+                      person.addChild(childId, null, App.pedigree!);
+                    });
+
+                    scheduleSave(context);
                   },
                 ),
                 // Padding(
@@ -212,9 +213,11 @@ class _PersonPageState extends State<PersonPage> {
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                      // TODO: remove child
-                    },
+                    onPressed: () => setState(() {
+                      person.removeChild(child.id, App.pedigree!);
+
+                      scheduleSave(context);
+                    }),
                   ),
                   onTap: () {
                     // TODO: navigate to child

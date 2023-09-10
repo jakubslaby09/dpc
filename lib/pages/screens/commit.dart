@@ -130,6 +130,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
+                      // TODO: display children diff
                     ],
                   ),
                 );
