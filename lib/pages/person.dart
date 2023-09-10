@@ -240,7 +240,6 @@ class _PersonPageState extends State<PersonPage> {
       } else {
         imageProvider = null;
       }
-      print(imageProvider);
     } catch (e) {
       // TODO: make some error handling
       print(e);

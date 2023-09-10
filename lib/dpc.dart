@@ -327,7 +327,6 @@ extension SexExtension on Sex? {
 
 T sampleFromExponentialDistribution<T>(double x, List<T> values, [double rate = 1]) {
   final index = (pow(e, -rate * x) * values.length).floor();
-  print(index);
   return values[index];
 }
 
