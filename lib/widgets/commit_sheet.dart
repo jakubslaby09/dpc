@@ -10,28 +10,36 @@ import 'package:flutter/widgets.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 
 class CommitSheet extends StatelessWidget {
-  const CommitSheet({super.key});
+  CommitSheet({super.key});
+
+  late final commitMessageController = TextEditingController();
+  late final commitDesctiptionController = TextEditingController();
+
+  // TODO: commit message field validation
+  String get wholeCommitMessage => "${commitDesctiptionController.text}\n${commitDesctiptionController.text}";
 
   @override
   Widget build(BuildContext context) {
     return Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: TextField(
-              decoration: InputDecoration(
+              controller: commitMessageController,
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Zpráva příspěvku',
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.all(8.0),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: TextField(
+              controller: commitDesctiptionController,
               minLines: 2,
               maxLines: 5,
               keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Popis příspěvku',
               ),
@@ -87,8 +95,7 @@ class CommitSheet extends StatelessWidget {
         // ffi.nullptr,
         signature.value,
         "UTF-8".toNativeUtf8().cast(),
-        // TODO: use the actual commit message
-        "test".toNativeUtf8().cast(),
+        wholeCommitMessage.toNativeUtf8().cast(),
         tree.value,
         1,
         parent,
@@ -122,6 +129,6 @@ Future<CommitSheet?> showCommitSheet(BuildContext context) {
   return showModalBottomSheet<CommitSheet>(
     context: context,
     showDragHandle: true,
-    builder: (context) => const CommitSheet(),
+    builder: (context) => CommitSheet(),
   );
 }
