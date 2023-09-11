@@ -133,10 +133,9 @@ class _PersonPageState extends State<PersonPage> {
                     sex: Sex.male,
                     initialId: person.father,
                     onPick: (fatherId) => setState(() {
-                      person.father = fatherId;
+                      person.setParent(fatherId, Sex.male, App.pedigree!);
 
                       // TODO: update personField
-                      // TODO: Update children
 
                       scheduleSave(context);
                     }),
@@ -144,7 +143,7 @@ class _PersonPageState extends State<PersonPage> {
                   trailing: unchangedPerson == null ? null : IconButton(
                     icon: const Icon(Icons.backspace_outlined),
                     onPressed: person.father != unchangedPerson!.father ? () => setState(() {
-                      person.father = unchangedPerson!.father;
+                      person.setParent(unchangedPerson!.father, Sex.male, App.pedigree!);
                       scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,
@@ -156,10 +155,9 @@ class _PersonPageState extends State<PersonPage> {
                     sex: Sex.female,
                     initialId: person.mother,
                     onPick: (motherId) => setState(() {
-                      person.mother = motherId;
+                      person.setParent(motherId, Sex.female, App.pedigree!);
 
                       // TODO: update personField
-                      // TODO: Update children
 
                       scheduleSave(context);
                     }),
@@ -167,7 +165,7 @@ class _PersonPageState extends State<PersonPage> {
                   trailing: unchangedPerson == null ? null : IconButton(
                     icon: const Icon(Icons.backspace_outlined),
                     onPressed: person.mother != unchangedPerson!.mother ? () => setState(() {
-                      person.mother = unchangedPerson!.mother;
+                      person.setParent(unchangedPerson!.mother, Sex.female, App.pedigree!);
                       scheduleSave(context);
                     }) : null,
                     color: Theme.of(context).colorScheme.onBackground,

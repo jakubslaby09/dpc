@@ -114,7 +114,7 @@ class _CommitScreenState extends State<CommitScreen> {
                         trailing: IconButton(
                           icon: const Icon(Icons.backspace_outlined),
                           onPressed: () => setState(() {
-                            person.father = App.unchangedPedigree!.people[change.index].father;
+                            person.setParent(App.unchangedPedigree!.people[change.index].father, Sex.male, App.pedigree!);
                           }),
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
@@ -125,7 +125,7 @@ class _CommitScreenState extends State<CommitScreen> {
                         trailing: IconButton(
                           icon: const Icon(Icons.backspace_outlined),
                           onPressed: () => setState(() {
-                            person.mother = App.unchangedPedigree!.people[change.index].mother;
+                            person.setParent(App.unchangedPedigree!.people[change.index].mother, Sex.female, App.pedigree!);
                           }),
                           color: Theme.of(context).colorScheme.onBackground,
                         ),

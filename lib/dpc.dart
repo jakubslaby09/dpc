@@ -114,8 +114,8 @@ class Person implements Child, HasOtherParent {
       birth = json['birth'],
       death = json['death'],
       pedigreeLink = json['pedigreeLink'] != null ? PedigreeLink.parse(json['pedigreeLink']) : null,
-      father = json['father'],
-      mother = json['mother'],
+      _father = json['father'],
+      _mother = json['mother'],
       children = parseIdList(json['children'])! {
     switch (json['sex']) {
       case 'male':
@@ -140,8 +140,8 @@ class Person implements Child, HasOtherParent {
   birth = person.birth,
   death = person.death,
   pedigreeLink = person.pedigreeLink?.clone(),
-  father = person.father,
-  mother = person.mother,
+  _father = person.father,
+  _mother = person.mother,
   children = [...person.children];
 
   @override
@@ -152,9 +152,12 @@ class Person implements Child, HasOtherParent {
   String? birth;
   String? death;
   PedigreeLink? pedigreeLink;
-  int? father;
-  int? mother;
+  int? _father;
+  int? _mother;
   List<num> children;
+
+  int? get mother => _mother;
+  int? get father => _father;
 
   Iterable<Child> getChildren(Pedigree pedigree) {
     return children.map((childId) {
@@ -188,14 +191,46 @@ class Person implements Child, HasOtherParent {
     if(child != null) {
       switch (sex) {
         case Sex.male:
-          child.father = this.id;
+          child._father = this.id;
           // print("setting ${child.name}'s father to $name");
           break;
         case Sex.female:
           // print("setting ${child.name}'s mother to $name");
-          child.mother = this.id;
+          child._mother = this.id;
           break;
       }
+    }
+  }
+
+  void setParent(int? newId, Sex parentSex, Pedigree pedigree) {
+    final int? oldParentId;
+    switch (parentSex) {
+      case Sex.male:
+        oldParentId = _father;
+        _father = newId;
+        break;
+      case Sex.female:
+        oldParentId = _mother;
+        _mother = newId;
+    }
+
+    if(oldParentId != null) {
+      final oldParent = pedigree.people.elementAtOrNull(oldParentId);
+      // TODO: display index errors
+      if(oldParent == null) return;
+
+      oldParent.children.remove(id);
+    } 
+
+    if(newId != null) {
+      final newParent = pedigree.people.elementAtOrNull(newId);
+      // TODO: display index errors
+      if(newParent == null) return;
+
+      // TODO: check if the new parent's sex is the same as parentSex
+
+      // TODO: display a warning if it's already there
+      newParent.children.add(id);
     }
   }
 
@@ -208,12 +243,12 @@ class Person implements Child, HasOtherParent {
     if(child == null) return;
     switch (sex) {
       case Sex.male:
-        child.father = null;
+        child._father = null;
         // print("setting ${child.name}'s father to null");
         break;
       case Sex.female:
         // print("setting ${child.name}'s mother to null");
-        child.mother = null;
+        child._mother = null;
         break;
     }
   }
