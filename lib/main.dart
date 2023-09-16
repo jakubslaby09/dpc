@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/preferences.dart';
-import 'package:dpc/pages/screens/commit.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:path/path.dart';
