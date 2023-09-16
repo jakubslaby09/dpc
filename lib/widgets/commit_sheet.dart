@@ -105,6 +105,7 @@ class CommitSheet extends StatelessWidget {
       App.git.git_tree_free(tree.value);
       
       // TODO: make it functional
+      // TODO: display progress with int callback(int current, int total, int bytes, ffi.Pointer<ffi.Void> payload)
       // push
       // ffi.Pointer<ffi.Pointer<git_remote>> remote = ffi.calloc();
       // ffi.Pointer<git_push_options> defaultOptions = ffi.calloc();

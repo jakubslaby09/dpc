@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'package:dpc/widgets/clone_repo_sheet.dart';
 import 'package:dpc/widgets/create_repo_sheet.dart';
 import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
@@ -88,6 +89,11 @@ class _FileScreenState extends State<FileScreen> {
           leading: const Icon(Icons.file_upload_outlined),
           title: const Text("Otevřít repozitář"),
           onTap: () => openRepo(context).then((_) => setState(() {})),
+        ),
+        ListTile(
+          leading: const Icon(Icons.download_for_offline_outlined),
+          title: const Text("Stáhnout repozitář"),
+          onTap: () => CloneRepoSheet.show(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.create_new_folder_outlined),
