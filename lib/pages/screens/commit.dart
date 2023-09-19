@@ -34,6 +34,7 @@ class CommitScreen extends StatefulWidget implements FABScreen {
 // TODO: make ChangeType more clear in the ui
 // TODO: add a 'no changes' text
 // TODO: add ui for unassigned files
+// TODO: make people listTiles navigate to their pages on tap
 class _CommitScreenState extends State<CommitScreen> {
   @override
   Widget build(BuildContext context) {
@@ -130,7 +131,35 @@ class _CommitScreenState extends State<CommitScreen> {
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
-                      // TODO: display children diff
+                      if(
+                        change.type == ChangeType.modification &&
+                        change.unchanged!.children.length != person.children.length &&
+                        person.children.safeFirstWhere((id) => !change.unchanged!.children.contains(id)) != null
+                        )
+                        ...simpleDiff(change.unchanged!.children, person.children).map((childChange) {
+                        final child = Child(childChange.unchanged ?? person.children[childChange.index], App.pedigree!);
+                        return ListTile(
+                          tileColor: childChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
+                          textColor: childChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          iconColor: childChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          leading: const Icon(Icons.child_friendly_outlined),
+                          title: Text(child is Person ? child.name : "id: ${child.id}"),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.backspace_outlined),
+                            onPressed: () => setState(() {
+                              if(childChange.type == ChangeType.addition) {
+                                print("removing ${childChange.unchanged!} from ${person.name}");
+                                person.removeChild(childChange.index, App.pedigree!);
+                              } else if(childChange.type == ChangeType.removal) {
+                                // TODO: fix ordering
+                                person.addChild(childChange.unchanged!, null, App.pedigree!, childChange.index);
+                                // person.children.add(childChange.unchanged!);
+                              }
+                              scheduleSave(context);
+                            }),
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 );

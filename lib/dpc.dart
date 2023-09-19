@@ -160,26 +160,16 @@ class Person implements Child, HasOtherParent {
   int? get father => _father;
 
   Iterable<Child> getChildren(Pedigree pedigree) {
-    return children.map((childId) {
-      if(childId == -1) return const UnknownChild();
-      if(childId.toInt() == -2) {
-        if(childId == -2) {
-          return const UnknownChildren();
-        } else {
-          return UnknownChildren(int.parse(childId.toString().split(".")[1]));
-        }
-      }
-      
-      assert(childId is int && childId >= 0, "special child ids should be checked in Pedigree.parse");
-      return pedigree.people[childId as int];
-    });
+    return children.map((childId) => Child(childId, pedigree));
   }
 
-  void addChild(num id, Person? otherParent, Pedigree pedigree) {
+  void addChild(num id, Person? otherParent, Pedigree pedigree, [int? position]) {
     // TODO: make ui for already added child id
     // TODO: sort children by birth date
+
+    position = min(children.length, position ?? children.length);
     children.remove(id);
-    children.add(id);
+    children.insert(position, id);
 
     if(otherParent != null) {
       otherParent.addChild(id, null, pedigree);
@@ -189,6 +179,7 @@ class Person implements Child, HasOtherParent {
     assert(id is int, "positive ids should be checked in Pedigree.parse");
     final child = pedigree.people.elementAtOrNull(id as int);
     if(child != null) {
+      // TODO: remove child from old parent
       switch (sex) {
         case Sex.male:
           child._father = this.id;
@@ -444,6 +435,20 @@ class PedigreeLink {
 
 abstract class Child {
   int get id;
+
+  factory Child(num childId, Pedigree pedigree) {
+    if(childId == -1) return const UnknownChild();
+    if(childId.toInt() == -2) {
+      if(childId == -2) {
+        return const UnknownChildren();
+      } else {
+        return UnknownChildren(int.parse(childId.toString().split(".")[1]));
+      }
+    }
+    
+    assert(childId is int && childId >= 0, "special child ids should be checked in Pedigree.parse");
+    return pedigree.people[childId as int];
+  }
 }
 
 abstract class HasOtherParent {
