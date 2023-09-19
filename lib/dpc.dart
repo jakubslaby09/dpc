@@ -229,7 +229,9 @@ class Person implements Child, HasOtherParent {
 
       // TODO: check if the new parent's sex is the same as parentSex
 
+      // TODO: fix ordering
       // TODO: display a warning if it's already there
+      newParent.children.remove(id);
       newParent.children.add(id);
     }
   }
