@@ -44,7 +44,6 @@ class _HomePageState extends State<HomePage> {
 
   int _viewedScreen = 0;
 
-  // TODO: disable destinations until a pedigree is opened
   @override
   Widget build(BuildContext context) {
     return Scaffold(
