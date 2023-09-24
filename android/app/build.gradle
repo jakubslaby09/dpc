@@ -40,6 +40,11 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        main.jni.srcDirs = []
+        main.jniLibs.srcDirs = [
+            '../../lib/libgit2/openssl/out.jni',
+            '../../lib/libgit2/build',
+        ]
     }
 
     defaultConfig {

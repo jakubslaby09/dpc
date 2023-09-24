@@ -1,3 +1,3 @@
-[submodule "lib/libgit"]
-	path = lib/libgit
-	url = https://github.com/torvalds/libgit2.git
+[submodule "lib/libgit2"]
+	path = lib/libgit2
+	url = https://github.com/jakubslaby09/libgit2-android.git

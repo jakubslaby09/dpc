@@ -13,6 +13,7 @@ import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:dpc/pages/log.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class FileScreen extends StatefulWidget {
   const FileScreen({super.key});
@@ -139,21 +140,31 @@ class _FileScreenState extends State<FileScreen> {
     }
     
     Pointer<Pointer<git_repository>> repo = calloc();
-    switch (App.git.git_repository_open(repo, directory.toNativeUtf8().cast())) {
+    final repoOpenResult = App.git.git_repository_open(repo, directory.toNativeUtf8().cast());
+    switch (repoOpenResult) {
       case 0:
         break;
       case git_error_code.GIT_ENOTFOUND:
         showException(context, "Vybraná složka není Git repozitář. Vybrali jste správnou složku? Možná jste smazali skrytou podsložku `.git`.");
         return;
       default:
-        showException(context, "Git repozitář se nepodařilo otevřít. Skrytá podsložka `.git` je možná poškozená.");
+        showException(context, "Git repozitář se nepodařilo otevřít. Skrytá podsložka `.git` je možná poškozená.", Exception(repoOpenResult));
         return;
     }
     
     bool broken = false;
     try {
-      dynamic values = json.decode(await index.readAsString());
-      App.pedigree = Pedigree.parse(values, directory, repo);
+      String indexString;
+      try {
+        indexString = await index.readAsString();
+      } on PathAccessException catch (e) {
+        if(await Permission.manageExternalStorage.isGranted) rethrow;
+        // TODO: make a dialog for it
+        await Permission.manageExternalStorage.request();
+        indexString = await index.readAsString();
+      }
+      dynamic indexValues = json.decode(indexString);
+      App.pedigree = Pedigree.parse(indexValues, directory, repo);
       try {
         Pointer<Pointer<git_index>> gitIndex = calloc();
         Pointer<git_oid> treeOid = calloc();
@@ -180,6 +191,8 @@ class _FileScreenState extends State<FileScreen> {
         App.unchangedPedigree = App.pedigree!.clone();
       }
 
+    } on PathAccessException catch (e, t) {
+      showException(context, "Aplikaci nebylo povoleno přečíst rodokmen.", e, t);
     } on Exception catch (e, t) {
       // TODO: make a pedigree upgrade dialog
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e, t);

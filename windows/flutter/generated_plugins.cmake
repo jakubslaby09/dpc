@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   git2dart_binaries
+  permission_handler_windows
   url_launcher_windows
 )
 
