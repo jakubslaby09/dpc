@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:path/path.dart';
 
@@ -13,7 +12,7 @@ import 'pages/home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   App.prefs = await initPrefs();
-  App._init_libgit2();
+  App.initLibgit2();
 
   const App app = App();
   runApp(app);
@@ -66,13 +65,13 @@ class App extends StatelessWidget {
     );
   }
 
-  static void _init_libgit2() async {
+  static void initLibgit2() async {
     final String libraryPath;
     if(Platform.isAndroid) {
       libraryPath = "libgit2.so";
     } else {
       // TODO: debug
-      libraryPath = "lib/libgit/build/x86_64/libgit2.so";
+      libraryPath = "lib/libgit2/build/x86_64/libgit2.so";
     }
     Libgit2 git = Libgit2(DynamicLibrary.open(libraryPath));
     git.git_libgit2_init();
