@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'package:dpc/autosave.dart';
 import 'package:dpc/widgets/clone_repo_sheet.dart';
 import 'package:dpc/widgets/create_repo_sheet.dart';
 import 'package:ffi/ffi.dart';
@@ -164,7 +165,12 @@ class _FileScreenState extends State<FileScreen> {
         indexString = await index.readAsString();
       }
       dynamic indexValues = json.decode(indexString);
-      App.pedigree = Pedigree.parse(indexValues, directory, repo);
+      if(App.prefs.autoUpgradeFiles) {
+        App.pedigree = Pedigree.upgrade(indexValues, directory, repo);
+        scheduleSave(context);
+      } else {
+        App.pedigree = Pedigree.parse(indexValues, directory, repo);
+      }
       try {
         Pointer<Pointer<git_index>> gitIndex = calloc();
         Pointer<git_oid> treeOid = calloc();

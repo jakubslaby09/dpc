@@ -150,6 +150,12 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
               ],
             ),
           ),
+          SwitchListTile(
+            value: App.prefs.autoUpgradeFiles,
+            onChanged: (value) => setState(() => App.prefs.autoUpgradeFiles = value),
+            title: const Text("Bez ptaní upgradovat soubory"),
+            secondary: const Icon(Icons.upgrade),
+          ),
         ],
       ),
     );
@@ -208,5 +214,11 @@ class Preferences {
   bool get saveBrokenRecentFiles => _sharedPrefs!.getBool(_saveBrokenRecentFilesKey) ?? false;
   set saveBrokenRecentFiles(bool value) {
     _sharedPrefs!.setBool(_saveBrokenRecentFilesKey, value);
+  }
+  
+  static const _autoUpgradeFilesKey = "autoUpgradeFiles";
+  bool get autoUpgradeFiles => _sharedPrefs!.getBool(_autoUpgradeFilesKey) ?? false;
+  set autoUpgradeFiles(bool value) {
+    _sharedPrefs!.setBool(_autoUpgradeFilesKey, value);
   }
 }
