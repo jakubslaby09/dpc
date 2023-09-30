@@ -16,7 +16,7 @@ class CommitSheet extends StatelessWidget {
   late final commitDesctiptionController = TextEditingController();
 
   // TODO: commit message field validation
-  String get wholeCommitMessage => "${commitDesctiptionController.text}\n${commitDesctiptionController.text}";
+  String get wholeCommitMessage => "${commitMessageController.text}\n${commitDesctiptionController.text}";
 
   @override
   Widget build(BuildContext context) {
