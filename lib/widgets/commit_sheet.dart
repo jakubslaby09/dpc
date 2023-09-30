@@ -59,10 +59,9 @@ class CommitSheet extends StatelessWidget {
       );
   }
   
+  // TODO: Close upon success, reload App.unchangedPedigree and the commit page
   void onConfirm(BuildContext context) {
-    // print("running libgit2");
-    // TODO: make an exception for it
-    if(App.pedigree == null) return;
+    assert(App.pedigree != null, "this should be checked in home.dart");
     try {
       App.pedigree!.save(context);
 
@@ -104,20 +103,20 @@ class CommitSheet extends StatelessWidget {
       App.git.git_signature_free(signature.value);
       App.git.git_tree_free(tree.value);
       
-      // TODO: make it functional
       // TODO: display progress with int callback(int current, int total, int bytes, ffi.Pointer<ffi.Void> payload)
       // push
-      // ffi.Pointer<ffi.Pointer<git_remote>> remote = ffi.calloc();
-      // ffi.Pointer<git_push_options> defaultOptions = ffi.calloc();
-      // // var refspecsArray = const ffi.Array<git_strarray>(1);
-      // ffi.Pointer<git_strarray> refspecs = ffi.calloc<git_strarray>();
-      // refspecs.ref.count = 1;
-      // refspecs.ref.strings.value = "refs/heads/master".toNativeUtf8().cast();
+      ffi.Pointer<ffi.Pointer<git_remote>> remote = ffi.calloc();
+      ffi.Pointer<git_push_options> defaultOptions = ffi.calloc();
+      ffi.Pointer<git_strarray> refspecs = ffi.calloc<git_strarray>();
+      ffi.Pointer<ffi.Pointer<ffi.Char>> refspecsArray = ffi.calloc();
+      // TODO: use git_remote_get_refspec
+      refspecsArray[0] = "refs/heads/main".toNativeUtf8().cast();
+      refspecs.ref.strings = refspecsArray;
+      refspecs.ref.count = 1;
 
-      // expectCode(App.git.git_remote_lookup(remote, App.pedigree!.repo.value, "origin".toNativeUtf8().cast()));
-      // expectCode(App.git.git_push_options_init(defaultOptions, GIT_PUSH_OPTIONS_VERSION));
-      // expectCode(App.git.git_remote_push(remote.value, refspecs, defaultOptions));
-
+      expectCode(App.git.git_remote_lookup(remote, App.pedigree!.repo.value, "origin".toNativeUtf8().cast()));
+      expectCode(App.git.git_push_options_init(defaultOptions, GIT_PUSH_OPTIONS_VERSION));
+      expectCode(App.git.git_remote_push(remote.value, refspecs, defaultOptions));
       
       // App.git.git_index_free(index.value);
     } on Exception catch(e, t) {
