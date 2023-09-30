@@ -12,7 +12,6 @@ import 'pages/home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   App.prefs = await initPrefs();
-  App.initLibgit2();
 
   const App app = App();
   runApp(app);
@@ -25,7 +24,7 @@ class App extends StatelessWidget {
   static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
   static Pedigree? unchangedPedigree;
   static Pedigree? pedigree;
-  static late final Libgit2 git;
+  static final Libgit2 git = App.initLibgit2();
 
   // This widget is the root of your application.
   @override
@@ -65,7 +64,7 @@ class App extends StatelessWidget {
     );
   }
 
-  static void initLibgit2() async {
+  static Libgit2 initLibgit2() {
     final String libraryPath;
     if(Platform.isAndroid) {
       libraryPath = "libgit2.so";
@@ -76,7 +75,7 @@ class App extends StatelessWidget {
     Libgit2 git = Libgit2(DynamicLibrary.open(libraryPath));
     git.git_libgit2_init();
 
-    App.git = git;
+    return git;
   }
 }
 
