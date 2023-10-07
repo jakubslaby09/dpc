@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:isolate';
@@ -5,10 +7,13 @@ import 'dart:ui';
 
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/screens/file.dart';
+import 'package:dpc/secrets.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class CloneRepoSheet extends StatefulWidget {
   const CloneRepoSheet({super.key});
@@ -16,10 +21,11 @@ class CloneRepoSheet extends StatefulWidget {
   @override
   State<CloneRepoSheet> createState() => _CloneRepoSheetState();
 
-  static Future<void> show(BuildContext context) {
+  static Future<String?> show(BuildContext context) {
     return showModalBottomSheet(
       isDismissible: false,
       enableDrag: false,
+      isScrollControlled: true,
       context: context,
       builder: (context) => const CloneRepoSheet(),
     );
@@ -30,165 +36,234 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
   GlobalKey<FormState> formKey = GlobalKey();
   TextEditingController pathController = TextEditingController();
   TextEditingController urlController = TextEditingController();
+  TextEditingController repoNameController = TextEditingController();
   String? error;
   DownloadHandle? isolateHandle;
   double? progress;
+  AuthOptions selectedAuthOption = AuthOptions.github;
 
-  bool get finished => progress == 1.0 || error != null;
-  bool get inProgress => progress != null && !finished;
+  bool get inProgress => progress != null && error == null;
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-            child: TextFormField(
-              decoration: InputDecoration(
-                icon: const Icon(Icons.file_copy_outlined),
-                labelText: "Složka repozitáře",
-                border: const OutlineInputBorder(),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: IconButton(
-                    icon: const Icon(Icons.file_open_outlined),
-                    onPressed: () async {
-                      final dir = await FilePicker.platform.getDirectoryPath(
-                        dialogTitle: "Vybrat novou složku pro repozitář",
-                      );
-                      if(dir == null) return;
-                      pathController.text = dir;
-                    },
+    return SingleChildScrollView(
+      child: Form(
+        key: formKey,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 24, bottom: 16),
+              child: SegmentedButton<AuthOptions>(
+                segments: const [
+                  ButtonSegment(
+                    icon: Icon(Icons.cloud_outlined),
+                    value: AuthOptions.github,
+                    label: Text("Github"),
                   ),
-                ),
+                  ButtonSegment(
+                    icon: Icon(Icons.settings_outlined),
+                    value: AuthOptions.manual,
+                    label: Text("Vlastní URL"),
+                  ),
+                ],
+                selected: { selectedAuthOption },
+                onSelectionChanged: (selection) => setState(() {
+                  selectedAuthOption = selection.first;
+                }),
               ),
-              controller: pathController,
-              // TODO: make the validator async
-              validator: (value) {
-                if(value == null || value.trim().isEmpty) {
-                  return "Vyberte si, kam repozitář stáhnete";
-                }
-                final dir = Directory(value);
-                if(!dir.existsSync()) {
-                  // TODO: can't i just create the fucking folder for the user?
-                  return "Taková složka neexistuje. Nezapoměli jste ji vytvořit?";
-                }
-                if(dir.listSync().isNotEmpty) {
-                  // TODO: add ui to override this check
-                  return "Složka není prázdná";
-                }
-                // TODO: check write permissions
-                return null;
-              },
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-            child: TextFormField(
-              decoration: const InputDecoration(
-                icon: Icon(Icons.link),
-                labelText: "URL Adresa vzdáleného repozitáře",
-                errorMaxLines: 5,
-                border: OutlineInputBorder(),
+            Padding(
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.file_copy_outlined),
+                  labelText: "Složka repozitáře",
+                  border: const OutlineInputBorder(),
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      icon: const Icon(Icons.file_open_outlined),
+                      onPressed: () async {
+                        final dir = await FilePicker.platform.getDirectoryPath(
+                          dialogTitle: "Vybrat novou složku pro repozitář",
+                        );
+                        if(dir == null) return;
+                        pathController.text = dir;
+                      },
+                    ),
+                  ),
+                ),
+                controller: pathController,
+                // TODO: make the validator async
+                validator: (value) {
+                  if(value == null || value.trim().isEmpty) {
+                    return "Vyberte si, kam repozitář stáhnete";
+                  }
+                  final dir = Directory(value);
+                  if(!dir.existsSync()) {
+                    // TODO: can't i just create the fucking folder for the user?
+                    return "Taková složka neexistuje. Nezapoměli jste ji vytvořit?";
+                  }
+                  if(dir.listSync().isNotEmpty) {
+                    // TODO: add ui to override this check
+                    return "Složka není prázdná";
+                  }
+                  // TODO: check write permissions
+                  return null;
+                },
               ),
-              controller: urlController,
-              // TODO: make the validator async
-              validator: (value) {
-                if(value == null || value.trim().isEmpty) {
-                  return "Vyberte si, odkud repozitář stáhnete";
-                }
-                if(!(Uri.tryParse(value)?.isAbsolute ?? false)) {
-                  return "Toto nevypadá jako URL, ani jako absolutní URI";
-                }
-                final uri = Uri.parse(value);
-                if(uri.userInfo.isNotEmpty && !uri.userInfo.contains(":")) {
-                  return "Adresa obsahuje '@', ale ne ':'. Použijte prosím formát jméno:${uri.userInfo}";
-                }
-                return null;
-              },
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            child: Row(
-              children: [
-                if(error != null) Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Text(
-                    error!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
+            if(selectedAuthOption == AuthOptions.manual) Padding(
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  icon: Icon(Icons.link),
+                  labelText: "URL Adresa vzdáleného repozitáře",
+                  errorMaxLines: 5,
+                  border: OutlineInputBorder(),
                 ),
-                Expanded(
-                  child: LinearProgressIndicator(
-                    // i didn't use `onErrorContainer` for the indicator because it is in contact with `surface` a lot more than with `errorContainer`
-                    color: error == null ? null : Theme.of(context).colorScheme.error,
-                    backgroundColor: error == null ? null : Theme.of(context).colorScheme.errorContainer,
-                    value: progress ?? 0,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16),
-                  child: Text("${((progress ?? 0) * 100).round()} %"),
-                ),
-              ],
+                enabled: selectedAuthOption == AuthOptions.manual,
+                controller: urlController,
+                // TODO: make the validator async
+                validator: (value) {
+                  if(value == null || value.trim().isEmpty) {
+                    return "Vyberte si, odkud repozitář stáhnete";
+                  }
+                  if(!(Uri.tryParse(value)?.isAbsolute ?? false)) {
+                    return "Toto nevypadá jako URL, ani jako absolutní URI";
+                  }
+                  final uri = Uri.parse(value);
+                  if(uri.userInfo.isNotEmpty && !uri.userInfo.contains(":")) {
+                    return "Adresa obsahuje '@', ale ne ':'. Použijte prosím formát jméno:${uri.userInfo}";
+                  }
+                  return null;
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      if(!inProgress) {
-                        Navigator.of(context).pop();
-                        return;
-                      }
-                      
-                      isolateHandle?.abort();
-                    },
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(40),
+            if(selectedAuthOption == AuthOptions.github) Padding(
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  icon: Icon(Icons.share_outlined),
+                  labelText: "Jméno repozitáře",
+                  border: OutlineInputBorder(),
+                ),
+                enabled: selectedAuthOption == AuthOptions.github,
+                controller: repoNameController,
+                validator: (value) {
+                  if(value == null || value.trim().isEmpty) {
+                    return "Vyberte si repozitář";
+                  }
+                  if(!value.contains("/")) {
+                    return "Uveďte prosím vlastníka repozitáře, ve formátu vlastník/repozitář";
+                  }
+    
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              child: Row(
+                children: [
+                  if(error != null) Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Text(
+                      error!,
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
-                    icon: Icon(inProgress ? Icons.disabled_by_default_outlined : Icons.cancel_outlined),
-                    label: Text(inProgress ? "Přerušit" : "Zahodit"),
                   ),
-                ),
-                const VerticalDivider(),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () => setState(() {
-                      if(!formKey.currentState!.validate()) return;
-
-                      error = null;
-
-                      startDownload(context);
-                    }),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(40),
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      // i didn't use `onErrorContainer` for the indicator because it is in contact with `surface` a lot more than with `errorContainer`
+                      color: error == null ? null : Theme.of(context).colorScheme.error,
+                      backgroundColor: error == null ? null : Theme.of(context).colorScheme.errorContainer,
+                      value: progress ?? 0,
                     ),
-                    icon: Icon(error != null ? Icons.restart_alt : Icons.download_for_offline_outlined),
-                    label: Text(error != null ? "Zkusit znovu" : "Stáhnout"),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text("${((progress ?? 0) * 100).round()} %"),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        if(!inProgress) {
+                          Navigator.of(context).pop();
+                          return;
+                        }
+                        
+                        isolateHandle?.abort();
+                      },
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(40),
+                      ),
+                      icon: Icon(inProgress ? Icons.disabled_by_default_outlined : Icons.cancel_outlined),
+                      label: Text(inProgress ? "Přerušit" : "Zahodit"),
+                    ),
+                  ),
+                  const VerticalDivider(),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () async {
+                        if(!formKey.currentState!.validate()) return;
+    
+                        error = null;
+                        final String url;
+                        switch (selectedAuthOption) {
+                          case AuthOptions.manual:
+                            url = urlController.text;
+                            break;
+                          case AuthOptions.github:
+                            final token = await githubOauth();
+                            final name = await githubUsername(token);
+                            url = Uri(
+                              scheme: "https",
+                              host: "github.com",
+                              userInfo: "$name:$token",
+                              path: repoNameController.text.endsWith(".git") ? repoNameController.text : "${repoNameController.text}.git",
+                            ).toString();
+                            break;
+                        }
+                        
+                        setState(() => {});
+                        startDownload(context, url);
+                      },
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(40),
+                      ),
+                      icon: Icon(error != null ? Icons.restart_alt : Icons.download_for_offline_outlined),
+                      label: Text(error != null ? "Zkusit znovu" : selectedAuthOption == AuthOptions.manual ? "Stáhnout" : "Přihlásit se a stáhnout"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void startDownload(BuildContext context) async {
-    final handle = await spawnDownload(context, urlController.text, pathController.text);
+  void startDownload(BuildContext context, String url) async {
+    final handle = await spawnDownload(context, url, pathController.text);
 
     isolateHandle = handle;
 
-    handle.progressReceiver.listen((message) { 
+    handle.progressReceiver.listen((message) async { 
       if(context.mounted) {
+        if(message == 1) {
+          if(await Navigator.of(context).maybePop(pathController.text)) {
+            return;
+          }
+        }
         setState(() {
           progress = message;
         });
@@ -210,6 +285,68 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
 
       // TODO: make a way to report the error
     });
+  }
+
+  Future<String> githubOauth() async {
+    final codeCompleter = Completer<String>();
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080);
+    server.forEach((req) {
+      req.response.headers.contentType = ContentType.html;
+      req.response.write("<script>window.close()</script><h1>Nyní můžete toho okno zavřít</h1>");
+      req.response.close();
+      server.close();
+      if(!req.uri.queryParameters.containsKey("code")) {
+        codeCompleter.completeError(req.uri.queryParameters);
+      }
+      codeCompleter.complete(req.uri.queryParameters["code"]);
+    });
+    final authorizationUri = Uri(
+      scheme: "https",
+      host: "github.com",
+      path: "/login/oauth/authorize",
+      queryParameters: {
+        "client_id": "d484387b4d7fa68eb87f",
+        "redirect_uri": "http://localhost:8080",
+        "scope": "repo",
+      }
+    );
+    await launchUrl(authorizationUri);
+    final code = await codeCompleter.future;
+
+    final tokenResponse = await http.post(Uri(
+      scheme: "https",
+      host: "github.com",
+      path: "login/oauth/access_token",
+      queryParameters: {
+        "client_id": "d484387b4d7fa68eb87f",
+        "client_secret": githubClientSecret,
+        "code": code,
+      }
+    ), headers: {"Accept": "application/json"});
+    final tokenResponseValues = jsonDecode(tokenResponse.body) as Map<String, dynamic>;
+    assert(
+      tokenResponseValues.containsKey("access_token"),
+      "error when requesting token: ${tokenResponseValues["error"] ?? tokenResponseValues.toString()}"
+    );
+    return tokenResponseValues["access_token"];
+  }
+
+  Future<String> githubUsername(String token) async {
+    final res = await http.get(Uri(
+      scheme: "https",
+      host: "api.github.com",
+      path: "user",
+    ), headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token",
+      "X-GitHub-Api-Version": "2022-11-28",
+    });
+    final resValues = jsonDecode(res.body) as Map<String, dynamic>;
+    assert(
+      resValues.containsKey("login"),
+      "error when requesting token: ${resValues["error"] ?? resValues.toString()}"
+    );
+    return resValues["login"];
   }
 }
 
@@ -306,4 +443,9 @@ class DownloadHandle {
 
   final ReceivePort progressReceiver;
   final ReceivePort errorReceiver;
+}
+
+enum AuthOptions {
+  manual,
+  github,
 }

@@ -1,20 +1,21 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
-import 'package:dpc/autosave.dart';
-import 'package:dpc/widgets/clone_repo_sheet.dart';
-import 'package:dpc/widgets/create_repo_sheet.dart';
 import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:path/path.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import 'package:dpc/autosave.dart';
+import 'package:dpc/widgets/clone_repo_sheet.dart';
+import 'package:dpc/widgets/create_repo_sheet.dart';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:dpc/pages/log.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class FileScreen extends StatefulWidget {
   const FileScreen({super.key});
@@ -95,7 +96,13 @@ class _FileScreenState extends State<FileScreen> {
         ListTile(
           leading: const Icon(Icons.download_for_offline_outlined),
           title: const Text("Stáhnout repozitář"),
-          onTap: () => CloneRepoSheet.show(context).then((_) => setState(() {})),
+          onTap: () async {
+            final path = await CloneRepoSheet.show(context);
+            if(path == null) return;
+
+            await openRepo(context, path);
+            setState(() { });
+          },
         ),
         ListTile(
           leading: const Icon(Icons.create_new_folder_outlined),
