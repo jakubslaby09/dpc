@@ -262,8 +262,8 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
 
   expectCode(App.git.git_clone(
     repo,
-    message.url/* "https://github.com/jakubslaby09/rust-ytmapi.git" */.toNativeUtf8().cast(),
-    message.path/* "/home/jakub/Projekty/dpc/test2" */.toNativeUtf8().cast(),
+    message.url.toNativeUtf8().cast(),
+    message.path.toNativeUtf8().cast(),
     options,
   ));
 
