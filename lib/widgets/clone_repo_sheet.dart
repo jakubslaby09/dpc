@@ -199,11 +199,14 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
       final String errorString = (message as List)[0];
       // the error receiver message type is just fucking hilariously stupid, but still:
       // TODO: find a better way to get the error code
-      if(errorString.contains(git_error_code.GIT_EUSER.toString())) {
-        error = "Zrušeno";
-      } else {
-        error = errorString;
-      }
+
+      setState(() {
+        if(errorString.contains(git_error_code.GIT_EUSER.toString())) {
+          error = "Zrušeno";
+        } else {
+          error = errorString;
+        }
+      });
 
       // TODO: make a way to report the error
     });
