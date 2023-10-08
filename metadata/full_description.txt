@@ -1,0 +1,3 @@
+<i>English translations are currently unavalible</i>
+
+Otevřená aplikace pro záznam rodinného rodokmenu, kroniky a jejich synchronizaci pomocí Git s podporou autentikace přes Github.
