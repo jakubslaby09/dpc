@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 
 class CloneRepoSheet extends StatefulWidget {
   const CloneRepoSheet({super.key});
@@ -213,6 +214,12 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: () async {
+                        // TODO: check file permissions before asking
+                        if(!await Permission.manageExternalStorage.isGranted) {
+                          if((await Permission.manageExternalStorage.request()).isGranted) {
+                            error = "oprávnění zamítnuto";
+                          }
+                        }
                         if(!formKey.currentState!.validate()) return;
     
                         error = null;
