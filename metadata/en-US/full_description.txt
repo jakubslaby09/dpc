@@ -1,0 +1,3 @@
+<i>English translation is currently unavalible</i>
+
+A Czech open-source app for writing a family pedigree with a chronicle. It uses Git and supports Github OAuth.
