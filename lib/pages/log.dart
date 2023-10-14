@@ -58,8 +58,9 @@ class LogPage extends StatelessWidget {
         future: canLaunchUrl(reportUrl),
         builder: (context, canLaunch) => Visibility(
           visible: canLaunch.data ?? false,
-          child: FloatingActionButton(
-            child: const Icon(Icons.bug_report_outlined),
+          child: FloatingActionButton.extended(
+            label: const Text("Nahlásit"),
+            icon: const Icon(Icons.bug_report_outlined),
             onPressed: () => launchUrl(reportUrl),
           ),
         ),
