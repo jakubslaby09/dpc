@@ -22,9 +22,12 @@ class LogPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(openedUnexpectedly ? "Právě se někde stala chyba!" : "Záznam chyby"),
+        backgroundColor: openedUnexpectedly ? Theme.of(context).colorScheme.error : null,
+        foregroundColor: openedUnexpectedly ? Theme.of(context).colorScheme.onError : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.copy_all),
+            color: openedUnexpectedly ? Theme.of(context).colorScheme.onError : null,
             onPressed: () => Clipboard.setData(ClipboardData(text: "${title ?? ""}\n$log")),
           )
         ],
@@ -47,7 +50,7 @@ class LogPage extends StatelessWidget {
                 style: const TextStyle(
                   fontFeatures: [
                     FontFeature.tabularFigures(),
-                  ]
+                  ],
                 ),
               ),
             ),
@@ -59,6 +62,8 @@ class LogPage extends StatelessWidget {
         builder: (context, canLaunch) => Visibility(
           visible: canLaunch.data ?? false,
           child: FloatingActionButton.extended(
+            backgroundColor: Theme.of(context).colorScheme.error,
+            foregroundColor: Theme.of(context).colorScheme.onError,
             label: const Text("Nahlásit"),
             icon: const Icon(Icons.bug_report_outlined),
             onPressed: () => launchUrl(reportUrl),
