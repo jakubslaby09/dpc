@@ -213,13 +213,14 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                   const VerticalDivider(),
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () async {
+                      onPressed: inProgress ? null : () async {
                         // TODO: check file permissions before asking
                         if(!await Permission.manageExternalStorage.isGranted) {
                           if((await Permission.manageExternalStorage.request()).isGranted) {
                             error = "oprávnění zamítnuto";
                           }
                         }
+
                         if(!formKey.currentState!.validate()) return;
     
                         error = null;
@@ -231,8 +232,14 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                           case AuthOptions.github:
                             final token = await githubOauth();
                             final name = await githubUsername(token);
-                            url = Uri(
+                            print(Uri(
                               scheme: "https",
+                              host: "github.com",
+                              userInfo: "$name:$token",
+                              path: repoNameController.text.endsWith(".git") ? repoNameController.text : "${repoNameController.text}.git",
+                            ).toString());
+                            url = Uri(
+                              scheme: "http",
                               host: "github.com",
                               userInfo: "$name:$token",
                               path: repoNameController.text.endsWith(".git") ? repoNameController.text : "${repoNameController.text}.git",
@@ -383,6 +390,14 @@ void _checkoutProgressCallback(ffi.Pointer<ffi.Char> path, int current, int tota
   final sender = IsolateNameServer.lookupPortByName(payload.nativeSender.toString());
   sender?.send(current / total);
 }
+int _badCertificateCallback(ffi.Pointer<git_cert> path, int n, ffi.Pointer<ffi.Char> char, ffi.Pointer<ffi.Void> payloadPtr) {
+  print(path.ref.cert_type);
+  print(n);
+  print(payloadPtr);
+  return 0;
+}
+
+const minusOne = -1;
 
 void _isolateEntryPoint(DownloadIsolateMessage message) async {
   // final abortReceiver = ReceivePort();
@@ -393,6 +408,7 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
   ffi.Pointer<git_clone_options> options = ffi.calloc();
   final fetchCallback = ffi.Pointer.fromFunction<ffi.Int Function(ffi.Pointer<git_indexer_progress>, ffi.Pointer<ffi.Void>)>(_fetchProgressCallback, 0);
   final checkoutCallback = ffi.Pointer.fromFunction<ffi.Void Function(ffi.Pointer<ffi.Char>, ffi.Size, ffi.Size, ffi.Pointer<ffi.Void>)>(_checkoutProgressCallback);
+  final badCertCallback = ffi.Pointer.fromFunction<ffi.Int Function(ffi.Pointer<git_cert>, ffi.Int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Void>)>(_badCertificateCallback, minusOne);
   ffi.Pointer<ffi.Bool> abort = ffi.Pointer.fromAddress(message.abortPtr);
   ffi.Pointer<ProgressCallbackPayload> payload = ffi.calloc();
   message.sender.send(0.0);
@@ -406,6 +422,8 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
 	options.ref.checkout_opts.progress_cb = checkoutCallback;
   options.ref.fetch_opts.callbacks.transfer_progress = fetchCallback;
   options.ref.fetch_opts.callbacks.payload = payload.cast();
+  options.ref.fetch_opts.proxy_opts.certificate_check = badCertCallback;
+  options.ref.fetch_opts.proxy_opts.url = "github.com".toNativeUtf8().cast();
 
   expectCode(App.git.git_clone(
     repo,
