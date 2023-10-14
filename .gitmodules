@@ -1,3 +1,7 @@
 [submodule "lib/libgit2"]
 	path = lib/libgit2
 	url = https://github.com/jakubslaby09/libgit2-android.git
+
+[submodule ".flutter"]
+	path = .flutter
+	url = https://gitlab.com/.flutter/flutter.git
