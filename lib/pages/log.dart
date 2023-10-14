@@ -5,21 +5,23 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LogPage extends StatelessWidget {
-  const LogPage(this.log, {this.title, super.key});
+  const LogPage(this.log, {this.title, this.openedUnexpectedly = false, super.key});
 
   // TODO: add device info
+  // TODO: encode markdown symbols
   Uri get reportUrl => Uri.https("github.com", "/jakubslaby09/dpc/issues/new", {
     if(title != null) "title": title,
     "body": "```$title```\n```$log```",
   });
   final String? title;
   final String log;
+  final bool openedUnexpectedly;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Záznamy"),
+        title: Text(openedUnexpectedly ? "Právě se někde stala chyba!" : "Záznam chyby"),
         actions: [
           IconButton(
             icon: const Icon(Icons.copy_all),

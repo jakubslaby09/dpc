@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:dpc/dpc.dart';
+import 'package:dpc/pages/log.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -12,6 +13,12 @@ import 'pages/home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   App.prefs = await initPrefs();
+
+  ErrorWidget.builder = (details) => LogPage(
+    details.stack.toString(),
+    openedUnexpectedly: true,
+    title: details.exceptionAsString(),
+  );
 
   const App app = App();
   runApp(app);
