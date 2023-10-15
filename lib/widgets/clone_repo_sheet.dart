@@ -28,7 +28,10 @@ class CloneRepoSheet extends StatefulWidget {
       enableDrag: false,
       isScrollControlled: true,
       context: context,
-      builder: (context) => const CloneRepoSheet(),
+      builder: (context) => Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: const CloneRepoSheet(),
+      ),
     );
   }
 }
