@@ -79,22 +79,20 @@ class _AddChildSheetState extends State<AddChildSheet> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Expanded(
-            child: FilledButton(
-              child: const Text("Přidat"),
-              onPressed: id == null && selectedOption == AddChildOptions.existingChild ? null : () {
-                final num id;
-                switch (selectedOption) {
-                  case AddChildOptions.existingChild:
-                    id = this.id!;
-                  case AddChildOptions.unknownChild:
-                    id = const UnknownChild().id;
-                  case AddChildOptions.unknownChildren:
-                    id = UnknownChildren(otherParentIdController.value).wholeId;
-                }
-                Navigator.of(context).pop(id);
-              },
-            ),
+          child: FilledButton(
+            child: const Text("Přidat"),
+            onPressed: id == null && selectedOption == AddChildOptions.existingChild ? null : () {
+              final num id;
+              switch (selectedOption) {
+                case AddChildOptions.existingChild:
+                  id = this.id!;
+                case AddChildOptions.unknownChild:
+                  id = const UnknownChild().id;
+                case AddChildOptions.unknownChildren:
+                  id = UnknownChildren(otherParentIdController.value).wholeId;
+              }
+              Navigator.of(context).pop(id);
+            },
           ),
         ),
       ],
