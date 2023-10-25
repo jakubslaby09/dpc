@@ -218,7 +218,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                     child: FilledButton.icon(
                       onPressed: inProgress ? null : () async {
                         // TODO: check file permissions before asking
-                        if(!await Permission.manageExternalStorage.isGranted) {
+                        if(Platform.isAndroid && !await Permission.manageExternalStorage.isGranted) {
                           if((await Permission.manageExternalStorage.request()).isGranted) {
                             error = "oprávnění zamítnuto";
                           }
