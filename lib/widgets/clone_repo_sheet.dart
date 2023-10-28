@@ -43,7 +43,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
   TextEditingController repoNameController = TextEditingController();
   String? error;
   DownloadHandle? isolateHandle;
-  double? progress;
+  CloneProgress? progress;
   AuthOptions selectedAuthOption = AuthOptions.github;
 
   bool get inProgress => progress != null && error == null;
@@ -176,17 +176,21 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                       style: TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ),
+                  if(progress != null) Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Text("${((progress!.bytes ?? 0) / 1048576).round()} MiB"),
+                  ),
                   Expanded(
                     child: LinearProgressIndicator(
                       // i didn't use `onErrorContainer` for the indicator because it is in contact with `surface` a lot more than with `errorContainer`
                       color: error == null ? null : Theme.of(context).colorScheme.error,
                       backgroundColor: error == null ? null : Theme.of(context).colorScheme.errorContainer,
-                      value: progress ?? 0,
+                      value: progress?.ratio ?? 0,
                     ),
                   ),
-                  Padding(
+                  if(progress != null) Padding(
                     padding: const EdgeInsets.only(left: 16),
-                    child: Text("${((progress ?? 0) * 100).round()} %"),
+                    child: Text("${(progress!.ratio * 100).round().toString().padLeft(1, "0")} %"),
                   ),
                 ],
               ),
@@ -276,12 +280,14 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
 
     isolateHandle = handle;
 
-    handle.progressReceiver.listen((message) async { 
+    handle.progressReceiver.listen((message) async {
+      // TODO: log error when message is of a wrong type
+      // this gives false positives
+      // assert(message is! CloneProgress, "a message sent by the clone isolate is not a CloneProgress: $message");
+
       if(context.mounted) {
-        if(message == 1) {
-          if(await Navigator.of(context).maybePop(pathController.text)) {
-            return;
-          }
+        if(message.ratio == 1 && await Navigator.of(context).maybePop(pathController.text)) {
+          return;
         }
         setState(() {
           progress = message;
@@ -384,7 +390,10 @@ class DownloadIsolateMessage {
 int _fetchProgressCallback(ffi.Pointer<git_indexer_progress> progress, ffi.Pointer<ffi.Void> payloadPtr) {
   final payload = (payloadPtr as ffi.Pointer<ProgressCallbackPayload>).ref;
   final sender = IsolateNameServer.lookupPortByName(payload.nativeSender.toString());
-  sender?.send(progress.ref.received_objects / progress.ref.total_objects);
+  sender?.send(CloneProgress(
+    ratio: progress.ref.received_objects / progress.ref.total_objects,
+    bytes: progress.ref.received_bytes,
+  ));
 
   final ffi.Pointer<ffi.Bool> abort = ffi.Pointer.fromAddress(payload.abortPtr);
   return abort.value ? git_error_code.GIT_EUSER : 0;
@@ -393,17 +402,21 @@ int _fetchProgressCallback(ffi.Pointer<git_indexer_progress> progress, ffi.Point
 void _checkoutProgressCallback(ffi.Pointer<ffi.Char> path, int current, int total, ffi.Pointer<ffi.Void> payloadPtr) {
   final payload = (payloadPtr as ffi.Pointer<ProgressCallbackPayload>).ref;
   final sender = IsolateNameServer.lookupPortByName(payload.nativeSender.toString());
-  sender?.send(current / total);
+  sender?.send(CloneProgress(
+    ratio: current / total,
+  ));
 }
-int _badCertificateCallback(ffi.Pointer<git_cert> path, int n, ffi.Pointer<ffi.Char> char, ffi.Pointer<ffi.Void> payloadPtr) {
-  print(path.ref.cert_type);
-  print(n);
-  print(payloadPtr);
-  return 0;
+int _badCertificateCallback(ffi.Pointer<git_cert> cert, int valid, ffi.Pointer<ffi.Char> host, ffi.Pointer<ffi.Void> payloadPtr) {
+  if(Platform.isAndroid) {
+    // TODO: don't do such a stupid thing
+    print("ignoring a bad certificate");
+    return 0;
+  }
+  // TODO: ask the user
+  return 1;
 }
 
 const minusOne = -1;
-
 void _isolateEntryPoint(DownloadIsolateMessage message) async {
   // final abortReceiver = ReceivePort();
   // message.sender.send(abortReceiver.sendPort);
@@ -416,7 +429,7 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
   final badCertCallback = ffi.Pointer.fromFunction<ffi.Int Function(ffi.Pointer<git_cert>, ffi.Int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Void>)>(_badCertificateCallback, minusOne);
   ffi.Pointer<ffi.Bool> abort = ffi.Pointer.fromAddress(message.abortPtr);
   ffi.Pointer<ProgressCallbackPayload> payload = ffi.calloc();
-  message.sender.send(0.0);
+  message.sender.send(CloneProgress(ratio: 0));
   
   expectCode(App.git.git_clone_options_init(options, GIT_CLONE_OPTIONS_VERSION), "chyba při nastavování výchozího nastavení");
   // TODO: try to use less confusing identifier than nativePort
@@ -425,10 +438,9 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
   payload.ref.abortPtr = abort.address;
   options.ref.checkout_opts.progress_payload = payload.cast();
 	options.ref.checkout_opts.progress_cb = checkoutCallback;
-  options.ref.fetch_opts.callbacks.transfer_progress = fetchCallback;
   options.ref.fetch_opts.callbacks.payload = payload.cast();
-  options.ref.fetch_opts.proxy_opts.certificate_check = badCertCallback;
-  options.ref.fetch_opts.proxy_opts.url = "github.com".toNativeUtf8().cast();
+  options.ref.fetch_opts.callbacks.transfer_progress = fetchCallback;
+  options.ref.fetch_opts.callbacks.certificate_check = badCertCallback;
 
   expectCode(App.git.git_clone(
     repo,
@@ -437,7 +449,7 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
     options,
   ));
 
-  message.sender.send(1.0);
+  message.sender.send(CloneProgress(ratio: 1));
 }
 
 Future<DownloadHandle> spawnDownload(BuildContext context, String url, String path) async {
@@ -464,6 +476,12 @@ final class ProgressCallbackPayload extends ffi.Struct {
   
   @ffi.Int64()
   external int nativeSender;
+}
+
+final class CloneProgress {
+  CloneProgress({required this.ratio, this.bytes});
+  double ratio;
+  int? bytes;
 }
 
 class DownloadHandle {
