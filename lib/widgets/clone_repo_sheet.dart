@@ -104,8 +104,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                     return "Vyberte si, kam repozitář stáhnete";
                   }
                   final dir = Directory(value);
-                  if(!dir.existsSync()) {
-                    // TODO: can't i just create the fucking folder for the user?
+                  if(Platform.isAndroid && !dir.existsSync()) {
                     return "Taková složka neexistuje. Nezapoměli jste ji vytvořit?";
                   }
                   if(dir.listSync().isNotEmpty) {
@@ -221,6 +220,14 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                         if(Platform.isAndroid && !await Permission.manageExternalStorage.isGranted) {
                           if((await Permission.manageExternalStorage.request()).isGranted) {
                             error = "oprávnění zamítnuto";
+                          }
+                        }
+
+                        if(!Platform.isAndroid) {
+                          try {
+                            File(pathController.text).createSync(recursive: true);
+                          } on Exception catch(e) {
+                            error = "nelze vytvořit složku. Zkuste ji vytvořit sami: $e";
                           }
                         }
 
