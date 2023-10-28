@@ -8,7 +8,7 @@ class CreateRepoSheet extends StatefulWidget {
   : useSubdir = directory.listSync().isNotEmpty;
 
   final Directory directory;
-  bool useSubdir;
+  final bool useSubdir;
 
   @override
   State<CreateRepoSheet> createState() => _CreateRepoSheetState();
