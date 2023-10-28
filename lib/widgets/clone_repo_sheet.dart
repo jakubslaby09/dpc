@@ -235,18 +235,13 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                           case AuthOptions.github:
                             final token = await githubOauth();
                             final name = await githubUsername(token);
-                            print(Uri(
+                            url = Uri(
                               scheme: "https",
                               host: "github.com",
                               userInfo: "$name:$token",
                               path: repoNameController.text.endsWith(".git") ? repoNameController.text : "${repoNameController.text}.git",
-                            ).toString());
-                            url = Uri(
-                              scheme: "http",
-                              host: "github.com",
-                              userInfo: "$name:$token",
-                              path: repoNameController.text.endsWith(".git") ? repoNameController.text : "${repoNameController.text}.git",
                             ).toString();
+                            print(url);
                             break;
                         }
                         
