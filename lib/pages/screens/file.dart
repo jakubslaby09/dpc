@@ -37,7 +37,7 @@ class _FileScreenState extends State<FileScreen> {
                 child: ListTile(
                   leading: Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onBackground),
                   title: Text(App.pedigree!.name),
-                  subtitle: const Text("github.com/dolor-sit/amet", overflow: TextOverflow.ellipsis),
+                  subtitle: Text(App.pedigree!.dir, overflow: TextOverflow.ellipsis),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

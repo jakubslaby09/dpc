@@ -1,0 +1,6 @@
+- minor design changes
+- display the error log page on uncaught exceptions
+- when cloning, display MiB downloaded
+- fix keyboard covering bottom sheets
+- fix crashes in the add child sheet
+- fix the cloning procedure
