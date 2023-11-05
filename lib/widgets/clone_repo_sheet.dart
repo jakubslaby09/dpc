@@ -239,6 +239,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
     
                         error = null;
                         final String url;
+                        setState(() => progress = CloneProgress(ratio: 0));
                         switch (selectedAuthOption) {
                           case AuthOptions.manual:
                             url = urlController.text;
@@ -256,7 +257,6 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                             break;
                         }
                         
-                        setState(() => {});
                         startDownload(context, url);
                       },
                       style: FilledButton.styleFrom(
@@ -331,7 +331,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
       path: "/login/oauth/authorize",
       queryParameters: {
         "client_id": "d484387b4d7fa68eb87f",
-        "redirect_uri": "http://127.0.0.1:8080",
+        "redirect_uri": "http://localhost:8080",
         "scope": "repo",
       }
     );
