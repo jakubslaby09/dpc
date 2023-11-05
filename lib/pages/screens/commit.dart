@@ -16,19 +16,15 @@ class CommitScreen extends StatefulWidget implements FABScreen {
   @override
   Widget fab(_) => OrientationBuilder(
     builder: (context, orientation) => orientation == Orientation.portrait ? FloatingActionButton(
-        onPressed: () => commit(context),
+        onPressed: () => CommitSheet.show(context),
         tooltip: "Zveřejnit",
         child: const Icon(Icons.cloud_upload_outlined),
       ) : FloatingActionButton.extended(
-        onPressed: () => commit(context),
+        onPressed: () => CommitSheet.show(context),
         icon: const Icon(Icons.cloud_upload_outlined),
         label: const Text("Zveřejnit"),
       ),
   );
-
-  void commit(BuildContext context) {
-    showCommitSheet(context);
-  }
 }
 
 // TODO: make ChangeType more clear in the ui

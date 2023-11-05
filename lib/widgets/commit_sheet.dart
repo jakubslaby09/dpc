@@ -9,10 +9,24 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 
-class CommitSheet extends StatelessWidget {
-  CommitSheet({super.key});
+class CommitSheet extends StatefulWidget {
+  const CommitSheet({super.key});
 
+  static Future<CommitSheet?> show(BuildContext context) {
+    return showModalBottomSheet<CommitSheet>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => const CommitSheet(),
+    );
+  }
+
+  @override
+  State<CommitSheet> createState() => _CommitSheetState();
+}
+
+class _CommitSheetState extends State<CommitSheet> {
   late final commitMessageController = TextEditingController();
+
   late final commitDesctiptionController = TextEditingController();
 
   // TODO: commit message field validation
@@ -123,12 +137,4 @@ class CommitSheet extends StatelessWidget {
       showException(context, "Nepodařilo se zveřejnit Vaše změny", e, t);
     }
   }
-}
-
-Future<CommitSheet?> showCommitSheet(BuildContext context) {
-  return showModalBottomSheet<CommitSheet>(
-    context: context,
-    showDragHandle: true,
-    builder: (context) => CommitSheet(),
-  );
 }
