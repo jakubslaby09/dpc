@@ -244,6 +244,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                           case AuthOptions.manual:
                             url = urlController.text;
                             break;
+                          // TODO: set default signature
                           case AuthOptions.github:
                             final token = await githubOauth();
                             final name = await githubUsername(token);

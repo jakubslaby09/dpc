@@ -29,7 +29,11 @@ class CommitSheet extends StatefulWidget {
 class _CommitSheetState extends State<CommitSheet> {
   final commitMessageController = TextEditingController();
   final commitDesctiptionController = TextEditingController();
+  final authorNameController = TextEditingController();
+  final authorEmailController = TextEditingController();
   String? error;
+  // TODO: add an option to override it
+  bool customSignature = false;
 
   // TODO: commit message field validation
   String get wholeCommitMessage => "${commitMessageController.text}\n${commitDesctiptionController.text}";
@@ -37,65 +41,85 @@ class _CommitSheetState extends State<CommitSheet> {
   @override
   Widget build(BuildContext context) {
     return Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text("Zveřejnit změny", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: TextField(
-              controller: commitMessageController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Zpráva příspěvku',
-              ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text("Zveřejnit změny", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, left: 8.0, right: 8.0),
+          child: TextField(
+            controller: commitMessageController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Zpráva příspěvku',
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: commitDesctiptionController,
-              minLines: 2,
-              maxLines: 5,
-              keyboardType: TextInputType.multiline,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Popis příspěvku',
-              ),
+        ),
+        if(customSignature) Padding(
+          padding: const EdgeInsets.only(top: 8, left: 8.0, right: 8.0),
+          child: TextField(
+            controller: authorNameController,
+            decoration: const InputDecoration(
+              labelText: "Jméno příspěvku",
+              border: OutlineInputBorder(),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Text(
-              error ?? "",
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+        if(customSignature) Padding(
+          padding: const EdgeInsets.only(top: 8, left: 8.0, right: 8.0),
+          child: TextField(
+            controller: authorEmailController,
+            decoration: const InputDecoration(
+              labelText: "Email autora příspěvku",
+              border: OutlineInputBorder(),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.cancel_outlined),
-                    label: const Text("Zahodit"),
-                  ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: commitDesctiptionController,
+            minLines: 2,
+            maxLines: 5,
+            keyboardType: TextInputType.multiline,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Popis příspěvku',
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Text(
+            error ?? "",
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.cancel_outlined),
+                  label: const Text("Zahodit"),
                 ),
-                const VerticalDivider(),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () => onConfirm(context),
-                    icon: const Icon(Icons.send_outlined),
-                    label: const Text("Potvrdit"),
-                  ),
+              ),
+              const VerticalDivider(),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => onConfirm(context),
+                  icon: const Icon(Icons.send_outlined),
+                  label: const Text("Potvrdit"),
                 ),
-              ],
-            ),
-          )
-        ],
-      );
+              ),
+            ],
+          ),
+        )
+      ],
+    );
   }
   
   // TODO: Close upon success, reload App.unchangedPedigree and the commit page
@@ -118,29 +142,28 @@ class _CommitSheetState extends State<CommitSheet> {
       ffi.Pointer<git_oid> treeOid = ffi.calloc();
       ffi.Pointer<git_oid> commitOid = ffi.calloc();
       ffi.Pointer<ffi.Pointer<git_tree>> tree = ffi.calloc();
-      ffi.Pointer<ffi.Pointer<git_signature>> signature = ffi.calloc();
 
       expectCode(App.git.git_index_write_tree(treeOid, index.value));
       expectCode(App.git.git_index_write(index.value));
       expectCode(App.git.git_tree_lookup(tree, App.pedigree!.repo, treeOid));
       expectCode(App.git.git_reference_name_to_id(parentOid, App.pedigree!.repo, "HEAD".toNativeUtf8().cast()));
       expectCode(App.git.git_commit_lookup(parent, App.pedigree!.repo, parentOid));
-      expectCode(App.git.git_signature_default(signature, App.pedigree!.repo));
+      ffi.Pointer<git_signature> signature = getSignature(App.pedigree!.repo);
       expectCode(App.git.git_commit_create(
         commitOid,
         App.pedigree!.repo,
         "HEAD".toNativeUtf8().cast(),
-        signature.value,
+        signature,
         // ffi.nullptr,
-        signature.value,
+        signature,
         "UTF-8".toNativeUtf8().cast(),
         wholeCommitMessage.toNativeUtf8().cast(),
         tree.value,
         1,
         parent,
-      ));
+      ), "couldn't create commit");
 
-      App.git.git_signature_free(signature.value);
+      App.git.git_signature_free(signature);
       App.git.git_tree_free(tree.value);
       
       // TODO: display progress with int callback(int current, int total, int bytes, ffi.Pointer<ffi.Void> payload)
@@ -165,5 +188,25 @@ class _CommitSheetState extends State<CommitSheet> {
       setState(() => error = "Nepodařilo se zveřejnit Vaše změny: $e");
       rethrow;
     }
+  }
+
+  ffi.Pointer<git_signature> getSignature(ffi.Pointer<git_repository> repo) {
+    ffi.Pointer<ffi.Pointer<git_signature>> signature = ffi.calloc();
+
+    if(customSignature) {
+      expectCode(App.git.git_signature_now(
+        signature,
+        authorNameController.text.toNativeUtf8().cast(),
+        authorEmailController.text.toNativeUtf8().cast(),
+      ));
+      return signature.value;
+    }
+
+    int defaultResult = App.git.git_signature_default(signature, repo);
+    if(defaultResult == git_error_code.GIT_ENOTFOUND) {
+      setState(() => customSignature = true);
+    }
+    expectCode(defaultResult, "nelze získat výchozí podpis");
+    return signature.value;
   }
 }
