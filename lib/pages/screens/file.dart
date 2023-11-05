@@ -173,10 +173,10 @@ class _FileScreenState extends State<FileScreen> {
       }
       dynamic indexValues = json.decode(indexString);
       if(App.prefs.autoUpgradeFiles) {
-        App.pedigree = Pedigree.upgrade(indexValues, directory, repo);
+        App.pedigree = Pedigree.upgrade(indexValues, directory, repo.value);
         scheduleSave(context);
       } else {
-        App.pedigree = Pedigree.parse(indexValues, directory, repo);
+        App.pedigree = Pedigree.parse(indexValues, directory, repo.value);
       }
       try {
         Pointer<Pointer<git_index>> gitIndex = calloc();
@@ -186,19 +186,19 @@ class _FileScreenState extends State<FileScreen> {
         Pointer<Pointer<git_object>> object = calloc();
         Pointer<git_oid> objectOid = calloc();
         Pointer<Pointer<git_blob>> blob = calloc();
-        expectCode(App.git.git_repository_index(gitIndex, App.pedigree!.repo.value));
+        expectCode(App.git.git_repository_index(gitIndex, App.pedigree!.repo));
         expectCode(App.git.git_index_write_tree(treeOid, gitIndex.value));
-        expectCode(App.git.git_tree_lookup(tree, App.pedigree!.repo.value, treeOid));
+        expectCode(App.git.git_tree_lookup(tree, App.pedigree!.repo, treeOid));
         entry.value = App.git.git_tree_entry_byname(tree.value, "index.dpc".toNativeUtf8().cast());
-        expectCode(App.git.git_tree_entry_to_object(object, App.pedigree!.repo.value, entry.value));
+        expectCode(App.git.git_tree_entry_to_object(object, App.pedigree!.repo, entry.value));
         objectOid = App.git.git_object_id(object.value);
-        expectCode(App.git.git_blob_lookup(blob, App.pedigree!.repo.value, objectOid));
+        expectCode(App.git.git_blob_lookup(blob, App.pedigree!.repo, objectOid));
         Pointer<Void> blobBuffer = App.git.git_blob_rawcontent(blob.value);
 
         String text = (blobBuffer.cast<Pointer<Utf8>>() as Pointer<Utf8>).toDartString();
         dynamic values = json.decode(text);
         
-        App.unchangedPedigree = Pedigree.upgrade(values, directory, repo);
+        App.unchangedPedigree = Pedigree.upgrade(values, directory, repo.value);
       } on Exception catch (e, t) {
         showException(context, "Nelze porovnat rodokmen s verzí bez aktuálních změn.", e, t);
         App.unchangedPedigree = App.pedigree!.clone();
@@ -243,7 +243,7 @@ class _FileScreenState extends State<FileScreen> {
       Pointer<git_oid> commitId = calloc();
       expectCode(App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
 
-      final pedigree = Pedigree.empty(sheetResult.name, directory.path, repo);
+      final pedigree = Pedigree.empty(sheetResult.name, directory.path, repo.value);
       await pedigree.save(context, true);
 
       expectCode(App.git.git_signature_now(signature, sheetResult.gitName.toNativeUtf8().cast(), sheetResult.gitEmail.toNativeUtf8().cast()));

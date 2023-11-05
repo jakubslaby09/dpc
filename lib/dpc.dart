@@ -29,7 +29,7 @@ class Pedigree {
       });
   }
 
-  factory Pedigree.upgrade(Map<String, dynamic> json, dir, repo) {
+  factory Pedigree.upgrade(Map<String, dynamic> json, String dir, Pointer<git_repository> repo) {
     if(json['version'] is! int || json['version'] < minUpgradableVersion || json['version'] > maxVersion) {
       throw Exception("Unsupported or invalid pedigree version: ${json['version']}");
     }
@@ -70,7 +70,7 @@ class Pedigree {
   List<Chronicle> chronicle;
   String dir;
   // TODO: free when closing file
-  Pointer<Pointer<git_repository>> repo;
+  Pointer<git_repository> repo;
 
   static const maxVersion = 4;
   static const minUpgradableVersion = 3;

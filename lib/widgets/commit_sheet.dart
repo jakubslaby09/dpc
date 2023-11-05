@@ -106,7 +106,7 @@ class _CommitSheetState extends State<CommitSheet> {
       App.pedigree!.save(context);
 
       ffi.Pointer<ffi.Pointer<git_index>> index = ffi.calloc();
-      expectCode(App.git.git_repository_index(index, App.pedigree!.repo.value));
+      expectCode(App.git.git_repository_index(index, App.pedigree!.repo));
 
       // add
       expectCode(App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
@@ -122,13 +122,13 @@ class _CommitSheetState extends State<CommitSheet> {
 
       expectCode(App.git.git_index_write_tree(treeOid, index.value));
       expectCode(App.git.git_index_write(index.value));
-      expectCode(App.git.git_tree_lookup(tree, App.pedigree!.repo.value, treeOid));
-      expectCode(App.git.git_reference_name_to_id(parentOid, App.pedigree!.repo.value, "HEAD".toNativeUtf8().cast()));
-      expectCode(App.git.git_commit_lookup(parent, App.pedigree!.repo.value, parentOid));
-      expectCode(App.git.git_signature_default(signature, App.pedigree!.repo.value));
+      expectCode(App.git.git_tree_lookup(tree, App.pedigree!.repo, treeOid));
+      expectCode(App.git.git_reference_name_to_id(parentOid, App.pedigree!.repo, "HEAD".toNativeUtf8().cast()));
+      expectCode(App.git.git_commit_lookup(parent, App.pedigree!.repo, parentOid));
+      expectCode(App.git.git_signature_default(signature, App.pedigree!.repo));
       expectCode(App.git.git_commit_create(
         commitOid,
-        App.pedigree!.repo.value,
+        App.pedigree!.repo,
         "HEAD".toNativeUtf8().cast(),
         signature.value,
         // ffi.nullptr,
@@ -154,7 +154,7 @@ class _CommitSheetState extends State<CommitSheet> {
       refspecs.ref.strings = refspecsArray;
       refspecs.ref.count = 1;
 
-      expectCode(App.git.git_remote_lookup(remote, App.pedigree!.repo.value, "origin".toNativeUtf8().cast()));
+      expectCode(App.git.git_remote_lookup(remote, App.pedigree!.repo, "origin".toNativeUtf8().cast()));
       expectCode(App.git.git_push_options_init(defaultOptions, GIT_PUSH_OPTIONS_VERSION));
       expectCode(App.git.git_remote_push(remote.value, refspecs, defaultOptions));
       
@@ -162,8 +162,8 @@ class _CommitSheetState extends State<CommitSheet> {
     } on Exception catch(e, t) {
       // TODO: fix unmouned context
       // showException(context, "Nepodařilo se zveřejnit Vaše změny", e, t);
-
       setState(() => error = "Nepodařilo se zveřejnit Vaše změny: $e");
+      rethrow;
     }
   }
 }
