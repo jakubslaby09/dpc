@@ -202,12 +202,12 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                   Expanded(
                     child: TextButton.icon(
                       onPressed: () {
-                        if(!inProgress) {
+                        if(!inProgress || isolateHandle == null) {
                           Navigator.of(context).pop();
                           return;
                         }
                         
-                        isolateHandle?.abort();
+                        isolateHandle!.abort();
                       },
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(40),
@@ -314,7 +314,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
 
   Future<String> githubOauth() async {
     final codeCompleter = Completer<String>();
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080);
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080, shared: true);
     server.forEach((req) {
       req.response.headers.contentType = ContentType.html;
       req.response.write("<script>window.close()</script><h1>Nyní můžete toho okno zavřít</h1>");
