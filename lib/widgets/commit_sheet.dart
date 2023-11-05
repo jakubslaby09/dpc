@@ -27,9 +27,9 @@ class CommitSheet extends StatefulWidget {
 }
 
 class _CommitSheetState extends State<CommitSheet> {
-  late final commitMessageController = TextEditingController();
-
-  late final commitDesctiptionController = TextEditingController();
+  final commitMessageController = TextEditingController();
+  final commitDesctiptionController = TextEditingController();
+  String? error;
 
   // TODO: commit message field validation
   String get wholeCommitMessage => "${commitMessageController.text}\n${commitDesctiptionController.text}";
@@ -66,6 +66,13 @@ class _CommitSheetState extends State<CommitSheet> {
             ),
           ),
           Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Text(
+              error ?? "",
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
@@ -93,8 +100,9 @@ class _CommitSheetState extends State<CommitSheet> {
   
   // TODO: Close upon success, reload App.unchangedPedigree and the commit page
   void onConfirm(BuildContext context) {
-    assert(App.pedigree != null, "this should be checked in home.dart");
+    setState(() => error = null);
     try {
+      assert(App.pedigree != null, "this should be checked in home.dart");
       App.pedigree!.save(context);
 
       ffi.Pointer<ffi.Pointer<git_index>> index = ffi.calloc();
@@ -152,7 +160,10 @@ class _CommitSheetState extends State<CommitSheet> {
       
       // App.git.git_index_free(index.value);
     } on Exception catch(e, t) {
-      showException(context, "Nepodařilo se zveřejnit Vaše změny", e, t);
+      // TODO: fix unmouned context
+      // showException(context, "Nepodařilo se zveřejnit Vaše změny", e, t);
+
+      setState(() => error = "Nepodařilo se zveřejnit Vaše změny: $e");
     }
   }
 }
