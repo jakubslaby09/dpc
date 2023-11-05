@@ -9,13 +9,15 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 
+// TODO: save commit message draft
 class CommitSheet extends StatefulWidget {
   const CommitSheet({super.key});
 
   static Future<CommitSheet?> show(BuildContext context) {
     return showModalBottomSheet<CommitSheet>(
       context: context,
-      showDragHandle: true,
+      enableDrag: false,
+      isDismissible: false,
       builder: (context) => const CommitSheet(),
     );
   }
@@ -36,6 +38,10 @@ class _CommitSheetState extends State<CommitSheet> {
   Widget build(BuildContext context) {
     return Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text("Zveřejnit změny", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: TextField(
@@ -61,12 +67,24 @@ class _CommitSheetState extends State<CommitSheet> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: FilledButton(
-              onPressed: () => onConfirm(context),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(40),
-              ),
-              child: const Text("Potvrdit"),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.cancel_outlined),
+                    label: const Text("Zahodit"),
+                  ),
+                ),
+                const VerticalDivider(),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => onConfirm(context),
+                    icon: const Icon(Icons.send_outlined),
+                    label: const Text("Potvrdit"),
+                  ),
+                ),
+              ],
             ),
           )
         ],
