@@ -176,7 +176,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                       style: TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ),
-                  if(progress != null) Padding(
+                  if(progress?.bytes != null) Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: Text("${((progress!.bytes ?? 0) / 1048576).round()} MiB"),
                   ),
