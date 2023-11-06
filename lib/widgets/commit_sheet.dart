@@ -47,37 +47,40 @@ class _CommitSheetState extends State<CommitSheet> {
           child: Text("Zveřejnit změny", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 8, left: 8.0, right: 8.0),
+          padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
           child: TextField(
             controller: commitMessageController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
+              icon: Icon(Icons.message_outlined),
               labelText: 'Zpráva příspěvku',
             ),
           ),
         ),
         if(customSignature) Padding(
-          padding: const EdgeInsets.only(top: 8, left: 8.0, right: 8.0),
+          padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
           child: TextField(
             controller: authorNameController,
             decoration: const InputDecoration(
-              labelText: "Jméno příspěvku",
+              labelText: "Jméno autora příspěvku",
+              icon: Icon(Icons.contact_mail_outlined),
               border: OutlineInputBorder(),
             ),
           ),
         ),
         if(customSignature) Padding(
-          padding: const EdgeInsets.only(top: 8, left: 8.0, right: 8.0),
+          padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
           child: TextField(
             controller: authorEmailController,
             decoration: const InputDecoration(
               labelText: "Email autora příspěvku",
+              icon: Icon(Icons.email_outlined),
               border: OutlineInputBorder(),
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: TextField(
             controller: commitDesctiptionController,
             minLines: 2,
@@ -85,12 +88,13 @@ class _CommitSheetState extends State<CommitSheet> {
             keyboardType: TextInputType.multiline,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
+              icon: Icon(Icons.more_horiz),
               labelText: 'Popis příspěvku',
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             error ?? "",
             style: TextStyle(color: Theme.of(context).colorScheme.error),
