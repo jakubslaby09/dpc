@@ -18,7 +18,11 @@ class CommitSheet extends StatefulWidget {
       context: context,
       enableDrag: false,
       isDismissible: false,
-      builder: (context) => const CommitSheet(),
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: const CommitSheet(),
+      ),
     );
   }
 
@@ -40,89 +44,91 @@ class _CommitSheetState extends State<CommitSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text("Zveřejnit změny", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
-          child: TextField(
-            controller: commitMessageController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              icon: Icon(Icons.message_outlined),
-              labelText: 'Zpráva příspěvku',
-            ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text("Zveřejnit změny", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
           ),
-        ),
-        if(customSignature) Padding(
-          padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
-          child: TextField(
-            controller: authorNameController,
-            decoration: const InputDecoration(
-              labelText: "Jméno autora příspěvku",
-              icon: Icon(Icons.contact_mail_outlined),
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        if(customSignature) Padding(
-          padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
-          child: TextField(
-            controller: authorEmailController,
-            decoration: const InputDecoration(
-              labelText: "Email autora příspěvku",
-              icon: Icon(Icons.email_outlined),
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          child: TextField(
-            controller: commitDesctiptionController,
-            minLines: 2,
-            maxLines: 5,
-            keyboardType: TextInputType.multiline,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              icon: Icon(Icons.more_horiz),
-              labelText: 'Popis příspěvku',
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            error ?? "",
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.cancel_outlined),
-                  label: const Text("Zahodit"),
-                ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+            child: TextField(
+              controller: commitMessageController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                icon: Icon(Icons.message_outlined),
+                labelText: 'Zpráva příspěvku',
               ),
-              const VerticalDivider(),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () => onConfirm(context),
-                  icon: const Icon(Icons.send_outlined),
-                  label: const Text("Potvrdit"),
-                ),
-              ),
-            ],
+            ),
           ),
-        )
-      ],
+          if(customSignature) Padding(
+            padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+            child: TextField(
+              controller: authorNameController,
+              decoration: const InputDecoration(
+                labelText: "Jméno autora příspěvku",
+                icon: Icon(Icons.contact_mail_outlined),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          if(customSignature) Padding(
+            padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+            child: TextField(
+              controller: authorEmailController,
+              decoration: const InputDecoration(
+                labelText: "Email autora příspěvku",
+                icon: Icon(Icons.email_outlined),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: TextField(
+              controller: commitDesctiptionController,
+              minLines: 2,
+              maxLines: 5,
+              keyboardType: TextInputType.multiline,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                icon: Icon(Icons.more_horiz),
+                labelText: 'Popis příspěvku',
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              error ?? "",
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.cancel_outlined),
+                    label: const Text("Zahodit"),
+                  ),
+                ),
+                const VerticalDivider(),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => onConfirm(context),
+                    icon: const Icon(Icons.send_outlined),
+                    label: const Text("Potvrdit"),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
   
