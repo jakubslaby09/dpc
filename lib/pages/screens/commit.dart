@@ -4,11 +4,12 @@ import 'package:dpc/autosave.dart';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/home.dart';
+import 'package:dpc/pages/log.dart';
 import 'package:dpc/widgets/commit_sheet.dart';
 import 'package:flutter/material.dart';
 
-class CommitScreen extends StatefulWidget implements FABScreen {
-  const CommitScreen({super.key});
+class CommitScreen extends UniqueWidget implements FABScreen {
+  const CommitScreen({required super.key});
 
   @override
   State<CommitScreen> createState() => _CommitScreenState();
@@ -16,11 +17,11 @@ class CommitScreen extends StatefulWidget implements FABScreen {
   @override
   Widget fab(_) => OrientationBuilder(
     builder: (context, orientation) => orientation == Orientation.portrait ? FloatingActionButton(
-        onPressed: () => CommitSheet.show(context),
+        onPressed: () => (currentState as _CommitScreenState?)?.commit(context),
         tooltip: "Zveřejnit",
         child: const Icon(Icons.cloud_upload_outlined),
       ) : FloatingActionButton.extended(
-        onPressed: () => CommitSheet.show(context),
+        onPressed: () => (currentState as _CommitScreenState?)?.commit(context),
         icon: const Icon(Icons.cloud_upload_outlined),
         label: const Text("Zveřejnit"),
       ),
@@ -231,6 +232,15 @@ class _CommitScreenState extends State<CommitScreen> {
         ),
       ],
     );
+  }
+
+  void commit(BuildContext context) async {
+    final error = await CommitSheet.show(context);
+    if(error != null && context.mounted) {
+      showException(context, error.message, error.exception, error.trace);
+    }
+    // TODO: Reload App.unchangedPedigree
+    setState(() { });
   }
 }
 

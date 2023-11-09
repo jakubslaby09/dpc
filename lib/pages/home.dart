@@ -34,9 +34,9 @@ class _HomePageState extends State<HomePage> {
       // activeIcon: Icons.library_books,
       needsPedigree: true,
     ),
-    const Destination(
+    Destination(
       label: "Změny",
-      screen: CommitScreen(),
+      screen: CommitScreen(key: GlobalKey()),
       icon: Icons.commit,
       needsPedigree: true,
     ),

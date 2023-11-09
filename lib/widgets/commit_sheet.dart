@@ -2,20 +2,17 @@ import 'dart:ffi' as ffi;
 import 'dart:io';
 
 import 'package:dpc/main.dart';
-import 'package:dpc/pages/log.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 
 // TODO: save commit message draft
 class CommitSheet extends StatefulWidget {
   const CommitSheet({super.key});
 
-  static Future<CommitSheet?> show(BuildContext context) {
-    return showModalBottomSheet<CommitSheet>(
+  static Future<CommitSheetError?> show(BuildContext context) {
+    return showModalBottomSheet<CommitSheetError>(
       context: context,
       enableDrag: false,
       isDismissible: false,
@@ -38,6 +35,7 @@ class _CommitSheetState extends State<CommitSheet> {
   final formKey = GlobalKey<FormState>();
   String? error;
   bool saveSignature = true;
+  bool inProgress = false;
   // TODO: add an option to override it
   late ffi.Pointer<git_signature>? defaultSignature = readDefaultSignature(App.pedigree!.repo);
   late final authorNameController = TextEditingController(text: defaultSignature?.ref.name.toDartString());
@@ -108,6 +106,7 @@ class _CommitSheetState extends State<CommitSheet> {
                         signatureTileController.expand();
                         return "Zvolte si jméno autora";
                       }
+                      return null;
                     },
                   ),
                 ),
@@ -126,6 +125,7 @@ class _CommitSheetState extends State<CommitSheet> {
                         signatureTileController.expand();
                         return "Zadejte prosím email autora";
                       }
+                      return null;
                     },
                   ),
                 ),
@@ -163,15 +163,14 @@ class _CommitSheetState extends State<CommitSheet> {
                   const VerticalDivider(),
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () {
+                      onPressed: inProgress ? null : () {
                         if(!formKey.currentState!.validate()) {
                           return;
                         }
-
                         commit(context, customSignature());
                       },
                       icon: const Icon(Icons.send_outlined),
-                      label: const Text("Potvrdit"),
+                      label: const Text("Odeslat"),
                     ),
                   ),
                 ],
@@ -183,11 +182,13 @@ class _CommitSheetState extends State<CommitSheet> {
     );
   }
   
-  // TODO: Close upon success, reload App.unchangedPedigree and the commit page
   // TODO: free memory
   void commit(BuildContext context, ffi.Pointer<git_signature> signature) {
-    print(signature.ref.email.toDartString());
-    setState(() => error = null);
+    setState(() {
+      inProgress = true;
+      error = null;
+    });
+    print(inProgress);
     try {
       assert(App.pedigree != null, "this should be checked in home.dart");
       App.pedigree!.save(context);
@@ -246,33 +247,36 @@ class _CommitSheetState extends State<CommitSheet> {
       );
       expectCode(App.git.git_push_options_init(pushOptions, GIT_PUSH_OPTIONS_VERSION));
       pushOptions.ref.callbacks.certificate_check = badCertCallback;
-      print("git_remote_push");
-      print(remote);
-      print(refspecs);
-      print(pushOptions);
       expectCode(App.git.git_remote_push(remote.value, refspecs, pushOptions));
       
-      try {
-        expectCode(App.git.git_repository_config(config, App.pedigree!.repo), "nelze číst z configu repozitáře");
-        expectCode(
-          App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), signature.ref.name),
-          "nelze uložit jméno v configu repozitáře",
-        );
-        expectCode(
-          App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), signature.ref.email),
-          "nelze uložit email v configu repozitáře",
-        );
-      } on Exception catch (e) {
-        // TODO: close so the user doesn't commit again and call showException
+      if(saveSignature) {
+        try {
+          expectCode(App.git.git_repository_config(config, App.pedigree!.repo), "nelze číst z configu repozitáře");
+          expectCode(
+            App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), signature.ref.name),
+            "nelze uložit jméno v configu repozitáře",
+          );
+          expectCode(
+            App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), signature.ref.email),
+            "nelze uložit email v configu repozitáře",
+          );
+        } on Exception catch (e, t) {
+          Navigator.of(context).pop(CommitSheetError("Nelze uložit podpis autora", e, t));
+        }
       }
+
     } on Exception catch(e) {
-      // TODO: fix unmouned context
-      // showException(context, "Nepodařilo se zveřejnit Vaše změny", e, t);
-      setState(() => error = "Nepodařilo se zveřejnit Vaše změny: $e");
+      setState(() {
+        inProgress = false;
+        error = "Nepodařilo se zveřejnit Vaše změny: $e";
+      });
       rethrow;
     }
-    
+    setState(() => inProgress = false);
+
     App.git.git_signature_free(signature);
+
+    Navigator.of(context).pop(null);
   }
 
   ffi.Pointer<git_signature>? readDefaultSignature(ffi.Pointer<git_repository> repo) {
@@ -280,7 +284,6 @@ class _CommitSheetState extends State<CommitSheet> {
     
     // TODO: display errors other than ENOTFOUND
     final int result = App.git.git_signature_default(signature, repo);
-    print(result);
     
     return result == 0 ? signature.value : null;
   }
@@ -295,6 +298,14 @@ class _CommitSheetState extends State<CommitSheet> {
     ));
     return signature.value;
   }
+}
+
+class CommitSheetError {
+  final String message;
+  final Exception exception;
+  final StackTrace trace;
+
+  const CommitSheetError(this.message, this.exception, this.trace);
 }
 
 const minusOne = -1;
