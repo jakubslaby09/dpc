@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/log.dart';
 import 'package:dpc/pages/preferences.dart';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:path/path.dart';
@@ -129,5 +130,11 @@ extension IterableExtension<E> on Iterable<E> {
   
   Iterable<T> indexedFilteredMap<T>(T? Function(E element, int index) toElement) {
     return indexed.map<T?>((e) => toElement(e.$2, e.$1)).where((e) => e != null).cast();
+  }
+}
+
+extension NativeCharPointerExtension on Pointer<Char> {
+  String toDartString() {
+    return (cast() as Pointer<Utf8>).toDartString();
   }
 }
