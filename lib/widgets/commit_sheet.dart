@@ -225,7 +225,6 @@ class _CommitSheetState extends State<CommitSheet> {
         parent,
       ), "couldn't create commit");
 
-      App.git.git_signature_free(signature);
       App.git.git_tree_free(tree.value);
       
       // TODO: display progress with int callback(int current, int total, int bytes, ffi.Pointer<ffi.Void> payload)
@@ -272,6 +271,8 @@ class _CommitSheetState extends State<CommitSheet> {
       setState(() => error = "Nepodařilo se zveřejnit Vaše změny: $e");
       rethrow;
     }
+    
+    App.git.git_signature_free(signature);
   }
 
   ffi.Pointer<git_signature>? readDefaultSignature(ffi.Pointer<git_repository> repo) {
