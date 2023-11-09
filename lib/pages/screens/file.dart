@@ -221,6 +221,7 @@ class _FileScreenState extends State<FileScreen> {
     App.prefs.recentFiles = recents;
   }
   
+  // TODO: move into sheet file
   createRepo(BuildContext context) async {
     final pickerResult = await FilePicker.platform.getDirectoryPath(
       dialogTitle: "Vybrat složku pro nový repozitář",
@@ -241,12 +242,15 @@ class _FileScreenState extends State<FileScreen> {
       Pointer<git_oid> treeId = calloc();
       Pointer<Pointer<git_tree>> tree = calloc();
       Pointer<git_oid> commitId = calloc();
+      Pointer<Pointer<git_config>> config = calloc();
       expectCode(App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
 
       final pedigree = Pedigree.empty(sheetResult.name, directory.path, repo.value);
       await pedigree.save(context, true);
 
-      expectCode(App.git.git_signature_now(signature, sheetResult.gitName.toNativeUtf8().cast(), sheetResult.gitEmail.toNativeUtf8().cast()));
+      final Pointer<Char> name = sheetResult.gitName.toNativeUtf8().cast();
+      final Pointer<Char> email = sheetResult.gitEmail.toNativeUtf8().cast();
+      expectCode(App.git.git_signature_now(signature, name, email));
       expectCode(App.git.git_repository_index(index, repo.value));
       expectCode(App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
       expectCode(App.git.git_index_write(index.value));
@@ -264,6 +268,20 @@ class _FileScreenState extends State<FileScreen> {
         0,
         nullptr,
       ));
+      
+      try {
+        expectCode(App.git.git_repository_config(config, repo.value), "nelze číst z configu repozitáře");
+        expectCode(
+          App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), name),
+          "nelze nastavit jméno v configu repozitáře",
+        );
+        expectCode(
+          App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), email),
+          "nelze nastavit email v configu repozitáře",
+        );
+      } on Exception catch (e, t) {
+        showException(context, "Nelze pro nový repozitář nastavit Váš podpis", e, t);
+      }
     } on Exception catch (e, t) {
       showException(context, "Nelze pro nový rodokmen založit Git repozitář", e, t);
     }
