@@ -82,9 +82,11 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                 // leading: Icon(chronicle.mime.icon, color: Theme.of(context).colorScheme.outline),
                 title: Row(
                   children: [
-                    Text(fileName),
-                    if(chronicle.mime.openable) const Icon(Icons.navigate_next),
-                    const Spacer(),
+                    Expanded(child: Text(fileName)),
+                    if(chronicle.mime.openable) const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(Icons.navigate_next),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () => setState(() {
