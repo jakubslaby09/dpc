@@ -24,6 +24,7 @@ class CreateRepoSheet extends StatefulWidget {
   }
 }
 
+// TODO: add a field for setting a remote, push the repo there
 class _CreateRepoSheetState extends State<CreateRepoSheet> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dirController = TextEditingController();
