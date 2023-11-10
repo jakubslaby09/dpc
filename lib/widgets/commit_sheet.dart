@@ -251,15 +251,7 @@ class _CommitSheetState extends State<CommitSheet> {
       
       if(saveSignature) {
         try {
-          expectCode(App.git.git_repository_config(config, App.pedigree!.repo), "nelze číst z configu repozitáře");
-          expectCode(
-            App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), signature.ref.name),
-            "nelze uložit jméno v configu repozitáře",
-          );
-          expectCode(
-            App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), signature.ref.email),
-            "nelze uložit email v configu repozitáře",
-          );
+          saveDefaultSignature(App.pedigree!.repo, signature.ref.name, signature.ref.email);
         } on Exception catch (e, t) {
           Navigator.of(context).pop(CommitSheetError("Nelze uložit podpis autora", e, t));
         }

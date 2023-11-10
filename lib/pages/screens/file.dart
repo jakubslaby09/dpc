@@ -270,15 +270,7 @@ class _FileScreenState extends State<FileScreen> {
       ));
       
       try {
-        expectCode(App.git.git_repository_config(config, repo.value), "nelze číst z configu repozitáře");
-        expectCode(
-          App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), name),
-          "nelze nastavit jméno v configu repozitáře",
-        );
-        expectCode(
-          App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), email),
-          "nelze nastavit email v configu repozitáře",
-        );
+        saveDefaultSignature(repo.value, name, email);
       } on Exception catch (e, t) {
         showException(context, "Nelze pro nový repozitář nastavit Váš podpis", e, t);
       }
@@ -288,6 +280,20 @@ class _FileScreenState extends State<FileScreen> {
 
     await openRepo(context, directory.path);
   }
+}
+
+void saveDefaultSignature(Pointer<git_repository> repo, Pointer<Char> name, Pointer<Char> email) {
+  Pointer<Pointer<git_config>> config = calloc();
+  expectCode(App.git.git_repository_config(config, repo), "nelze číst z configu repozitáře");
+  expectCode(
+    App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), name),
+    "nelze uložit jméno v configu repozitáře",
+  );
+  expectCode(
+    App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), email),
+    "nelze uložit email v configu repozitáře",
+  );
+  App.git.git_config_free(config.value);
 }
 
 void expectCode(int code, [String? message]) {
