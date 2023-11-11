@@ -5,6 +5,7 @@ import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/log.dart';
+import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/widgets/commit_sheet.dart';
 import 'package:flutter/material.dart';
 
@@ -239,7 +240,12 @@ class _CommitScreenState extends State<CommitScreen> {
     if(error != null && context.mounted) {
       showException(context, error.message, error.exception, error.trace);
     }
-    // TODO: Reload App.unchangedPedigree
+    try {
+      readUnchanged(context, App.pedigree!.dir, App.pedigree!.repo);
+    } on Exception catch (e, t) {
+      showException(context, "Nelze porovnat rodokmen s právě zveřejněnou verzí.", e, t);
+      App.unchangedPedigree = App.pedigree!.clone();
+    }
     setState(() { });
   }
 }
