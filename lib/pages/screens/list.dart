@@ -4,6 +4,7 @@ import 'package:dpc/main.dart';
 import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/person.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ListScreen extends UniqueWidget implements FABScreen {
   const ListScreen({required super.key});
@@ -88,7 +89,7 @@ class _ListScreenState extends State<ListScreen> {
     sortedPeople?.sort((a, b) {
       switch (columnIndex) {
         case 1:
-          return (a.birth != null ? direction * (b.birth != null ? (a.birth!).compareTo(b.birth!) : -1) : 1);
+          return direction * compareDates(a.birth, b.birth);
         case 0:
         default:
           return direction * a.name.compareTo(b.name);
@@ -99,7 +100,20 @@ class _ListScreenState extends State<ListScreen> {
     sortAscending = ascending;
   }
 
+
   Iterable<Person>? filterPeople() {
     return sortedPeople?.where((person) => person.name.toLowerCase().contains(filter.toLowerCase()));
   }
+}
+int compareDates(String? a, String? b) {
+  if(a == null) return 1;
+  if(b == null) return -1;
+  final dateFormat = DateFormat("d.M.y");
+  final yearFormat = DateFormat("y");
+  DateTime? parsedA = DateTime.tryParse(a) ?? dateFormat.tryParseLoose(a) ?? yearFormat.tryParseLoose(a);
+  DateTime? parsedB = DateTime.tryParse(b) ?? dateFormat.tryParseLoose(b) ?? yearFormat.tryParseLoose(b);
+  if(parsedA == null || parsedB == null) {
+    return (a).compareTo(b);
+  }
+  return parsedA.compareTo(parsedB);
 }

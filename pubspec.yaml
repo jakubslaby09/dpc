@@ -43,6 +43,7 @@ dependencies:
   url_launcher: ^6.1.14
   permission_handler: ^11.0.0
   http: ^1.1.0
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:

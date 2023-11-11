@@ -7,7 +7,7 @@ import 'package:dpc/pages/preferences.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
-import 'package:path/path.dart';
+import 'package:intl/intl.dart';
 
 import 'pages/home.dart';
 
@@ -136,5 +136,15 @@ extension IterableExtension<E> on Iterable<E> {
 extension NativeCharPointerExtension on Pointer<Char> {
   String toDartString() {
     return (cast() as Pointer<Utf8>).toDartString();
+  }
+}
+
+extension DateFormatExtension on DateFormat {
+  DateTime? tryParseLoose(String input) {
+    try {
+      return parseLoose(input);
+    } on FormatException catch (_) {
+      return null;
+    }
   }
 }
