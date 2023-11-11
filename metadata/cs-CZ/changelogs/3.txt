@@ -1,0 +1,5 @@
+- vylepšeno třídění pomocí datumu
+- při použití Github OAuth bude získán Git podpis
+- přidána možnost změnit Git podpis při každém zveřejnění změn
+- stránka pro zveřejňování změn je teď hezčí
+- několik drobných oprav

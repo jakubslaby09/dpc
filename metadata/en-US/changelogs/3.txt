@@ -1,0 +1,5 @@
+- parse dates when sorting people where possible
+- get Git signature when using Github OAuth
+- add an option to change Git signature when comitting changes
+- make the commit sheet prettier
+- minor fixes
