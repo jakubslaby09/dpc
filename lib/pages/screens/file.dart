@@ -242,7 +242,6 @@ class _FileScreenState extends State<FileScreen> {
       Pointer<git_oid> treeId = calloc();
       Pointer<Pointer<git_tree>> tree = calloc();
       Pointer<git_oid> commitId = calloc();
-      Pointer<Pointer<git_config>> config = calloc();
       expectCode(App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
 
       final pedigree = Pedigree.empty(sheetResult.name, directory.path, repo.value);
@@ -282,17 +281,19 @@ class _FileScreenState extends State<FileScreen> {
   }
 }
 
-void saveDefaultSignature(Pointer<git_repository> repo, Pointer<Char> name, Pointer<Char> email) {
+void saveDefaultSignature(Pointer<git_repository> repo, Pointer<Char> name, Pointer<Char>? email) {
   Pointer<Pointer<git_config>> config = calloc();
   expectCode(App.git.git_repository_config(config, repo), "nelze číst z configu repozitáře");
   expectCode(
     App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), name),
     "nelze uložit jméno v configu repozitáře",
   );
-  expectCode(
-    App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), email),
-    "nelze uložit email v configu repozitáře",
-  );
+  if(email != null) {
+    expectCode(
+      App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), email),
+      "nelze uložit email v configu repozitáře",
+    );
+  }
   App.git.git_config_free(config.value);
 }
 
