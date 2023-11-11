@@ -184,6 +184,7 @@ class _CommitSheetState extends State<CommitSheet> {
   
   // TODO: free memory
   void commit(BuildContext context, ffi.Pointer<git_signature> signature) {
+    App.pedigree!.save(context);
     setState(() {
       inProgress = true;
       error = null;
@@ -238,7 +239,6 @@ class _CommitSheetState extends State<CommitSheet> {
       refspecsArray[0] = "refs/heads/main".toNativeUtf8().cast();
       refspecs.ref.strings = refspecsArray;
       refspecs.ref.count = 1;
-      ffi.Pointer<ffi.Pointer<git_config>> config = ffi.calloc();
       final badCertCallback = ffi.Pointer.fromFunction<ffi.Int Function(ffi.Pointer<git_cert>, ffi.Int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Void>)>(_badCertificateCallback, minusOne);
 
       expectCode(
