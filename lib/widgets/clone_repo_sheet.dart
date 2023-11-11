@@ -238,27 +238,30 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                         if(!formKey.currentState!.validate()) return;
     
                         error = null;
-                        final String url;
+                        final Uri url;
+                        final String name;
+                        String? email;
                         setState(() => progress = CloneProgress(ratio: 0));
                         switch (selectedAuthOption) {
                           case AuthOptions.manual:
-                            url = urlController.text;
+                            url = Uri.parse(urlController.text);
+                            name = url.userInfo.split(":")[0];
                             break;
-                          // TODO: set default signature
                           case AuthOptions.github:
                             final token = await githubOauth();
-                            final name = await githubUsername(token);
+                            name = await githubUsername(token);
+                            email = await githubEmail(token);
                             url = Uri(
                               scheme: "https",
                               host: "github.com",
                               userInfo: "$name:$token",
                               path: repoNameController.text.endsWith(".git") ? repoNameController.text : "${repoNameController.text}.git",
-                            ).toString();
+                            );
                             print(url);
                             break;
                         }
                         
-                        startDownload(context, url);
+                        startDownload(context, url.toString(), name, email);
                       },
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(40),
@@ -276,8 +279,8 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
     );
   }
 
-  void startDownload(BuildContext context, String url) async {
-    final handle = await spawnDownload(context, url, pathController.text);
+  void startDownload(BuildContext context, String url, String name, String? email) async {
+    final handle = await spawnDownload(context, url, pathController.text, name, email);
 
     isolateHandle = handle;
 
@@ -333,7 +336,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
       queryParameters: {
         "client_id": "d484387b4d7fa68eb87f",
         "redirect_uri": "http://localhost:8080",
-        "scope": "repo",
+        "scope": "repo,user:email",
       }
     );
     await launchUrl(authorizationUri);
@@ -374,15 +377,47 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
     );
     return resValues["login"];
   }
+
+  Future<String?> githubEmail(String token) async {
+    final res = await http.get(Uri(
+      scheme: "https",
+      host: "api.github.com",
+      path: "user/emails",
+    ), headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token",
+      "X-GitHub-Api-Version": "2022-11-28",
+    });
+    final _resValues = jsonDecode(res.body);
+    assert(
+      _resValues is List<dynamic>,
+      "error when requesting token: ${(_resValues is Map ? _resValues["message"] : null) ?? _resValues.toString()}"
+    );
+    final resValues = _resValues as List<dynamic>;
+    final email = resValues.firstWhere(
+      (email) => email is Map && (email["primary"] as bool? ?? false),
+      orElse: () => resValues.elementAtOrNull(0)
+    );
+    return email?["email"];
+  }
 }
 
 class DownloadIsolateMessage {
-  const DownloadIsolateMessage(this.sender, this.url, this.path, this.abortPtr);
+  const DownloadIsolateMessage({
+    required this.sender,
+    required this.url,
+    required this.path,
+    required this.abortPtr,
+    required this.name,
+    this.email,
+  });
 
   final SendPort sender;
   final String url;
   final String path;
   final int abortPtr;
+  final String name;
+  final String? email;
 }
 
 // im sorry for sharing memory between isolates, i just wasn't able to use a simple receive port.
@@ -448,19 +483,30 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
     message.url.toNativeUtf8().cast(),
     message.path.toNativeUtf8().cast(),
     options,
-  ));
+  ), "nelze stáhnout repozitář");
+
+  saveDefaultSignature(
+    repo.value, message.name.toNativeUtf8().cast(), message.email?.toNativeUtf8().cast(),
+  );
 
   message.sender.send(CloneProgress(ratio: 1));
 }
 
-Future<DownloadHandle> spawnDownload(BuildContext context, String url, String path) async {
+Future<DownloadHandle> spawnDownload(BuildContext context, String url, String path, String name, String? email) async {
   final progressReceiver = ReceivePort();
   final errorReceiver = ReceivePort();
   // TODO: free pointer
   final ffi.Pointer<ffi.Bool> abortPtr = ffi.calloc();
   await Isolate.spawn<DownloadIsolateMessage>(
     _isolateEntryPoint,
-    DownloadIsolateMessage(progressReceiver.sendPort, url, path, abortPtr.address),
+    DownloadIsolateMessage(
+      sender: progressReceiver.sendPort,
+      url: url,
+      path: path,
+      abortPtr: abortPtr.address,
+      name: name,
+      email: email,
+    ),
     onError: errorReceiver.sendPort,
   );
 
