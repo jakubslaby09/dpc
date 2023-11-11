@@ -1,6 +1,6 @@
 - drobné změny vzhledu
 - zobrazovat stránku pro nahlašování chyb při neošetřených vyjímkách
-- přidat ukazatel stažených MiB při klonování
+- přidat ukazatele stažených MiB při klonování
 - opravit zakrytí některých stránek klávesnicí
 - opravit pády aplikace při přidávání dítěte
 - opravit chybu při klonování repozitáře
