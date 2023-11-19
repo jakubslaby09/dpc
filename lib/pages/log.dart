@@ -9,10 +9,16 @@ class LogPage extends StatelessWidget {
 
   // TODO: add device info
   // TODO: encode markdown symbols
-  Uri get reportUrl => Uri.https("github.com", "/jakubslaby09/dpc/issues/new", {
-    if(title != null) "title": title,
-    "body": "```$title```\n```$log```",
-  });
+  Uri get reportUrl {
+    String? shortenedLog;
+    if(log.length > 6000) {
+      shortenedLog = log.replaceRange(6000, log.length, "...");
+    }
+    return Uri.https("github.com", "/jakubslaby09/dpc/issues/new", {
+      if(title != null) "title": title,
+      "body": "```$title```\n```${shortenedLog ?? log}\n```",
+    });
+  }
   final String? title;
   final String log;
   final bool openedUnexpectedly;
