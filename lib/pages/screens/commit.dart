@@ -1,4 +1,8 @@
+import 'dart:ffi';
+import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:dpc/autosave.dart';
 import 'package:dpc/dpc.dart';
@@ -7,7 +11,9 @@ import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/log.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/widgets/commit_sheet.dart';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
+import 'package:git2dart_binaries/git2dart_binaries.dart';
 
 class CommitScreen extends UniqueWidget implements FABScreen {
   const CommitScreen({required super.key});
@@ -259,11 +265,14 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
     final Pointer<git_status_options> options = calloc();
     expectCode(
       App.git.git_status_options_init(options, GIT_STATUS_OPTIONS_VERSION),
+      "chyba při nastavování zjišťování stavu ostatních souborů"
     );
     options.ref.flags |= git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNTRACKED;
     expectCode(
       App.git.git_status_list_new(statuslist, Pointer.fromAddress(repoPtr), options),
+      "nelze získat stav ostatních souborů",
     );
+    calloc.free(options);
     
     final List<(File, ChangeType)> files = [];
     // TODO: add a limit to prefs
@@ -277,6 +286,9 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
         files.add(status);
       }
     }
+
+    App.git.git_status_list_free(statuslist.value);
+    calloc.free(statuslist);
     return files;
   });
 }
