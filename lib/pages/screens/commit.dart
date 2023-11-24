@@ -250,6 +250,63 @@ class _CommitScreenState extends State<CommitScreen> {
   }
 }
 
+Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) async {
+  // TODO: don't share the repo pointer
+  // TODO: free memory
+  final repoPtr = repo.address;
+  return await Isolate.run(() {
+    final Pointer<Pointer<git_status_list>> statuslist = calloc();
+    final Pointer<git_status_options> options = calloc();
+    expectCode(
+      App.git.git_status_options_init(options, GIT_STATUS_OPTIONS_VERSION),
+    );
+    options.ref.flags |= git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNTRACKED;
+    expectCode(
+      App.git.git_status_list_new(statuslist, Pointer.fromAddress(repoPtr), options),
+    );
+    
+    final List<(File, ChangeType)> files = [];
+    // TODO: add a limit to prefs
+    for (var i = 0;; i++) {
+      final entry = App.git.git_status_byindex(statuslist.value, i);
+      if(entry.address == nullptr.address) {
+        break;
+      }
+      final status = fileStatus(entry);
+      if(status != null) {
+        files.add(status);
+      }
+    }
+    return files;
+  });
+}
+
+(File, ChangeType)? fileStatus(Pointer<git_status_entry> entry) {
+  final file = File(entry.ref.index_to_workdir.ref.new_file.path.toDartString());
+  final ChangeType changeType;
+  switch (entry.ref.status) {
+    case git_status_t.GIT_STATUS_INDEX_NEW:
+    case git_status_t.GIT_STATUS_WT_NEW:
+      changeType = ChangeType.addition;
+      break;
+    case git_status_t.GIT_STATUS_INDEX_DELETED:
+    case git_status_t.GIT_STATUS_WT_DELETED:
+      changeType = ChangeType.removal;
+      break;
+    case git_status_t.GIT_STATUS_INDEX_MODIFIED:
+    case git_status_t.GIT_STATUS_WT_MODIFIED:
+      // TODO: check filename instead
+      if(file.path == "index.dpc") {
+        return null;
+      }
+      changeType = ChangeType.modification;
+      break;
+    default:
+      return null;
+  }
+  return (file, changeType);
+}
+
 enum ChangeType {
   addition,
   removal,
