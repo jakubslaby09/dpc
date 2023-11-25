@@ -2,7 +2,6 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:dpc/autosave.dart';
 import 'package:dpc/dpc.dart';
@@ -39,7 +38,10 @@ class CommitScreen extends UniqueWidget implements FABScreen {
 // TODO: add a 'no changes' text
 // TODO: add ui for unassigned files
 // TODO: make people listTiles navigate to their pages on tap
+// TODO: display dividers only when needed
 class _CommitScreenState extends State<CommitScreen> {
+  final files = changedFiles(App.pedigree!.repo);
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -152,7 +154,6 @@ class _CommitScreenState extends State<CommitScreen> {
                             icon: const Icon(Icons.backspace_outlined),
                             onPressed: () => setState(() {
                               if(childChange.type == ChangeType.addition) {
-                                print("removing ${childChange.unchanged!} from ${person.name}");
                                 person.removeChild(childChange.index, App.pedigree!);
                               } else if(childChange.type == ChangeType.removal) {
                                 // TODO: fix ordering
@@ -230,6 +231,26 @@ class _CommitScreenState extends State<CommitScreen> {
                   ),
                 );
             }),
+            FutureBuilder(
+              future: files,
+              builder: (context, files) =>  files.hasData ? Column(
+                children: [
+                  const Divider(color: Color.fromARGB(64, 128, 128, 128)),
+                  ...files.data!.map((file) => Card(
+                    child: ListTile(
+                      tileColor: file.$2 == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
+                      textColor: file.$2 == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                      iconColor: file.$2 == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                      leading: Icon(file.$2 == ChangeType.modification ? Icons.edit_outlined : Icons.file_present_outlined),
+                      title: Text(file.$1.path),
+                    ),
+                  )),
+                ],
+              ) : const Padding(
+                padding: EdgeInsets.all(8),
+                child: LinearProgressIndicator(),
+              ),
+            ),
             // Space for FAB
             const Padding(
               padding: EdgeInsets.only(bottom: 75)
