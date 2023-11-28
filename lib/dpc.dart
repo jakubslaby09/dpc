@@ -20,9 +20,9 @@ class Pedigree {
       if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
       if (version < maxVersion) throw Exception("Outdated pedigree version $version.${version >= minUpgradableVersion ? " You need to upgrade it first." : ""}");
       people.asMap().forEach((index, person) {
-        if (person.father != null && person.father! < 0) throw Exception("${person.father} < 0");
-        if (person.mother != null && person.mother! < 0) throw Exception("${person.mother} < 0");
-        if (person.id != index) throw Exception("${person.id} != $index");
+        if (person.father != null && person.father! < 0) throw Exception("${person.name} has a father id smaller than 0");
+        if (person.mother != null && person.mother! < 0) throw Exception("${person.name} has a mother id smaller than 0");
+        if (person.id != index) throw Exception("${person.name} is in position $index in the list, which doesn't correspond to it's id (${person.id})");
         for (var id in person.children) {
           if(id >= 0 && id is double) throw Exception("Child id $id is not an integer. Only negative child ids can have a decimal part");
         }
@@ -54,7 +54,7 @@ class Pedigree {
     : version = maxVersion,
     people = [],
     chronicle = [];
-  
+
   Pedigree.clone(Pedigree pedigree)
     : version = pedigree.version,
     name = pedigree.name,
@@ -62,7 +62,7 @@ class Pedigree {
     chronicle = pedigree.chronicle.map((chronicle) => Chronicle.clone(chronicle)).toList(),
     dir = pedigree.dir,
     repo = pedigree.repo;
-    
+
 
   int version;
   String name;
@@ -211,7 +211,7 @@ class Person implements Child, HasOtherParent {
       if(oldParent == null) return;
 
       oldParent.children.remove(id);
-    } 
+    }
 
     if(newId != null) {
       final newParent = pedigree.people.elementAtOrNull(newId);
@@ -272,7 +272,7 @@ class Person implements Child, HasOtherParent {
     children.length == other.children.length &&
     children.safeFirstWhere((childId) => !other.children.contains(childId)) == null;
   }
-  
+
   Map<String, dynamic> toJson() {
     Map<String, dynamic> result = {
       "id": id,
@@ -314,12 +314,12 @@ class Chronicle {
     files.safeFirstWhere((element) => !other.files.contains(element)) == null &&
     authors.safeFirstWhere((element) => !other.authors.contains(element)) == null;
   }
-  
+
   String name;
   ChronicleMime mime;
   List<String> files;
   List<num> authors;
-  
+
   Map<String, dynamic> toJson() {
     Map<String, Object> result = {
       "name": name,
@@ -371,7 +371,7 @@ extension SexExtension on Sex? {
   String get string {
     return this == null ? "osoba" : this == Sex.male ? "muž" : "žena";
   }
-  
+
   IconData get icon {
     return this == null ? Icons.face_outlined : this == Sex.male ? Icons.face_6_outlined : Icons.face_3_outlined;
   }
@@ -445,7 +445,7 @@ abstract class Child {
         return UnknownChildren(int.parse(childId.toString().split(".")[1]));
       }
     }
-    
+
     assert(childId is int && childId >= 0, "special child ids should be checked in Pedigree.parse");
     return pedigree.people[childId as int];
   }
