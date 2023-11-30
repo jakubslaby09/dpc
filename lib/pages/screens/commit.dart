@@ -13,6 +13,7 @@ import 'package:dpc/widgets/commit_sheet.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
+import 'package:path/path.dart' as p;
 
 class CommitScreen extends UniqueWidget implements FABScreen {
   const CommitScreen({required super.key});
@@ -328,8 +329,7 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
       break;
     case git_status_t.GIT_STATUS_INDEX_MODIFIED:
     case git_status_t.GIT_STATUS_WT_MODIFIED:
-      // TODO: check filename instead
-      if(file.path == "index.dpc") {
+      if(p.basename(file.path) == "index.dpc") {
         return null;
       }
       changeType = ChangeType.modification;
