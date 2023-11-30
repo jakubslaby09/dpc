@@ -41,7 +41,7 @@ class CommitScreen extends UniqueWidget implements FABScreen {
 // TODO: make people listTiles navigate to their pages on tap
 // TODO: display dividers only when needed
 class _CommitScreenState extends State<CommitScreen> {
-  final files = changedFiles(App.pedigree!.repo);
+  Future<List<(File, ChangeType)>> files = changedFiles(App.pedigree!.repo);
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +244,22 @@ class _CommitScreenState extends State<CommitScreen> {
                       iconColor: file.$2 == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
                       leading: Icon(file.$2 == ChangeType.modification ? Icons.edit_outlined : Icons.file_present_outlined),
                       title: Text(file.$1.path),
+                      // TODO: make all file changes revertable
+                      trailing: file.$2 == ChangeType.addition ? IconButton(
+                        icon: const Icon(Icons.delete_forever_outlined),
+                        onPressed: () async {
+                          // TODO: indicate progress in the ui
+                          try {
+                            final absoluteFile = File(p.join(App.pedigree!.dir, file.$1.path));
+                            print(absoluteFile.path);
+                            await absoluteFile.delete();
+                          } on Exception catch (e, t) {
+                            showException(context, "nelze smazat soubor", e, t);
+                          }
+                          this.files = changedFiles(App.pedigree!.repo);
+                          setState(() { });
+                        },
+                      ) : null,
                     ),
                   )),
                 ],
