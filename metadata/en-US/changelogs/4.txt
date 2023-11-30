@@ -1,0 +1,3 @@
+- display file changes in the repository
+- make it easy to remove new files in the changes page
+- fix reporting errors with long stack traces

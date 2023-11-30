@@ -1,0 +1,3 @@
+- nyní jsou zobrazovány změny souborů v repozitáři
+- na stránce změn přidána možnost smazat nové soubory
+- opraveno nahlašování chyb s příliš dlouhým zásobníkem volání
