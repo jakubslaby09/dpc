@@ -145,7 +145,7 @@ Future<void> addFile(BuildContext context, Chronicle chronicle) async {
     if(p.isWithin(App.pedigree!.dir, sourceFile.path)) {
       file = sourceFile;
     } else {
-      final filePath = await showFileImportSheet(context, sourceFile.path, "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění");
+      final filePath = await showFileImportSheet(context, sourceFile.path, "kronika", "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění");
       if(filePath == null) {
         return;
       }

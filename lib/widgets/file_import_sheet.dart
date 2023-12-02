@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
 class FileImportSheet extends StatefulWidget {
-  FileImportSheet({super.key, required this.sourcePath, this.message})
+  FileImportSheet({super.key, required this.sourcePath, this.message, String? suggestedDirectory})
   : pathController = TextEditingController(
-      text: p.join("kronika", p.basename(sourcePath)),
+      text: p.join(suggestedDirectory ?? "", p.basename(sourcePath)),
     );
 
   String? errorText;
@@ -27,11 +27,11 @@ class _FileImportSheetState extends State<FileImportSheet> {
     return Column(
       children: [
         if(widget.message != null) Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.only(right: 24, left: 24, top: 24),
           child: Text(widget.message!, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 24),
           child: TextFormField(
             decoration: const InputDecoration(
               icon: Icon(Icons.insert_drive_file_outlined),
@@ -140,7 +140,7 @@ class _FileImportSheetState extends State<FileImportSheet> {
   }
 }
 
-Future<String?> showFileImportSheet(BuildContext context, String sourcePath, [String? message]) {
+Future<String?> showFileImportSheet(BuildContext context, String sourcePath, [String? message, String? suggestedDirectory]) {
   return showModalBottomSheet<String>(
     context: context,
     // showDragHandle: true,
@@ -148,6 +148,7 @@ Future<String?> showFileImportSheet(BuildContext context, String sourcePath, [St
     enableDrag: false,
     builder: (context) => FileImportSheet(
       sourcePath: sourcePath,
+      suggestedDirectory: suggestedDirectory,
       message: message,
     ),
   );
