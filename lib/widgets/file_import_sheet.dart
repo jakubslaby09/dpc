@@ -58,6 +58,7 @@ class _FileImportSheetState extends State<FileImportSheet> {
                 ),
               ),
             ),
+            autofocus: true,
             controller: widget.pathController,
             onChanged: (_) => setState(() {
               widget.errorText = null;
