@@ -250,9 +250,13 @@ class _CommitScreenState extends State<CommitScreen> {
                         onPressed: () async {
                           // TODO: indicate progress in the ui
                           try {
-                            final absoluteFile = File(p.join(App.pedigree!.dir, file.$1.path));
-                            print(absoluteFile.path);
-                            await absoluteFile.delete();
+                            final absolutePath = p.join(App.pedigree!.dir, file.$1.path);
+                            if(await FileSystemEntity.isDirectory(absolutePath)) {
+                              await Directory(absolutePath).delete(recursive: true);
+                            } else {
+                              // TODO: handle other fs types
+                              await File(absolutePath).delete();
+                            }
                           } on Exception catch (e, t) {
                             showException(context, "nelze smazat soubor", e, t);
                           }
