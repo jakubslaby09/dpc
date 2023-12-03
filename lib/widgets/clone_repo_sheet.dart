@@ -157,8 +157,14 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                   if(value == null || value.trim().isEmpty) {
                     return "Vyberte si repozitář";
                   }
-                  if(!value.contains("/")) {
+
+                  final split = value.split("/");
+                  if(split.length < 2) {
                     return "Uveďte prosím vlastníka repozitáře, ve formátu vlastník/repozitář";
+                  }
+
+                  if(split.length > 2) {
+                    return "Uveďte prosím pouze repozitář a vlastníka. Možná zkuste: ${split[split.length - 2]}/${split[split.length - 1]}";
                   }
     
                   return null;
