@@ -321,7 +321,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080, shared: true);
     server.forEach((req) {
       req.response.headers.contentType = ContentType.html;
-      req.response.write("<script>window.close()</script><h1>Nyní můžete toho okno zavřít</h1>");
+      req.response.write("<script>window.close()</script><h1>Nyní můžete toto okno zavřít</h1>");
       req.response.close();
       server.close();
       if(!req.uri.queryParameters.containsKey("code")) {
