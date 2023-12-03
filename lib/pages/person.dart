@@ -241,9 +241,8 @@ class _PersonPageState extends State<PersonPage> {
       } else {
         imageProvider = null;
       }
-    } catch (e) {
-      // TODO: make some error handling
-      print(e);
+    } on Exception catch (e, t) {
+      showException(context, "nelze načíst profilovou fotku", e, t);
     }
   }
 
