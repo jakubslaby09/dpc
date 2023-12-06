@@ -198,7 +198,13 @@ class _CommitSheetState extends State<CommitSheet> {
       expectCode(App.git.git_repository_index(index, App.pedigree!.repo));
 
       // add
-      expectCode(App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
+      ffi.Pointer<git_strarray> pathspecs = ffi.calloc<git_strarray>();
+      ffi.Pointer<ffi.Pointer<ffi.Char>> pathspecsArray = ffi.calloc();
+      pathspecsArray[0] = ".".toNativeUtf8().cast();
+      pathspecs.ref.strings = pathspecsArray;
+      pathspecs.ref.count = 1;
+
+      expectCode(App.git.git_index_add_all(index.value, pathspecs, git_index_add_option_t.GIT_INDEX_ADD_DEFAULT | git_index_add_option_t.GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, ffi.nullptr, ffi.nullptr));
       expectCode(App.git.git_index_write(index.value));
 
       // commit
