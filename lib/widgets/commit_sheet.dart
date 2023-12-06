@@ -198,7 +198,7 @@ class _CommitSheetState extends State<CommitSheet> {
       expectCode(App.git.git_repository_index(index, App.pedigree!.repo));
 
       // add
-      ffi.Pointer<git_strarray> pathspecs = ffi.calloc<git_strarray>();
+      ffi.Pointer<git_strarray> pathspecs = ffi.calloc();
       ffi.Pointer<ffi.Pointer<ffi.Char>> pathspecsArray = ffi.calloc();
       pathspecsArray[0] = ".".toNativeUtf8().cast();
       pathspecs.ref.strings = pathspecsArray;
@@ -206,6 +206,9 @@ class _CommitSheetState extends State<CommitSheet> {
 
       expectCode(App.git.git_index_add_all(index.value, pathspecs, git_index_add_option_t.GIT_INDEX_ADD_DEFAULT | git_index_add_option_t.GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, ffi.nullptr, ffi.nullptr));
       expectCode(App.git.git_index_write(index.value));
+
+      App.git.git_strarray_dispose(pathspecs);
+      ffi.calloc.free(pathspecs);
 
       // commit
       ffi.Pointer<git_oid> parentOid = ffi.calloc();
@@ -233,6 +236,11 @@ class _CommitSheetState extends State<CommitSheet> {
         parent,
       ), "couldn't create commit");
 
+      App.git.git_index_free(index.value);
+      ffi.calloc.free(parentOid);
+      ffi.calloc.free(treeOid);
+      ffi.calloc.free(commitOid);
+      App.git.git_commit_free(parent.value);
       App.git.git_tree_free(tree.value);
       
       // TODO: display progress with int callback(int current, int total, int bytes, ffi.Pointer<ffi.Void> payload)
@@ -254,6 +262,11 @@ class _CommitSheetState extends State<CommitSheet> {
       expectCode(App.git.git_push_options_init(pushOptions, GIT_PUSH_OPTIONS_VERSION));
       pushOptions.ref.callbacks.certificate_check = badCertCallback;
       expectCode(App.git.git_remote_push(remote.value, refspecs, pushOptions));
+
+      App.git.git_remote_free(remote.value);
+      ffi.calloc.free(pushOptions);
+      App.git.git_strarray_dispose(refspecs);
+      ffi.calloc.free(refspecs);
       
       if(saveSignature) {
         try {
