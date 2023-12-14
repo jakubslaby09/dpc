@@ -12,7 +12,6 @@ class FileImportSheet extends StatefulWidget {
       text: p.join(suggestedDirectory ?? "", p.basename(sourcePath)),
     );
 
-  String? errorText;
   final String? message;
   final String sourcePath;
   final TextEditingController pathController;
@@ -22,6 +21,8 @@ class FileImportSheet extends StatefulWidget {
 }
 
 class _FileImportSheetState extends State<FileImportSheet> {
+  String? errorText;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -49,7 +50,7 @@ class _FileImportSheetState extends State<FileImportSheet> {
             decoration: InputDecoration(
               icon: const Icon(Icons.file_copy_outlined),
               labelText: "Soubor v repozitáři",
-              errorText: widget.errorText,
+              errorText: errorText,
               border: const OutlineInputBorder(),
               suffixIcon: Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -62,7 +63,7 @@ class _FileImportSheetState extends State<FileImportSheet> {
             autofocus: true,
             controller: widget.pathController,
             onChanged: (_) => setState(() {
-              widget.errorText = null;
+              errorText = null;
             }),
           ),
         ),
@@ -83,13 +84,14 @@ class _FileImportSheetState extends State<FileImportSheet> {
               const VerticalDivider(),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => setState(() {
+                  onPressed: () {
                     validate();
-                    if(widget.errorText != null) {
+                    if(errorText != null) {
+                      setState(() {});
                       return;
                     }
                     Navigator.of(context).pop(pickedPath);
-                  }),
+                  },
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(40),
                   ),
@@ -124,24 +126,31 @@ class _FileImportSheetState extends State<FileImportSheet> {
   }
 
   validate() {
-    final file = File(pickedPath);
-    if(file.existsSync()) {
-      widget.errorText = "Takový soubor již existuje";
+    final newFile = File(pickedPath);
+    if(newFile.existsSync()) {
+      errorText = "Takový soubor již existuje";
       return;
     }
-    if(!p.isWithin(App.pedigree!.dir, file.path)) {
-      widget.errorText = "Nový soubor se musí nacházet v repozitáři kroniky";
+    final sourceFile = File(widget.sourcePath);
+    print(sourceFile.path);
+    if(!sourceFile.existsSync()) {
+      errorText = "Soubor, který jste vybrali, již neexistuje. Nesmazali jste ho?";
       return;
     }
-    if(p.extension(file.path) != p.extension(widget.sourcePath)) {
-      widget.errorText = "Přípona souboru se neshoduje. Zkuste ji změnit na ${p.extension(widget.sourcePath)}";
+    if(!p.isWithin(App.pedigree!.dir, newFile.path)) {
+      errorText = "Nový soubor se musí nacházet v repozitáři kroniky";
+      return;
+    }
+    if(p.extension(newFile.path) != p.extension(widget.sourcePath)) {
+      errorText = "Přípona souboru se neshoduje. Zkuste ji změnit na ${p.extension(widget.sourcePath)}";
       return;
     }
 
-    widget.errorText = null;
+    errorText = null;
   }
 }
 
+// TODO: use named arguments
 Future<String?> showFileImportSheet(BuildContext context, String sourcePath, [String? message, String? suggestedDirectory]) {
   return showModalBottomSheet<String>(
     context: context,
