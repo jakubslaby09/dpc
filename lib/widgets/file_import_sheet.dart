@@ -25,6 +25,7 @@ class _FileImportSheetState extends State<FileImportSheet> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         if(widget.message != null) Padding(
           padding: const EdgeInsets.only(right: 24, left: 24, top: 24),
@@ -147,10 +148,15 @@ Future<String?> showFileImportSheet(BuildContext context, String sourcePath, [St
     // showDragHandle: true,
     isDismissible: false,
     enableDrag: false,
-    builder: (context) => FileImportSheet(
-      sourcePath: sourcePath,
-      suggestedDirectory: suggestedDirectory,
-      message: message,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (context) => Padding(
+      padding: MediaQuery.of(context).viewInsets,
+      child: FileImportSheet(
+        sourcePath: sourcePath,
+        suggestedDirectory: suggestedDirectory,
+        message: message,
+      ),
     ),
   );
 }
