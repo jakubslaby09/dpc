@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:dpc/autosave.dart';
+import 'package:dpc/pages/log.dart';
 import 'package:dpc/widgets/add_child_sheet.dart';
+import 'package:dpc/widgets/file_import_sheet.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:dpc/main.dart';
@@ -230,17 +233,17 @@ class _PersonPageState extends State<PersonPage> {
   }
 
   void readImage() {
+    if(person.image == null) {
+      imageProvider = null;
+      return;
+    }
     try {
-      if(person.image != null) {
-        final file = File(p.join(App.pedigree!.dir, person.image));
-        if(!file.existsSync()) {
-          // TODO: try to load from .git/
-          // TODO: make some error handling
-        }
-        imageProvider = FileImage(file);
-      } else {
-        imageProvider = null;
+      final file = File(p.join(App.pedigree!.dir, person.image));
+      if(!file.existsSync()) {
+        // TODO: try to load from .git/
+        // TODO: make some error handling
       }
+      imageProvider = FileImage(file);
     } on Exception catch (e, t) {
       showException(context, "nelze načíst profilovou fotku", e, t);
     }
@@ -258,8 +261,8 @@ class _PersonPageState extends State<PersonPage> {
               padding: const EdgeInsets.all(24.0),
               child: CircleAvatar(
                 radius: MediaQuery.of(context).orientation == Orientation.portrait
-                    ? min(MediaQuery.of(context).size.width / 2 - 48, MediaQuery.of(context).size.height / 4 - 50)
-                    : MediaQuery.of(context).size.width / 4 - 48,
+                  ? min(MediaQuery.of(context).size.width / 2 - 48, MediaQuery.of(context).size.height / 4 - 50)
+                  : MediaQuery.of(context).size.width / 4 - 48,
                 foregroundImage: imageProvider,
                 backgroundColor: Theme.of(context).colorScheme.errorContainer,
                 child: const Icon(Icons.hide_image_outlined),
@@ -272,8 +275,35 @@ class _PersonPageState extends State<PersonPage> {
                   padding: const EdgeInsets.only(right: 8.0),
                   child: IconButton.filledTonal(
                     icon: const Icon(Icons.add_a_photo_outlined),
-                    // TODO
-                    onPressed: () {}
+                    onPressed: () async {
+                      final fileResult = (await FilePicker.platform.pickFiles(
+                        allowMultiple: false,
+                        dialogTitle: "Fotka - ${person.name}",
+                        onFileLoading: (status) => print(status),
+                        type: FileType.image,
+                      ))?.files.elementAtOrNull(0);
+                      if(fileResult == null) return;
+                      final file = File(fileResult.path!);
+
+                      // TODO: allow file overwrites
+                      final newPath = await showFileImportSheet(context, file.path, "Pojmenujte fotku", "profilové fotky");
+                      if(newPath == null) return;
+
+                      try {
+                        await File(newPath).parent.create(recursive: true);
+                        await file.copy(newPath);
+                        // TODO: should we delete the original person.image file?
+                      } on Exception catch (e, t) {
+                        showException(context, "nelze zkopírovat profilovou fotku", e, t);
+                        return;
+                      }
+
+                      scheduleSave(context);
+                      setState(() {
+                        person.image = p.relative(newPath, from: App.pedigree!.dir);
+                      });
+                      readImage();
+                    },
                   ),
                 ),
                 IconButton.filledTonal(
