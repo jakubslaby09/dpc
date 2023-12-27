@@ -29,7 +29,7 @@ class ChronicleScreen extends UniqueWidget implements FABScreen {
 class _ChronicleScreenState extends State<ChronicleScreen> {
   @override
   Widget build(BuildContext context) {
-    // TODO: make the title and authors editable
+    // TODO: make the authors editable
     return ListView(
       children: App.pedigree!.chronicle.indexedMap((chronicle, chronicleIndex) => Padding(
         padding: const EdgeInsets.all(8),
@@ -49,7 +49,20 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                 title: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(child: Text(chronicle.name)),
+                    Expanded(
+                      // child: Text(chronicle.name)
+                      child: TextFormField(
+                        initialValue: chronicle.name,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Pojmenujte kroniku",
+                        ),
+                        onChanged: (newName) {
+                          chronicle.name = newName;
+                          scheduleSave(context);
+                        },
+                      ),
+                    ),
                     if(chronicle.files.isNotEmpty) IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
