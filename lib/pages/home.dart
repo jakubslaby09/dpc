@@ -27,9 +27,9 @@ class _HomePageState extends State<HomePage> {
       icon: Icons.list,
       needsPedigree: true,
     ),
-    const Destination(
+    Destination(
       label: "Kronika",
-      screen: ChronicleScreen(),
+      screen: ChronicleScreen(key: GlobalKey()),
       icon: Icons.history_edu,
       // activeIcon: Icons.library_books,
       needsPedigree: true,

@@ -4,16 +4,26 @@ import 'package:dpc/autosave.dart';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/chronicle.dart';
+import 'package:dpc/pages/home.dart';
 import 'package:dpc/widgets/file_import_sheet.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
-class ChronicleScreen extends StatefulWidget {
-  const ChronicleScreen({super.key});
+// TODO: make name and authors editable
+class ChronicleScreen extends UniqueWidget implements FABScreen {
+  const ChronicleScreen({required super.key});
 
   @override
   State<ChronicleScreen> createState() => _ChronicleScreenState();
+  
+  @override
+  Widget? fab(BuildContext context) {
+    return FloatingActionButton.small(
+      child: const Icon(Icons.add),
+      onPressed: () => (currentState as _ChronicleScreenState?)?.createEmpty(),
+    );
+  }
 }
 
 class _ChronicleScreenState extends State<ChronicleScreen> {
@@ -120,7 +130,16 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
       )).toList(),
     );
   }
+
+  // TODO: confirm
+  void createEmpty() {
+    setState(() {
+      App.pedigree!.chronicle.add(Chronicle.empty());
+    });
+    scheduleSave(context);
+  }
 }
+
 
 Future<void> addFile(BuildContext context, Chronicle chronicle) async {
   // TODO: use allowedExtensions

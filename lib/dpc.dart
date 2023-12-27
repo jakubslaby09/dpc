@@ -294,6 +294,12 @@ class Person implements Child, HasOtherParent {
 }
 
 class Chronicle {
+  Chronicle.empty()
+  : name = "",
+    authors = [],
+    files = [],
+    mime = ChronicleMime.other;
+
   Chronicle.parse(Map<String, dynamic> json)
     : name = json['name'],
       mime = mimeFromString(json['mime']),
@@ -316,6 +322,7 @@ class Chronicle {
   }
 
   String name;
+  // TODO: remove it in dpc v5 since it doesn't make sence
   ChronicleMime mime;
   List<String> files;
   List<num> authors;
