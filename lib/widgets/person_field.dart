@@ -74,18 +74,15 @@ class _PersonFieldState extends State<PersonField> {
       ),
       readOnly: true,
       controller: fieldController,
-      onTap: () => showModalBottomSheet(
-        context: context,
-        builder: (context) => PersonPicker(
-          sex: widget.sex,
-          onPick: (id) => setState(() {
-            widget.idController.value = id;
-            this.id = id;
-            Navigator.pop(context);
-            widget.onPick?.call(id);
-          }),
-        ),
-      ),
+      onTap: () async {
+        final id = await PersonPicker.show(context, sex: widget.sex);
+        if(id == null) return;
+        setState(() {
+          widget.idController.value = id;
+          this.id = id;
+        });
+        widget.onPick?.call(id);
+      }
     );
   }
 }
@@ -96,6 +93,16 @@ class PersonPicker extends StatefulWidget {
   // TODO: add a filter for exclusion
   final Function(int value)? onPick;
   final Sex? sex;
+
+  static Future<int?> show(BuildContext context, { Sex? sex }) async {
+    return await showModalBottomSheet<int>(
+      context: context,
+      builder: (context) => PersonPicker(
+        sex: sex,
+        onPick: (id) => Navigator.pop(context, id),
+      ),
+    );
+  }
 
   @override
   State<PersonPicker> createState() => _PersonPickerState();
@@ -132,7 +139,10 @@ class _PersonPickerState extends State<PersonPicker> {
                   color: Theme.of(context).disabledColor,
                 ),
               ),
-              onTap: () => widget.onPick?.call(filtered[index].id),
+              onTap: () {
+                print("tap ${widget.onPick}");
+                widget.onPick?.call(filtered[index].id);
+              },
             ),
           ),
         ),
