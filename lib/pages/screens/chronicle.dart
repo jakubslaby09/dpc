@@ -6,6 +6,7 @@ import 'package:dpc/main.dart';
 import 'package:dpc/pages/chronicle.dart';
 import 'package:dpc/pages/home.dart';
 import 'package:dpc/widgets/file_import_sheet.dart';
+import 'package:dpc/widgets/person_field.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -26,10 +27,11 @@ class ChronicleScreen extends UniqueWidget implements FABScreen {
 }
 
 class _ChronicleScreenState extends State<ChronicleScreen> {
+  final controller = ScrollController();
   @override
   Widget build(BuildContext context) {
-    // TODO: make the authors editable
     return ListView(
+      controller: controller,
       children: App.pedigree!.chronicle.indexedMap((chronicle, chronicleIndex) => Padding(
         padding: const EdgeInsets.all(8),
         child: Card(
@@ -79,24 +81,61 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                 ),
                 subtitle: Row(
                   // TODO: fix overflow
-                  children: chronicle.authors.map((e) => Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.onBackground,
-                      )
+                  children: [
+                    ...chronicle.authors.map((e) => Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.onSurface.withAlpha(160),
+                        )
+                      ),
+                      child: Row(
+                        children: [
+                          // TODO: make a more robust person lookup fuction
+                          Icon(
+                            App.pedigree!.people[e.round()].sex.icon,
+                            size: 32,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4, top: 4, bottom: 4),
+                            child: Text(App.pedigree!.people[e.round()].name),
+                          ),
+                          SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: IconButton(
+                              iconSize: 16,
+                              icon: Icon(Icons.close),
+                              onPressed: () {
+                                setState(() {
+                                  chronicle.authors.remove(e);
+                                });
+                                scheduleSave(context);
+                              },
+                            ),
+                          )
+                        ],
+                      ),
+                    )),
+                    if(chronicle.authors.isEmpty) OutlinedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: Text("Přidat autora"),
+                      // style: ButtonStyle(
+                        
+                      // ),
+                      onPressed: () => addAuthor(chronicle),
                     ),
-                    child: Row(
-                      children: [
-                        // TODO: make a more robust person lookup fuction
-                        Icon(App.pedigree!.people[e.round()].sex.icon),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 2, right: 8),
-                          child: Text(App.pedigree!.people[e.round()].name),
-                        ),
-                      ],
-                    ),
-                  )).toList(),
+                    if(chronicle.authors.isNotEmpty) SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: IconButton.outlined(
+                        iconSize: 20,
+                        icon: const Icon(Icons.add),
+                        padding: EdgeInsets.zero,
+                        onPressed: () => addAuthor(chronicle),
+                      ),
+                    )
+                  ],
                 ),
               ),
               Divider(height: chronicle.files.length <= 1 ? 2 : null),
@@ -144,9 +183,31 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
   }
 
   // TODO: confirm
-  void createEmpty() {
+  void createEmpty() async {
     setState(() {
       App.pedigree!.chronicle.add(Chronicle.empty());
+      // controller.jumpTo(controller.position.maxScrollExtent);
+    });
+    // TODO: wait only for maxScrollExtent to refresh
+    await Future.delayed(Durations.short1);
+    controller.animateTo(
+      controller.position.maxScrollExtent,
+      duration: Durations.medium2,
+      curve: standardEasing,
+    );
+    scheduleSave(context);
+  }
+
+  void addAuthor(Chronicle chronicle) async {
+    // TODO: don't display people which are already authors
+    final id = await PersonPicker.show(context);
+    if(id == null) return;
+
+    setState(() {
+      if(chronicle.authors.contains(id)) {
+        return;
+      }
+      chronicle.authors.add(id);
     });
     scheduleSave(context);
   }
