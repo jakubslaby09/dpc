@@ -5,6 +5,7 @@ import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/chronicle.dart';
 import 'package:dpc/pages/home.dart';
+import 'package:dpc/widgets/avatar.dart';
 import 'package:dpc/widgets/file_import_sheet.dart';
 import 'package:dpc/widgets/person_field.dart';
 import 'package:file_picker/file_picker.dart';
@@ -91,10 +92,11 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                       ),
                       child: Row(
                         children: [
+                          PersonAvatar(
                           // TODO: make a more robust person lookup fuction
-                          Icon(
-                            App.pedigree!.people[e.round()].sex.icon,
-                            size: 32,
+                            person: App.pedigree!.people[e.round()],
+                            repoDir: App.pedigree!.dir,
+                            radius: 16,
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 4, top: 4, bottom: 4),
