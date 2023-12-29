@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dpc/dpc.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,6 +72,12 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
               title: const Text("Tmavý režim"),
               secondary: const Icon(Icons.lightbulb_outline),
             ),
+          ),
+          SwitchListTile(
+            value: App.prefs.filledAvatarIcons,
+            onChanged: (value) => setState(() => App.prefs.filledAvatarIcons = value),
+            title: const Text("Barevné ikony osob"),
+            secondary: const Icon(Icons.face_retouching_natural_outlined),
           ),
           const Divider(),
           Padding(
@@ -220,5 +227,11 @@ class Preferences {
   bool get autoUpgradeFiles => _sharedPrefs!.getBool(_autoUpgradeFilesKey) ?? false;
   set autoUpgradeFiles(bool value) {
     _sharedPrefs!.setBool(_autoUpgradeFilesKey, value);
+  }
+  
+  static const _filledAvatarIconsKey = "filledAvatarIcons";
+  bool get filledAvatarIcons => _sharedPrefs!.getBool(_filledAvatarIconsKey) ?? true;
+  set filledAvatarIcons(bool value) {
+    _sharedPrefs!.setBool(_filledAvatarIconsKey, value);
   }
 }

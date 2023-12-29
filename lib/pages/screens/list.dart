@@ -3,6 +3,7 @@ import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/person.dart';
+import 'package:dpc/widgets/avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -68,8 +69,17 @@ class _ListScreenState extends State<ListScreen> {
           ],
           rows: filterPeople()!.map((person) => DataRow(
             cells: [
-              DataCell(Text(person.name)),
-              DataCell(Text(person.birth?.toString() ?? "chybí"), placeholder: person.birth == null),
+              DataCell(Row(
+                children: [
+                  // TODO: make a small standalone collumn for the avatar
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: PersonAvatar(person: person, repoDir: App.pedigree!.dir),
+                  ),
+                  Text(person.name),
+                ],
+              )),
+              DataCell(Text(person.birth ?? "chybí"), placeholder: person.birth == null),
             ],
             onSelectChanged: (value) async {
               await Navigator.of(context).push(MaterialPageRoute(

@@ -159,15 +159,19 @@ class Person implements Child, HasOtherParent {
   int? get mother => _mother;
   int? get father => _father;
 
-  Future<FileImage?> imageProvider(String repoDir) async {
+  FileImage? imageProviderUnchecked(String repoDir) {
     if(image == null) {
       return null;
     }
     final file = File(p.join(repoDir, image));
-    if(!await file.exists()) {
+    return FileImage(file);
+  }
+  Future<FileImage?> imageProvider(String repoDir) async {
+    final provider = imageProviderUnchecked(repoDir);
+    if(provider == null || !await provider.file.exists()) {
       return null;
     }
-    return FileImage(file);
+    return provider;
   }
 
   Iterable<Child> getChildren(Pedigree pedigree) {
