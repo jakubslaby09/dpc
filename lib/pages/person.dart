@@ -232,21 +232,13 @@ class _PersonPageState extends State<PersonPage> {
     );
   }
 
-  void readImage() {
-    if(person.image == null) {
-      imageProvider = null;
-      return;
-    }
+  Future<void> readImage() async {
     try {
-      final file = File(p.join(App.pedigree!.dir, person.image));
-      if(!file.existsSync()) {
-        // TODO: try to load from .git/
-        // TODO: make some error handling
-      }
-      imageProvider = FileImage(file);
+      imageProvider = await person.imageProvider(App.pedigree!.dir);
     } on Exception catch (e, t) {
       showException(context, "nelze načíst profilovou fotku", e, t);
     }
+    setState(() {});
   }
 
   // TODO: stop cropping when the screen is too wide
@@ -312,12 +304,10 @@ class _PersonPageState extends State<PersonPage> {
                     person.image = null;
                     readImage();
                     scheduleSave(context);
-                    setState(() {});
                   } : unchangedPerson?.image != null ? () {
                     person.image = unchangedPerson!.image;
                     readImage();
                     scheduleSave(context);
-                    setState(() {});
                   } : null
                 ),
               ],
