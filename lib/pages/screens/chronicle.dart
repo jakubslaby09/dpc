@@ -7,6 +7,7 @@ import 'package:dpc/pages/chronicle.dart';
 import 'package:dpc/pages/home.dart';
 import 'package:dpc/widgets/avatar.dart';
 import 'package:dpc/widgets/file_import_sheet.dart';
+import 'package:dpc/widgets/person_chip.dart';
 import 'package:dpc/widgets/person_field.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -83,41 +84,16 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                 subtitle: Row(
                   // TODO: fix overflow
                   children: [
-                    ...chronicle.authors.map((e) => Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(160),
-                        )
-                      ),
-                      child: Row(
-                        children: [
-                          PersonAvatar(
-                          // TODO: make a more robust person lookup fuction
-                            person: App.pedigree!.people[e.round()],
-                            repoDir: App.pedigree!.dir,
-                            radius: 16,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 4, top: 4, bottom: 4),
-                            child: Text(App.pedigree!.people[e.round()].name),
-                          ),
-                          SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: IconButton(
-                              iconSize: 16,
-                              icon: Icon(Icons.close),
-                              onPressed: () {
-                                setState(() {
-                                  chronicle.authors.remove(e);
-                                });
-                                scheduleSave(context);
-                              },
-                            ),
-                          )
-                        ],
-                      ),
+                    ...chronicle.authors.map((e) => PersonChip(
+                      // TODO: make a more robust person lookup fuction
+                      person: App.pedigree!.people[e.round()],
+                      repoDir: App.pedigree!.dir,
+                      onRemove: () {
+                        setState(() {
+                          chronicle.authors.remove(e);
+                        });
+                        scheduleSave(context);
+                      },
                     )),
                     if(chronicle.authors.isEmpty) OutlinedButton.icon(
                       icon: const Icon(Icons.add),

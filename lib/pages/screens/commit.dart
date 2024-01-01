@@ -10,6 +10,7 @@ import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/log.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/widgets/commit_sheet.dart';
+import 'package:dpc/widgets/person_chip.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -174,6 +175,8 @@ class _CommitScreenState extends State<CommitScreen> {
               ...diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b)).map((change) {
                 final changedChronicle = App.pedigree!.chronicle.elementAtOrNull(change.index);
                 final chronicle = change.unchanged ?? changedChronicle!;
+                final authorsDiff = change.unchanged == null ? null : simpleDiff<num>(change.unchanged!.authors, changedChronicle?.authors ?? []);
+                print(authorsDiff);
 
                 return Card(
                 // child: Text("${change.type.name}: ${changed}"),
@@ -185,6 +188,33 @@ class _CommitScreenState extends State<CommitScreen> {
                       ListTile(
                         leading: Icon(change.type == ChangeType.removal ? Icons.delete_outline : Icons.auto_stories_outlined),
                         title: Text(chronicle.name),
+                        subtitle: authorsDiff?.isEmpty ?? true ? null : Row(
+                          // TODO: fix overflow
+                          children: [
+                            ...authorsDiff!.map((authorChange) => PersonChip(
+                              // TODO: make a more robust person lookup fuction
+                              person: App.pedigree!.people[(authorChange.unchanged ?? changedChronicle!.authors[authorChange.index]).round()],
+                              repoDir: App.pedigree!.dir,
+                              backgroundColor: authorChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
+                              nameColor: authorChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                              avatarBackgroundColor: authorChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
+                              removeIcon: const Icon(Icons.backspace_outlined),
+                              onRemove: () => setState(() {
+                                if(authorChange.type == ChangeType.addition) {
+                                  changedChronicle!.authors.removeAt(authorChange.index);
+                                  print(changedChronicle.authors);
+                                } else if(authorChange.type == ChangeType.removal) {
+                                  // TODO: fix ordering
+                                  try {
+                                    changedChronicle!.authors.insert(authorChange.index, authorChange.unchanged!);
+                                  } on RangeError catch (_) {
+                                    changedChronicle!.authors.add(authorChange.unchanged!);
+                                  }
+                                }
+                              }),
+                            )),
+                          ],
+                        ),
                         trailing: change.type == ChangeType.modification && changedChronicle?.name == change.unchanged?.name ? null : IconButton(
                           icon: Icon(change.type == ChangeType.addition ? Icons.delete_forever_outlined : Icons.backspace_outlined),
                           onPressed: () => setState(() {
