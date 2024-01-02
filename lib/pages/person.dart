@@ -271,7 +271,6 @@ class _PersonPageState extends State<PersonPage> {
                       final fileResult = (await FilePicker.platform.pickFiles(
                         allowMultiple: false,
                         dialogTitle: "Fotka - ${person.name}",
-                        onFileLoading: (status) => print(status),
                         type: FileType.image,
                       ))?.files.elementAtOrNull(0);
                       if(fileResult == null) return;

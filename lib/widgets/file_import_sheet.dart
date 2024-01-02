@@ -132,7 +132,6 @@ class _FileImportSheetState extends State<FileImportSheet> {
       return;
     }
     final sourceFile = File(widget.sourcePath);
-    print(sourceFile.path);
     if(!sourceFile.existsSync()) {
       errorText = "Soubor, který jste vybrali, již neexistuje. Nesmazali jste ho?";
       return;

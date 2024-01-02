@@ -140,7 +140,6 @@ class _PersonPickerState extends State<PersonPicker> {
                 ),
               ),
               onTap: () {
-                print("tap ${widget.onPick}");
                 widget.onPick?.call(filtered[index].id);
               },
             ),

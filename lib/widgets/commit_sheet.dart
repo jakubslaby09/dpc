@@ -189,7 +189,6 @@ class _CommitSheetState extends State<CommitSheet> {
       inProgress = true;
       error = null;
     });
-    print(inProgress);
     try {
       assert(App.pedigree != null, "this should be checked in home.dart");
       App.pedigree!.save(context);

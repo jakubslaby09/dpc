@@ -5,7 +5,6 @@ import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/chronicle.dart';
 import 'package:dpc/pages/home.dart';
-import 'package:dpc/widgets/avatar.dart';
 import 'package:dpc/widgets/file_import_sheet.dart';
 import 'package:dpc/widgets/person_chip.dart';
 import 'package:dpc/widgets/person_field.dart';

@@ -176,7 +176,6 @@ class _CommitScreenState extends State<CommitScreen> {
                 final changedChronicle = App.pedigree!.chronicle.elementAtOrNull(change.index);
                 final chronicle = change.unchanged ?? changedChronicle!;
                 final authorsDiff = change.unchanged == null ? null : simpleDiff<num>(change.unchanged!.authors, changedChronicle?.authors ?? []);
-                print(authorsDiff);
 
                 return Card(
                 // child: Text("${change.type.name}: ${changed}"),
@@ -202,7 +201,6 @@ class _CommitScreenState extends State<CommitScreen> {
                               onRemove: () => setState(() {
                                 if(authorChange.type == ChangeType.addition) {
                                   changedChronicle!.authors.removeAt(authorChange.index);
-                                  print(changedChronicle.authors);
                                 } else if(authorChange.type == ChangeType.removal) {
                                   // TODO: fix ordering
                                   try {

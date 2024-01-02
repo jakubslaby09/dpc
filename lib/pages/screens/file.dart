@@ -165,7 +165,7 @@ class _FileScreenState extends State<FileScreen> {
       String indexString;
       try {
         indexString = await index.readAsString();
-      } on PathAccessException catch (e) {
+      } on PathAccessException catch (_) {
         if(await Permission.manageExternalStorage.isGranted) rethrow;
         // TODO: make a dialog for it
         await Permission.manageExternalStorage.request();

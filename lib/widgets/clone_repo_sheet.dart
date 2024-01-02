@@ -263,7 +263,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                               userInfo: "$name:$token",
                               path: repoNameController.text.endsWith(".git") ? repoNameController.text : "${repoNameController.text}.git",
                             );
-                            print(url);
+                            debugPrint("repo url: $url");
                             break;
                         }
                         
