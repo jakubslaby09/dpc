@@ -21,8 +21,7 @@ class ListScreen extends UniqueWidget implements FABScreen {
       await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PersonPage(person.id),
       ));
-      final state = currentState as _ListScreenState?;
-      state?.setState(() => state.sortPeople(state.sortedColumn, state.sortAscending));
+      (currentState as _ListScreenState?)?.resortPeople();
     },
   );
 
@@ -64,8 +63,8 @@ class _ListScreenState extends State<ListScreen> {
           sortColumnIndex: sortedColumn,
           showCheckboxColumn: false,
           columns: [
-            DataColumn(label: const Text("Jméno"), onSort: (i, a) => setState(() => sortPeople(i, a))),
-            DataColumn(label: const Text("Narození"), onSort: (i, a) => setState(() => sortPeople(i, a))),
+            DataColumn(label: const Text("Jméno"), onSort: (i, a) => sortPeople(i, a)),
+            DataColumn(label: const Text("Narození"), onSort: (i, a) => sortPeople(i, a)),
           ],
           rows: filterPeople()!.map((person) => DataRow(
             cells: [
@@ -85,7 +84,7 @@ class _ListScreenState extends State<ListScreen> {
               await Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => PersonPage(person.id),
               ));
-              setState(() => sortPeople(sortedColumn, sortAscending));
+              resortPeople();
             },
           )).toList(),
         ),
@@ -93,21 +92,28 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  void resortPeople() {
+    sortPeople(sortedColumn, sortAscending);
+  }
+
+  // TODO: do the sorting in an isolate
   void sortPeople(int columnIndex, bool ascending) {
-    final direction = ascending ? 1 : -1;
-    sortedPeople = App.pedigree?.clone().people;
-    sortedPeople?.sort((a, b) {
-      switch (columnIndex) {
-        case 1:
-          return direction * compareDates(a.birth, b.birth);
-        case 0:
-        default:
-          return direction * a.name.compareTo(b.name);
-      }
+    setState(() {
+      final direction = ascending ? 1 : -1;
+      sortedPeople = App.pedigree?.clone().people;
+      sortedPeople?.sort((a, b) {
+        switch (columnIndex) {
+          case 1:
+            return direction * compareDates(a.birth, b.birth);
+          case 0:
+          default:
+            return direction * a.name.compareTo(b.name);
+        }
+      });
+      
+      sortedColumn = columnIndex;
+      sortAscending = ascending;
     });
-    
-    sortedColumn = columnIndex;
-    sortAscending = ascending;
   }
 
 
