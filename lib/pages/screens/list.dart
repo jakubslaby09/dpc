@@ -58,13 +58,13 @@ class _ListScreenState extends State<ListScreen> {
             }),
           ),
         ),
-        if (sortedPeople != null) DataTable(
+        if(sortedPeople != null) DataTable(
           sortAscending: sortAscending,
           sortColumnIndex: sortedColumn,
           showCheckboxColumn: false,
           columns: [
-            DataColumn(label: const Text("Jméno"), onSort: (i, a) => sortPeople(i, a)),
-            DataColumn(label: const Text("Narození"), onSort: (i, a) => sortPeople(i, a)),
+            DataColumn(label: const Text("Jméno"), onSort: (i, a) => setState(() => sortPeople(i, a))),
+            DataColumn(label: const Text("Narození"), onSort: (i, a) => setState(() => sortPeople(i, a))),
           ],
           rows: filterPeople()!.map((person) => DataRow(
             cells: [
@@ -93,27 +93,27 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   void resortPeople() {
-    sortPeople(sortedColumn, sortAscending);
+    setState(() {
+      sortPeople(sortedColumn, sortAscending);
+    });
   }
 
   // TODO: do the sorting in an isolate
   void sortPeople(int columnIndex, bool ascending) {
-    setState(() {
-      final direction = ascending ? 1 : -1;
-      sortedPeople = App.pedigree?.clone().people;
-      sortedPeople?.sort((a, b) {
-        switch (columnIndex) {
-          case 1:
-            return direction * compareDates(a.birth, b.birth);
-          case 0:
-          default:
-            return direction * a.name.compareTo(b.name);
-        }
-      });
-      
-      sortedColumn = columnIndex;
-      sortAscending = ascending;
+    final direction = ascending ? 1 : -1;
+    sortedPeople = App.pedigree?.clone().people;
+    sortedPeople?.sort((a, b) {
+      switch (columnIndex) {
+        case 1:
+          return direction * compareDates(a.birth, b.birth);
+        case 0:
+        default:
+          return direction * a.name.compareTo(b.name);
+      }
     });
+    
+    sortedColumn = columnIndex;
+    sortAscending = ascending;
   }
 
 
