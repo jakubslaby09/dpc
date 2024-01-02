@@ -175,7 +175,7 @@ class _CommitScreenState extends State<CommitScreen> {
               ...diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b)).map((change) {
                 final changedChronicle = App.pedigree!.chronicle.elementAtOrNull(change.index);
                 final chronicle = change.unchanged ?? changedChronicle!;
-                final authorsDiff = change.unchanged == null ? null : simpleDiff<num>(change.unchanged!.authors, changedChronicle?.authors ?? []);
+                final authorsDiff = change.unchanged == null || changedChronicle == null ? null : simpleDiff<num>(change.unchanged!.authors, changedChronicle.authors);
 
                 return Card(
                 // child: Text("${change.type.name}: ${changed}"),
@@ -186,7 +186,7 @@ class _CommitScreenState extends State<CommitScreen> {
                     children: [
                       ListTile(
                         leading: Icon(change.type == ChangeType.removal ? Icons.delete_outline : Icons.auto_stories_outlined),
-                        title: Text(chronicle.name),
+                        title: Text(changedChronicle?.name ?? "test"),
                         subtitle: authorsDiff?.isEmpty ?? true ? null : Row(
                           // TODO: fix overflow
                           children: [
