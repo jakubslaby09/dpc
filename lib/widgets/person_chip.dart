@@ -13,6 +13,7 @@ class PersonChip extends StatelessWidget {
     this.backgroundColor,
     this.nameColor,
     this.avatarBackgroundColor,
+    this.margin,
   });
 
   final Person person;
@@ -22,11 +23,13 @@ class PersonChip extends StatelessWidget {
   final Color? backgroundColor;
   final Color? avatarBackgroundColor;
   final Color? nameColor;
+  final EdgeInsets? margin;
   
   @override
   Widget build(BuildContext context) {
     return Card(
       color: backgroundColor,
+      margin: margin,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(

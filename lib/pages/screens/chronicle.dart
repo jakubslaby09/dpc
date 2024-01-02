@@ -83,23 +83,21 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                 subtitle: Row(
                   // TODO: fix overflow
                   children: [
-                    ...chronicle.authors.map((e) => PersonChip(
+                    ...chronicle.authors.map((authorId) => PersonChip(
+                      margin: const EdgeInsets.only(right: 8, bottom: 4),
                       // TODO: make a more robust person lookup fuction
-                      person: App.pedigree!.people[e.round()],
+                      person: App.pedigree!.people[authorId.round()],
                       repoDir: App.pedigree!.dir,
                       onRemove: () {
                         setState(() {
-                          chronicle.authors.remove(e);
+                          chronicle.authors.remove(authorId);
                         });
                         scheduleSave(context);
                       },
                     )),
                     if(chronicle.authors.isEmpty) OutlinedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: Text("Přidat autora"),
-                      // style: ButtonStyle(
-                        
-                      // ),
+                      label: const Text("Přidat autora"),
                       onPressed: () => addAuthor(chronicle),
                     ),
                     if(chronicle.authors.isNotEmpty) SizedBox(
