@@ -329,7 +329,6 @@ class Chronicle {
 
   bool compare(Chronicle other) {
     return name == other.name &&
-    mime == other.mime &&
     files.length == other.files.length &&
     authors.length == other.authors.length &&
     files.safeFirstWhere((element) => !other.files.contains(element)) == null &&
@@ -508,24 +507,6 @@ enum ChronicleMime {
   other,
 }
 extension ChronicleMimeExtension on ChronicleMime {
-  IconData get icon {
-    return switch (this) {
-      ChronicleMime.applicationPdf => Icons.picture_as_pdf_outlined,
-      ChronicleMime.textPlain => Icons.text_snippet_outlined,
-      ChronicleMime.textMarkdown => Icons.text_snippet_outlined,
-      ChronicleMime.other => Icons.attachment,
-    };
-  }
-
-  bool get openable {
-    return switch (this) {
-      ChronicleMime.applicationPdf => false,
-      ChronicleMime.textPlain => true,
-      ChronicleMime.textMarkdown => true,
-      ChronicleMime.other => false,
-    };
-  }
-
   String get toMimeString {
     final capital = name.indexOf(RegExp(r"[A-Z]"));
     if(capital == -1) {
@@ -543,4 +524,38 @@ ChronicleMime mimeFromString(String value) {
   } catch (e) {
     return ChronicleMime.other;
   }
+}
+
+const fileTypes = {
+  "md": ChronicleFileType(
+    icon: Icons.text_snippet_outlined,
+    openable: true,
+  ),
+  "txt": ChronicleFileType(
+    icon: Icons.text_snippet_outlined,
+    openable: true,
+  ),
+  "pdf": ChronicleFileType(
+    icon: Icons.picture_as_pdf_outlined,
+    openable: false,
+  ),
+};
+
+class ChronicleFileType {
+  const ChronicleFileType({
+    required this.icon,
+    required this.openable,
+  });
+
+  final IconData icon;
+  final bool openable;
+}
+
+ChronicleFileType fileTypeFromPath(String path) {
+  final ext = p.extension(path);
+  final type = ext.isEmpty ? null : fileTypes[ext.substring(1)];
+  return type ?? const ChronicleFileType(
+    icon: Icons.attachment_outlined,
+    openable: false,
+  );
 }

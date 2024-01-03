@@ -46,8 +46,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
           child: Column(
             children: [
               ListTile(
-                iconColor: Theme.of(context).colorScheme.outline,
-                leading: Icon(chronicle.mime.icon),
+                leading: const Icon(Icons.history_edu),
                 title: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -114,28 +113,34 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                 ),
               ),
               Divider(height: chronicle.files.length <= 1 ? 2 : null),
-              ...chronicle.files.indexedMap((fileName, index) => ListTile(
-                // leading: Icon(chronicle.mime.icon, color: Theme.of(context).colorScheme.outline),
-                title: Row(
-                  children: [
-                    Expanded(child: Text(fileName)),
-                    if(chronicle.mime.openable) const Padding(
-                      padding: EdgeInsets.only(right: 12),
-                      child: Icon(Icons.navigate_next),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => setState(() {
-                        chronicle.files.removeAt(index);
-                        scheduleSave(context);
-                      }),
-                    )
-                  ],
-                ),
-                onTap: chronicle.mime.openable ? () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ChroniclePage(fileName, context, markdown: chronicle.mime == ChronicleMime.textMarkdown),
-                )) : null,
-              )),
+              ...chronicle.files.indexedMap((fileName, index) {
+                final fileType = fileTypeFromPath(fileName);
+                return ListTile(
+                  leading: Icon(
+                    fileType.icon,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer.withOpacity(0.6),
+                  ),
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(fileName)),
+                      if(fileType.openable) const Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: Icon(Icons.navigate_next),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => setState(() {
+                          chronicle.files.removeAt(index);
+                          scheduleSave(context);
+                        }),
+                      )
+                    ],
+                  ),
+                  onTap: fileType.openable ? () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ChroniclePage(fileName, context, markdown: true),
+                  )) : null,
+                );
+              }),
               if(chronicle.files.isEmpty) ListTile(
                 iconColor: Theme.of(context).colorScheme.outline,
                 title: const Row(
@@ -187,7 +192,6 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
     scheduleSave(context);
   }
 }
-
 
 Future<void> addFile(BuildContext context, Chronicle chronicle) async {
   // TODO: use allowedExtensions

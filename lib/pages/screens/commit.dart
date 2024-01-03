@@ -174,7 +174,6 @@ class _CommitScreenState extends State<CommitScreen> {
               const Divider(color: Color.fromARGB(64, 128, 128, 128)),
               ...diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b)).map((change) {
                 final changedChronicle = App.pedigree!.chronicle.elementAtOrNull(change.index);
-                final chronicle = change.unchanged ?? changedChronicle!;
                 final authorsDiff = change.unchanged == null || changedChronicle == null ? null : simpleDiff<num>(change.unchanged!.authors, changedChronicle.authors);
 
                 return Card(
@@ -233,29 +232,32 @@ class _CommitScreenState extends State<CommitScreen> {
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
-                      if(change.type == ChangeType.modification && (changedChronicle?.files.length != change.unchanged!.files.length || changedChronicle?.files.safeFirstWhere((e) => !change.unchanged!.files.contains(e)) != null)) ...simpleDiff(change.unchanged!.files, changedChronicle!.files).map((fileChange) => ListTile(
-                        tileColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
-                        textColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
-                        iconColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
-                        leading: Icon(chronicle.mime.icon),
-                        title: Text(fileChange.unchanged ?? changedChronicle.files[fileChange.index]),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.backspace_outlined),
-                          onPressed: () => setState(() {
-                            if(fileChange.type == ChangeType.addition) {
-                              changedChronicle.files.removeAt(fileChange.index);
-                            } else if(fileChange.type == ChangeType.removal) {
-                              // TODO: fix ordering
-                              try {
-                                changedChronicle.files.insert(fileChange.index, fileChange.unchanged!);
-                              } on RangeError catch (_) {
-                                changedChronicle.files.add(fileChange.unchanged!);
+                      if(change.type == ChangeType.modification && (changedChronicle?.files.length != change.unchanged!.files.length || changedChronicle?.files.safeFirstWhere((e) => !change.unchanged!.files.contains(e)) != null)) ...simpleDiff(change.unchanged!.files, changedChronicle!.files).map((fileChange) {
+                        final filePath = fileChange.unchanged ?? changedChronicle.files[fileChange.index];
+                        return ListTile(
+                          tileColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
+                          textColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          iconColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          leading: Icon(fileTypeFromPath(filePath).icon),
+                          title: Text(filePath),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.backspace_outlined),
+                            onPressed: () => setState(() {
+                              if(fileChange.type == ChangeType.addition) {
+                                changedChronicle.files.removeAt(fileChange.index);
+                              } else if(fileChange.type == ChangeType.removal) {
+                                // TODO: fix ordering
+                                try {
+                                  changedChronicle.files.insert(fileChange.index, fileChange.unchanged!);
+                                } on RangeError catch (_) {
+                                  changedChronicle.files.add(fileChange.unchanged!);
+                                }
                               }
-                            }
-                            scheduleSave(context);
-                          }),
-                        ),
-                      ))
+                              scheduleSave(context);
+                            }),
+                          ),
+                        );
+                      })
                     ],
                   ),
                 );
