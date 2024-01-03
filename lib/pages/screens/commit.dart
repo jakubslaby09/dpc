@@ -345,7 +345,7 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
       "nelze získat stav ostatních souborů",
     );
     calloc.free(options);
-    
+
     final List<(File, ChangeType)> files = [];
     // TODO: add a limit to prefs
     for (var i = 0;; i++) {
@@ -366,7 +366,13 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
 }
 
 (File, ChangeType)? fileStatus(Pointer<git_status_entry> entry) {
-  final file = File(entry.ref.index_to_workdir.ref.new_file.path.toDartString());
+  final Pointer<git_diff_delta> delta;
+  if(entry.ref.index_to_workdir.address != nullptr.address) {
+    delta = entry.ref.index_to_workdir;
+  } else {
+    delta = entry.ref.head_to_index;
+  }
+  final path = delta.ref.new_file.path.toDartString();
   final ChangeType changeType;
   switch (entry.ref.status) {
     case git_status_t.GIT_STATUS_INDEX_NEW:
@@ -379,7 +385,7 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
       break;
     case git_status_t.GIT_STATUS_INDEX_MODIFIED:
     case git_status_t.GIT_STATUS_WT_MODIFIED:
-      if(p.basename(file.path) == "index.dpc") {
+      if(p.basename(path) == "index.dpc") {
         return null;
       }
       changeType = ChangeType.modification;
@@ -387,7 +393,7 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
     default:
       return null;
   }
-  return (file, changeType);
+  return (File(path), changeType);
 }
 
 enum ChangeType {
