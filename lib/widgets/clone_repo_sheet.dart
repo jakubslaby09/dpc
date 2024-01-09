@@ -166,22 +166,23 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                   if(split.length > 2) {
                     return "Uveďte prosím pouze repozitář a vlastníka. Možná zkuste: ${split[split.length - 2]}/${split[split.length - 1]}";
                   }
-    
+
                   return null;
                 },
               ),
+            ),
+            if(error != null) Padding(
+                padding: const EdgeInsets.only(left: 24, right: 24, top: 8),
+                    child: Text(
+                    error!,
+                    softWrap: true,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
               child: Row(
                 children: [
-                  if(error != null) Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Text(
-                      error!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                  ),
                   if(progress?.bytes != null) Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: Text("${((progress!.bytes ?? 0) / 1048576).round()} MiB"),
@@ -212,7 +213,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                           Navigator.of(context).pop();
                           return;
                         }
-                        
+
                         isolateHandle!.abort();
                       },
                       style: FilledButton.styleFrom(
@@ -242,7 +243,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                         }
 
                         if(!formKey.currentState!.validate()) return;
-    
+
                         error = null;
                         final Uri url;
                         final String name;
@@ -254,9 +255,18 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                             name = url.userInfo.split(":")[0];
                             break;
                           case AuthOptions.github:
-                            final token = await githubOauth();
-                            name = await githubUsername(token);
-                            email = await githubEmail(token);
+                            final String token;
+                            try {
+                                token = await githubOauth();
+                                name = await githubUsername(token);
+                                email = await githubEmail(token);
+                            } catch (e) {
+                                setState(() {
+                                    // TODO: display less of the error, make a way to report it
+                                    error = e.toString();
+                                });
+                                return;
+                            }
                             url = Uri(
                               scheme: "https",
                               host: "github.com",
@@ -266,7 +276,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                             debugPrint("repo url: $url");
                             break;
                         }
-                        
+
                         startDownload(context, url.toString(), name, email);
                       },
                       style: FilledButton.styleFrom(
@@ -472,7 +482,7 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
   ffi.Pointer<ffi.Bool> abort = ffi.Pointer.fromAddress(message.abortPtr);
   ffi.Pointer<ProgressCallbackPayload> payload = ffi.calloc();
   message.sender.send(CloneProgress(ratio: 0));
-  
+
   expectCode(App.git.git_clone_options_init(options, GIT_CLONE_OPTIONS_VERSION), "chyba při nastavování výchozího nastavení");
   // TODO: try to use less confusing identifier than nativePort
   IsolateNameServer.registerPortWithName(message.sender, message.sender.nativePort.toString());
@@ -526,7 +536,7 @@ Future<DownloadHandle> spawnDownload(BuildContext context, String url, String pa
 final class ProgressCallbackPayload extends ffi.Struct {
   @ffi.Int64()
   external int abortPtr;
-  
+
   @ffi.Int64()
   external int nativeSender;
 }
