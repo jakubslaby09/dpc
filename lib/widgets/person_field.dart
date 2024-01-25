@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
+import 'package:dpc/widgets/avatar.dart';
 import 'package:flutter/material.dart';
 
 class PersonField extends StatefulWidget {
@@ -131,7 +132,7 @@ class _PersonPickerState extends State<PersonPicker> {
             // shrinkWrap: true,
             itemCount: filtered.length,
             itemBuilder: (_, index) => ListTile(
-              // leading: Icon(filtered[index].sex.icon),
+              leading: PersonAvatar(person: filtered[index], repoDir: App.pedigree!.dir),
               title: Text(filtered[index].name),
               trailing: Text(
                 "${filtered[index].birth ?? "?"} - ${filtered[index].death ?? "?"}",
