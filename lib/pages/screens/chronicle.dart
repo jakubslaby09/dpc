@@ -17,7 +17,7 @@ class ChronicleScreen extends UniqueWidget implements FABScreen {
 
   @override
   State<ChronicleScreen> createState() => _ChronicleScreenState();
-  
+
   @override
   Widget? fab(BuildContext context) {
     return FloatingActionButton.small(
@@ -149,7 +149,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                   ],
                 ),
                 onTap: () => addFile(context, chronicle).then((_) => setState(() {})),
-              )
+              ),
             ],
           ),
         ),
@@ -194,6 +194,7 @@ Future<void> addFile(BuildContext context, Chronicle chronicle) async {
   final picked = await FilePicker.platform.pickFiles(
     dialogTitle: "Vybrat soubory do kroniky",
     allowMultiple: true,
+    initialDirectory: App.pedigree?.dir,
   );
 
   if(picked == null) {
@@ -212,7 +213,7 @@ Future<void> addFile(BuildContext context, Chronicle chronicle) async {
     if(p.isWithin(App.pedigree!.dir, sourceFile.path)) {
       file = sourceFile;
     } else {
-      final filePath = await showFileImportSheet(context, sourceFile.path, "kronika", "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění");
+      final filePath = await showFileImportSheet(context, sourceFile.path, "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění", "kronika");
       if(filePath == null) {
         return;
       }
