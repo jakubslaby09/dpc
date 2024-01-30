@@ -138,7 +138,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                     ],
                   ),
                   onTap: fileType.openable ? () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ChroniclePage(fileName, context, markdown: true),
+                    builder: (context) => ChroniclePage(fileName, context),
                   )) : null,
                 );
               }),

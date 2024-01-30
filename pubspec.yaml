@@ -39,11 +39,15 @@ dependencies:
   shared_preferences: ^2.2.1
   git2dart_binaries: ^0.3.0
   ffi: ^2.0.2
-  flutter_markdown: ^0.6.17
   url_launcher: ^6.1.14
   permission_handler: ^11.0.0
   http: ^1.1.0
   intl: ^0.18.1
+  flutter_quill: ^9.2.10
+  markdown_quill:
+    git:
+      url: https://github.com/jakubslaby09/markdown_quill.git
+      revision: cf2581
 
 dev_dependencies:
   flutter_test:
