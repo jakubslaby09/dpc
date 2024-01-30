@@ -10,9 +10,8 @@ final RegExp authorPattern = RegExp(r"\[(\d*?)\]\((.*?)\):?\n?([\S\s]*)");
 
 class ChroniclePage extends StatelessWidget {
   ChroniclePage(this.relativePath, BuildContext context, {super.key, this.markdown = false}) {
-    // TODO: don't add that subdirectory in dpc v5
     // TODO: async with loading widget and error handling
-    string = File(p.join(App.pedigree!.dir, "kronika", relativePath)).readAsStringSync();
+    string = File(p.join(App.pedigree!.dir, relativePath)).readAsStringSync();
   }
 
   // final Chronicle chronicle;

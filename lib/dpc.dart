@@ -45,7 +45,21 @@ class Pedigree {
         return person;
       }).toList();
     }
-    assert(maxVersion == 4);
+    if(version <= 4) {
+      for(final Map chronicle in json['chronicle']) {
+        chronicle.remove('mime');
+        if(chronicle.keys.contains('file')) {
+          chronicle['file'] = p.join("kronika", chronicle['file']);
+        }
+        if(chronicle.keys.contains('files')) {
+          for (int pathIndex = 0; pathIndex < (chronicle['files'] as List).length; pathIndex++) {
+            chronicle['files'][pathIndex] = p.join("kronika", chronicle['files'][pathIndex]); 
+          }
+        }
+        if(chronicle['files'] == []) chronicle.remove("files");
+      }
+    }
+    assert(maxVersion == 5);
     json['version'] = maxVersion;
     return Pedigree.parse(json, dir, repo);
   }
@@ -72,7 +86,7 @@ class Pedigree {
   // TODO: free when closing file
   Pointer<git_repository> repo;
 
-  static const maxVersion = 4;
+  static const maxVersion = 5;
   static const minUpgradableVersion = 3;
 
   Pedigree clone() {
@@ -312,18 +326,15 @@ class Chronicle {
   Chronicle.empty()
   : name = "",
     authors = [],
-    files = [],
-    mime = ChronicleMime.other;
+    files = [];
 
   Chronicle.parse(Map<String, dynamic> json)
     : name = json['name'],
-      mime = mimeFromString(json['mime']),
       files = parseChronicleFiles(json['files'], json['file']),
-      authors = parseIdList(json['authors'])!;
+      authors = parseChronicleAuthors(json['authors'], json['author']);
 
   Chronicle.clone(Chronicle chronicle)
   : name = chronicle.name,
-  mime = chronicle.mime,
   files = [...chronicle.files],
   authors = [...chronicle.authors];
 
@@ -336,22 +347,24 @@ class Chronicle {
   }
 
   String name;
-  // TODO: remove it in dpc v5 since it doesn't make sence
-  ChronicleMime mime;
   List<String> files;
   List<num> authors;
 
   Map<String, dynamic> toJson() {
     Map<String, Object> result = {
       "name": name,
-      "mime": mime.toMimeString,
-      "authors": authors,
     };
 
     if(files.length == 1) {
       result["file"] = files[0];
-    } else {
+    } else if(files.length > 1) {
       result["files"] = files;
+    }
+    
+    if(authors.length == 1) {
+      result["author"] = authors[0];
+    } else if(authors.length > 1) {
+      result["authors"] = authors;
     }
 
     return result;
@@ -367,19 +380,31 @@ List<num>? parseIdList(List<dynamic>? list) {
   return list?.map((value) => value as num).toList();
 }
 
+List<num> parseChronicleAuthors(List<dynamic>? authors, dynamic author) {
+  if(author != null && authors != null) {
+    throw Exception("`author` and `authors` should not be set both at once.");
+  }
+
+  if(author != null) {
+    return [author];
+  } else {
+    return parseIdList(authors) ?? [];
+  }
+}
+
 List<String>? parseStringList(List<dynamic>? list) {
   return list?.map((value) => (value as String)).toList();
 }
 
 List<String> parseChronicleFiles(List<dynamic>? files, dynamic file) {
-  if((file == null) == (files == null)) {
-    throw Exception("Either `file` or `files` field should be set.");
+  if(file != null && files != null) {
+    throw Exception("`file` and `files` should not be set both at once.");
   }
 
   if(file != null) {
     return [file];
   } else {
-    return parseStringList(files)!;
+    return parseStringList(files) ?? [];
   }
 }
 
@@ -497,32 +522,6 @@ class UnknownChildren implements Child, HasOtherParent {
     final otherParents = pedigree.people.where((person) => person.id != parent.id && person.children.contains(wholeId));
     if(otherParents.length != 1) return null;
     return otherParents.first;
-  }
-}
-
-enum ChronicleMime {
-  applicationPdf,
-  textPlain,
-  textMarkdown,
-  other,
-}
-extension ChronicleMimeExtension on ChronicleMime {
-  String get toMimeString {
-    final capital = name.indexOf(RegExp(r"[A-Z]"));
-    if(capital == -1) {
-      return "other/other";
-    }
-    return name.replaceRange(capital, capital + 1, "/${name[capital].toLowerCase()}");
-  }
-}
-
-ChronicleMime mimeFromString(String value) {
-  try {
-    return ChronicleMime.values.firstWhere((element) {
-      return element.toString().split(".").last.toLowerCase() == value.replaceAll("/", "");
-    });
-  } catch (e) {
-    return ChronicleMime.other;
   }
 }
 
