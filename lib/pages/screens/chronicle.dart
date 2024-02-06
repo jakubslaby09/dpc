@@ -33,6 +33,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
   Widget build(BuildContext context) {
     return ListView(
       controller: controller,
+      padding: const EdgeInsets.only(bottom: 60),
       children: App.pedigree!.chronicle.indexedMap((chronicle, chronicleIndex) => Padding(
         padding: const EdgeInsets.all(8),
         child: Card(
