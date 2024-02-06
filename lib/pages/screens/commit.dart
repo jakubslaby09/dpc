@@ -62,6 +62,12 @@ class _CommitScreenState extends State<CommitScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
+              if(App.unchangedPedigree!.version != App.pedigree!.version) const Card(
+                child: ListTile(
+                  leading: Icon(Icons.upgrade),
+                  title: Text("Upgrade indexu"),
+                ),
+              ),
               ...diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b)).map((change) {
                 final person = App.pedigree!.people.elementAtOrNull(change.index) ?? change.unchanged!;
                   return Card(

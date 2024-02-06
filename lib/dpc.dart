@@ -18,7 +18,7 @@ class Pedigree {
     people = (json['people'] as List<dynamic>).map((person) => Person.parse(person)).toList(),
     chronicle = (json['chronicle'] as List<dynamic>).map((chronicle) => Chronicle.parse(chronicle)).toList() {
       if (version > maxVersion) throw Exception("Unsupported pedigree version $version!");
-      if (version < maxVersion) throw Exception("Outdated pedigree version $version.${version >= minUpgradableVersion ? " You need to upgrade it first." : ""}");
+      if (version < maxVersion) throw OutdatedPedigreeException(version, json);
       people.asMap().forEach((index, person) {
         if (person.father != null && person.father! < 0) throw Exception("${person.name} has a father id smaller than 0");
         if (person.mother != null && person.mother! < 0) throw Exception("${person.name} has a mother id smaller than 0");
@@ -30,8 +30,11 @@ class Pedigree {
   }
 
   factory Pedigree.upgrade(Map<String, dynamic> json, String dir, Pointer<git_repository> repo) {
-    if(json['version'] is! int || json['version'] < minUpgradableVersion || json['version'] > maxVersion) {
+    if(json['version'] is! int || json['version'] > maxVersion) {
       throw Exception("Unsupported or invalid pedigree version: ${json['version']}");
+    }
+    if(json['version'] < minUpgradableVersion) {
+      throw OutdatedPedigreeException(json['version'], json);
     }
     final version = json['version'];
 
@@ -557,4 +560,22 @@ ChronicleFileType fileTypeFromPath(String path) {
     icon: Icons.attachment_outlined,
     openable: false,
   );
+}
+
+class OutdatedPedigreeException implements Exception {
+  const OutdatedPedigreeException(this.version, this.values);
+
+  final int version;
+  final Map<String, dynamic> values;
+  @override
+  String toString() {
+    return "Exception: Outdated pedigree version $version.${
+      upgradable ? " You need to upgrade it first."
+      : " Only versions ${Pedigree.minUpgradableVersion} and newer can be upgraded."
+    }";
+  }
+
+  bool get upgradable {
+    return version >= Pedigree.minUpgradableVersion;
+  }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'package:dpc/widgets/confirm_upgrade_sheet.dart';
 import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -172,11 +173,14 @@ class _FileScreenState extends State<FileScreen> {
         indexString = await index.readAsString();
       }
       dynamic indexValues = json.decode(indexString);
-      if(App.prefs.autoUpgradeFiles) {
+      try {
+        App.pedigree = Pedigree.parse(indexValues, directory, repo.value);
+      } on OutdatedPedigreeException catch (e, _) {
+        if(!App.prefs.autoUpgradeFiles && !await UpgradeSheet.show(context, e.version, index.parent.path)) {
+          return;
+        }
         App.pedigree = Pedigree.upgrade(indexValues, directory, repo.value);
         scheduleSave(context);
-      } else {
-        App.pedigree = Pedigree.parse(indexValues, directory, repo.value);
       }
       try {
         readUnchanged(context, directory, repo.value);
@@ -187,8 +191,13 @@ class _FileScreenState extends State<FileScreen> {
 
     } on PathAccessException catch (e, t) {
       showException(context, "Aplikaci nebylo povoleno přečíst rodokmen.", e, t);
+    } on OutdatedPedigreeException catch (e, t) {
+      broken = true;
+      showException(context, "Rodokmen je příliš starý a není již podporován.", e, t);
+      if (!App.prefs.saveBrokenRecentFiles) {
+        return;
+      }
     } on Exception catch (e, t) {
-      // TODO: make a pedigree upgrade dialog
       showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e, t);
       if (!App.prefs.saveBrokenRecentFiles) {
         return;
@@ -298,7 +307,9 @@ void readUnchanged(BuildContext context, String directory, Pointer<git_repositor
   String text = (blobBuffer.cast<Pointer<Utf8>>() as Pointer<Utf8>).toDartString();
   dynamic values = json.decode(text);
   
+  final version = values['version'] as int;
   App.unchangedPedigree = Pedigree.upgrade(values, directory, repo);
+  App.unchangedPedigree!.version = version;
 }
 
 void expectCode(int code, [String? message]) {
