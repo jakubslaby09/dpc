@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dpc/main.dart';
+import 'package:dpc/pages/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
@@ -93,16 +94,18 @@ class _ChroniclePageState extends State<ChroniclePage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.save_outlined),
-        // TODO: write back to the file
-        onPressed: null/* () async {
-          final string;
-          if(markdown) {
-            string = DeltaToMarkdown().convert((await controller).document.toDelta());
-          } else {
-            string = (await controller).document.toPlainText();
+        onPressed: () async {
+          try {
+            final String string;
+            if(markdown) {
+              string = DeltaToMarkdown().convert((await controller).document.toDelta());
+            } else {
+              string = (await controller).document.toPlainText();
+            }
+          } on Exception catch (e, t) {
+            showException(context, "Nelze uložit Vaše změny.", e ,t);
           }
-          await File("./test.md").writeAsString(string);
-        } */,
+        },
       ),
     );
   }
