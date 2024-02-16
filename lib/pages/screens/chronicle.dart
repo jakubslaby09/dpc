@@ -227,7 +227,9 @@ Future<void> addFile(BuildContext context, Chronicle chronicle) async {
       await sourceFile.copy(file.path);
     }
 
-    chronicle.files.add(p.relative(file.path, from: App.pedigree!.dir));
     // TODO: fix ordering
+    chronicle.files.add(p.relative(file.path, from: App.pedigree!.dir));
+    
+    scheduleSave(context);
   }
 }
