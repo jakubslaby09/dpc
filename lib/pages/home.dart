@@ -79,8 +79,8 @@ class _HomePageState extends State<HomePage> {
             onDestinationSelected: (screen) => setState(() => _viewedScreen = screen),
           ),
           // const VerticalDivider(thickness: 1, width: 1),
-          SizedBox(
-            width: MediaQuery.of(context).size.width - (MediaQuery.of(context).orientation == Orientation.landscape ? 80 : 0),
+          Expanded(
+            // width: MediaQuery.of(context).size.width - (MediaQuery.of(context).orientation == Orientation.landscape ? 80 : 0),
             child: App.pedigree != null || !_destinations[_viewedScreen].needsPedigree ? _destinations[_viewedScreen].screen : NoPedigreeScreen(
               onHome: () => setState(() => _viewedScreen = 0),
             ),
