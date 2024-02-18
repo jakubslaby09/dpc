@@ -1,0 +1,7 @@
+- bugfixes and improvements
+- publishing all pedigree files
+- adding profile pictures
+- adding new chronicles
+- editing chronicle names and authors
+- the fifth version of the DPC index
+- upgrading chronicle indexes

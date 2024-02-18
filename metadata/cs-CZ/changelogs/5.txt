@@ -1,0 +1,7 @@
+- opravy chyb a drobná vylepšení
+- zveřejňování všech souborů rodokmenu
+- přidávání profilových fotek
+- přidávání nových dílů kroniky
+- úprava názvů a autorů kroniky
+- pátá verze indexu kroniky
+- upgradování indexu kroniky
