@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dpc/main.dart';
+import 'package:dpc/pages/chronicle/to_markdown.dart';
 import 'package:dpc/pages/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -82,6 +83,7 @@ class _ChroniclePageState extends State<ChroniclePage> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 75),
                   child: QuillEditor(
+                    // TODO: make an unknown embed builder
                     configurations: QuillEditorConfigurations(controller: controller.requireData),
                     scrollController: ScrollController(),
                     focusNode: FocusNode(),
@@ -98,10 +100,14 @@ class _ChroniclePageState extends State<ChroniclePage> {
           try {
             final String string;
             if(markdown) {
-              string = DeltaToMarkdown().convert((await controller).document.toDelta());
+              /* string = DeltaToMarkdown()
+              .convert((await controller).document.toDelta()); */
+              string = quillToMarkdownString((await controller).document.toDelta());
             } else {
               string = (await controller).document.toPlainText();
             }
+            await widget.file.writeAsString(string);
+            // File(p.setExtension(widget.file.path, ".json")).writeAsString(const JsonEncoder.withIndent(" ").convert((await controller).document.toDelta().toJson()));
           } on Exception catch (e, t) {
             showException(context, "Nelze uložit Vaše změny.", e ,t);
           }
@@ -123,6 +129,7 @@ class _ChroniclePageState extends State<ChroniclePage> {
       delta = MarkdownToDelta(
         markdownDocument: ChroniclePage.markdownDocument
       ).convert(string);
+      // File(p.setExtension(widget.file.path, ".json")).writeAsString(const JsonEncoder.withIndent(" ").convert(delta.toJson()));
     } else {
       delta = Delta.fromOperations([Operation.insert(string)]);
     }
