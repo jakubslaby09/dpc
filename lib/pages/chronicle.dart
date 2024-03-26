@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dpc/main.dart';
@@ -63,6 +64,7 @@ class _ChroniclePageState extends State<ChroniclePage> {
               showListCheck: false,
               showSubscript: false,
               showSuperscript: false,
+              showIndent: false,
               showBoldButton: markdown,
               showItalicButton: markdown,
               showUnderLineButton: markdown,
@@ -74,7 +76,6 @@ class _ChroniclePageState extends State<ChroniclePage> {
               showListBullets: markdown,
               showCodeBlock: markdown,
               showQuote: markdown,
-              showIndent: markdown,
               showLink: markdown,
             )),
             Expanded(
