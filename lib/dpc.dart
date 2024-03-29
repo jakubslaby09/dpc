@@ -121,6 +121,45 @@ class Pedigree {
       showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem.", e, t);
     }
   }
+
+  void removePerson(int id) {
+    assert(id < people.length, "Tried to remove a person which is not in the pedigree");
+    assert(id > 0, "Tried to remove a person with a negative id");
+
+    final person = people[id];
+    if(person.father != null) {
+      people[person.father!].children.remove(id);
+    }
+    if(person.mother != null) {
+      people[person.mother!].children.remove(id);
+    }
+    for (final child in [...person.getChildren(this)]) {
+      if(child is Person) {
+        child.setParent(null, person.sex, this);
+      }
+    }
+
+    if(id == people.length - 1) {
+      people.removeLast();
+    } else {
+      people[id] = people.removeLast();
+      final movedPerson = people[id];
+      movedPerson.id = id;
+      if(movedPerson.father != null) {
+        final index = people[movedPerson.father!].children.indexWhere((childId) => childId == people.length);
+        people[movedPerson.father!].children[index] = id;
+      }
+      if(movedPerson.mother != null) {
+        final index = people[movedPerson.mother!].children.indexWhere((childId) => childId == people.length);
+        people[movedPerson.mother!].children[index] = id;
+      }
+      for (final child in movedPerson.getChildren(this)) {
+        if(child is Person) {
+          child.setParent(id, person.sex, this);
+        }
+      }
+    }
+  }
 }
 
 class Person implements Child, HasOtherParent {

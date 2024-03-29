@@ -85,7 +85,7 @@ class _CommitScreenState extends State<CommitScreen> {
                                 person.name = App.unchangedPedigree!.people[change.index].name;
                                 break;
                               case ChangeType.addition:
-                                App.pedigree!.people.removeAt(change.index);
+                                App.pedigree!.removePerson(change.index);
                                 break;
                               case ChangeType.removal:
                                 // TODO: fix ordering
