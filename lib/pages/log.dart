@@ -80,16 +80,18 @@ class LogPage extends StatelessWidget {
   }
 }
 
+void showExceptionPage(BuildContext context, [Exception? exception, StackTrace? trace]) {
+  Navigator.of(context).push(MaterialPageRoute(
+    builder: (context) => LogPage(trace?.toString() ?? "", title: exception?.toString())
+  ));
+}
+
 void showException(BuildContext context, String message, [Exception? exception, StackTrace? trace]) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     content: Text(message),
     action: exception == null ? null : SnackBarAction(
       label: "Zobrazit detaily",
-      onPressed: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => LogPage(trace.toString(), title: exception.toString())
-        ));
-      },
+      onPressed: () => showExceptionPage(context, exception, trace),
     ),
   ));
 }
