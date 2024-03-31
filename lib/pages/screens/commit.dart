@@ -1,4 +1,4 @@
-import 'dart:ffi';
+import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
@@ -43,6 +43,7 @@ class CommitScreen extends UniqueWidget implements FABScreen {
 // TODO: display dividers only when needed
 class _CommitScreenState extends State<CommitScreen> {
   Future<List<(File, ChangeType)>> files = changedFiles(App.pedigree!.repo);
+  Future<int> newChanges = fetchChanges(App.pedigree!.repo);
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +63,37 @@ class _CommitScreenState extends State<CommitScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
+              FutureBuilder(
+                future: newChanges,
+                builder: (context, newChanges) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  child: ListTile(
+                    leading: !newChanges.hasData
+                      ? newChanges.hasError
+                        ? const Icon(Icons.cloud_off_outlined)
+                        : const CircularProgressIndicator()
+                      : newChanges.data == 0
+                        ? const Icon(Icons.cloud_outlined)
+                        : const Icon(Icons.cloud_download_outlined),
+                    title: !newChanges.hasData
+                    ? newChanges.hasError
+                      ? const Text("Nelze zkontrolovat změny z internetu")
+                      : const Text("Stahování změn...")
+                    : newChanges.data! > 0
+                      ? Text("Ve vzdáleném repozitáři je ${newChanges.data} ${newChanges.data! > 1 ? "nových příspěvků" : "nový příspěvek"}")
+                      : null,
+                    trailing: (newChanges.data ?? 0) > 0 ? FilledButton.icon(
+                      icon: const Icon(Icons.cloud_download_outlined),
+                      label: Text("Přijmout ${newChanges.data} ${newChanges.data! > 1 ? "příspěvků" : "příspěvek"}"),
+                      onPressed: null,
+                    ) : newChanges.error is Exception ? TextButton(
+                      child: const Text("Více"),
+                      onPressed: () => showExceptionPage(context, newChanges.error as Exception),
+                    ) : null,
+                  ),
+                ),
+              ),
+              const Divider(color: Color.fromARGB(64, 128, 128, 128)),
               if(App.unchangedPedigree!.version != App.pedigree!.version) const Card(
                 child: ListTile(
                   leading: Icon(Icons.upgrade),
@@ -332,31 +364,71 @@ class _CommitScreenState extends State<CommitScreen> {
     }
     setState(() { });
   }
+  
+  static Future<int> fetchChanges(ffi.Pointer<git_repository> repo) async {
+    final repoPtr = repo.address;
+    return await Isolate.run(() {
+      final ffi.Pointer<git_repository> repo = ffi.Pointer.fromAddress(repoPtr);
+      ffi.Pointer<ffi.Pointer<git_remote>> remote = calloc();
+      ffi.Pointer<git_fetch_options> options = calloc();
+      ffi.Pointer<ffi.Size> aheadCount = calloc();
+      ffi.Pointer<ffi.Size> behindCount = calloc();
+      ffi.Pointer<git_oid> localOid = calloc();
+      ffi.Pointer<ffi.Pointer<git_object>> remoteObject = calloc();
+      expectCode(
+        App.git.git_remote_lookup(remote, repo, "origin".toNativeUtf8().cast()),
+        "nelze zjistit, odkud stáhnout změny",
+      );
+      expectCode(App.git.git_fetch_options_init(options, GIT_FETCH_OPTIONS_VERSION));
+      // TODO: options.ref.callbacks.transfer_progress
+      expectCode(
+        App.git.git_remote_fetch(remote.value, ffi.nullptr, options, ffi.nullptr),
+        "nelze stáhnout změny",
+      );
+      expectCode(
+        App.git.git_reference_name_to_id(localOid, repo, "HEAD".toNativeUtf8().cast()),
+        "nelze najít místní poslední příspěvek",
+      );
+      expectCode(
+        App.git.git_revparse_single(remoteObject, repo, "origin/HEAD".toNativeUtf8().cast()),
+        "nelze najít vzdálený poslední příspěvek",
+      );
+      
+      expectCode(
+        App.git.git_graph_ahead_behind(aheadCount, behindCount, repo, remoteObject.value.cast(), localOid),
+        "nelze porovnat stažené změny mezi",
+      );
+
+      print("success: ${behindCount.value}, ${aheadCount.value}");
+      return aheadCount.value;
+    });
+  }
 }
 
-Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) async {
+Future<List<(File, ChangeType)>> changedFiles(ffi.Pointer<git_repository> repo) async {
   // TODO: don't share the repo pointer
   // TODO: free memory
   final repoPtr = repo.address;
   return await Isolate.run(() {
-    final Pointer<Pointer<git_status_list>> statuslist = calloc();
-    final Pointer<git_status_options> options = calloc();
+    final ffi.Pointer<ffi.Pointer<git_status_list>> statuslist = calloc();
+    final ffi.Pointer<git_status_options> options = calloc();
     expectCode(
       App.git.git_status_options_init(options, GIT_STATUS_OPTIONS_VERSION),
       "chyba při nastavování zjišťování stavu ostatních souborů"
     );
     options.ref.flags |= git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNTRACKED;
     expectCode(
-      App.git.git_status_list_new(statuslist, Pointer.fromAddress(repoPtr), options),
+      App.git.git_status_list_new(statuslist, ffi.Pointer.fromAddress(repoPtr), options),
       "nelze získat stav ostatních souborů",
     );
+    // git_error_code
     calloc.free(options);
 
     final List<(File, ChangeType)> files = [];
     // TODO: add a limit to prefs
     for (var i = 0;; i++) {
       final entry = App.git.git_status_byindex(statuslist.value, i);
-      if(entry.address == nullptr.address) {
+      if(entry.address == ffi.nullptr.address) {
         break;
       }
       final status = fileStatus(entry);
@@ -371,9 +443,9 @@ Future<List<(File, ChangeType)>> changedFiles(Pointer<git_repository> repo) asyn
   });
 }
 
-(File, ChangeType)? fileStatus(Pointer<git_status_entry> entry) {
-  final Pointer<git_diff_delta> delta;
-  if(entry.ref.index_to_workdir.address != nullptr.address) {
+(File, ChangeType)? fileStatus(ffi.Pointer<git_status_entry> entry) {
+  final ffi.Pointer<git_diff_delta> delta;
+  if(entry.ref.index_to_workdir.address != ffi.nullptr.address) {
     delta = entry.ref.index_to_workdir;
   } else {
     delta = entry.ref.head_to_index;
