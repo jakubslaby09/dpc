@@ -36,7 +36,6 @@ class _CommitSheetState extends State<CommitSheet> {
   String? error;
   bool saveSignature = true;
   bool inProgress = false;
-  // TODO: add an option to override it
   late ffi.Pointer<git_signature>? defaultSignature = readDefaultSignature(App.pedigree!.repo);
   late final authorNameController = TextEditingController(text: defaultSignature?.ref.name.toDartString());
   late final authorEmailController = TextEditingController(text: defaultSignature?.ref.email.toDartString());
