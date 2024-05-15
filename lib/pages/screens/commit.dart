@@ -43,7 +43,11 @@ class CommitScreen extends UniqueWidget implements FABScreen {
 // TODO: display dividers only when needed
 class _CommitScreenState extends State<CommitScreen> {
   Future<List<(File, ChangeType)>> files = changedFiles(App.pedigree!.repo);
-  Future<int> newChanges = fetchChanges(App.pedigree!.repo);
+  Future<int> remoteChanges = fetchChanges(App.pedigree!.repo);
+  List<Change<Person>> peopleChanges = diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b));
+  List<Change<Chronicle>> chronicleChanges = diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b));
+
+  bool get someChanges => peopleChanges.isNotEmpty || chronicleChanges.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -64,31 +68,34 @@ class _CommitScreenState extends State<CommitScreen> {
           child: Column(
             children: [
               FutureBuilder(
-                future: newChanges,
-                builder: (context, newChanges) => Padding(
+                future: remoteChanges,
+                builder: (context, remoteChanges) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                   child: ListTile(
-                    leading: !newChanges.hasData
-                      ? newChanges.hasError
+                    leading: !remoteChanges.hasData
+                      ? remoteChanges.hasError
                         ? const Icon(Icons.cloud_off_outlined)
                         : const CircularProgressIndicator()
-                      : newChanges.data == 0
+                      : remoteChanges.data == 0
                         ? const Icon(Icons.cloud_outlined)
                         : const Icon(Icons.cloud_download_outlined),
-                    title: !newChanges.hasData
-                    ? newChanges.hasError
+                    title: !remoteChanges.hasData
+                    ? remoteChanges.hasError
                       ? const Text("Nelze zkontrolovat změny z internetu")
                       : const Text("Stahování změn...")
-                    : newChanges.data! > 0
-                      ? Text("Ve vzdáleném repozitáři je ${newChanges.data} ${newChanges.data! > 1 ? "nových příspěvků" : "nový příspěvek"}")
-                      : null,
-                    trailing: (newChanges.data ?? 0) > 0 ? FilledButton.icon(
-                      icon: const Icon(Icons.cloud_download_outlined),
-                      label: Text("Přijmout ${newChanges.data} ${newChanges.data! > 1 ? "příspěvků" : "příspěvek"}"),
-                      onPressed: null,
-                    ) : newChanges.error is Exception ? TextButton(
+                    : remoteChanges.data! > 0
+                      ? Text("Ve vzdáleném repozitáři je ${remoteChanges.data} ${remoteChanges.data! > 1 ? "nových příspěvků" : "nový příspěvek"}. ${someChanges ? "Přijetím své změny přepíšete." : ""}")
+                      : const Text("Váš repozitář je aktuální"),
+                    trailing: (remoteChanges.data ?? 0) > 0 ? FilledButton.icon(
+                      icon: const Icon(Icons.download_for_offline_outlined),
+                      style: someChanges
+                        ? FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error)
+                        : null,
+                      label: someChanges ? const Text("Zahodit a přijmout") : Text("Přijmout ${remoteChanges.data} ${remoteChanges.data! > 1 ? "příspěvků" : "příspěvek"}"),
+                      onPressed: () => pullChanges(App.pedigree!.repo),
+                    ) : remoteChanges.error is Exception ? TextButton(
                       child: const Text("Více"),
-                      onPressed: () => showExceptionPage(context, newChanges.error as Exception),
+                      onPressed: () => showExceptionPage(context, remoteChanges.error as Exception),
                     ) : null,
                   ),
                 ),
@@ -100,7 +107,7 @@ class _CommitScreenState extends State<CommitScreen> {
                   title: Text("Upgrade indexu"),
                 ),
               ),
-              ...diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b)).map((change) {
+              ...peopleChanges.map((change) {
                 final person = App.pedigree!.people.elementAtOrNull(change.index) ?? change.unchanged!;
                   return Card(
                   child: Column(
@@ -210,7 +217,7 @@ class _CommitScreenState extends State<CommitScreen> {
                 );
               }),
               const Divider(color: Color.fromARGB(64, 128, 128, 128)),
-              ...diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b)).map((change) {
+              ...chronicleChanges.map((change) {
                 final changedChronicle = App.pedigree!.chronicle.elementAtOrNull(change.index);
                 final authorsDiff = change.unchanged == null || changedChronicle == null ? null : simpleDiff<num>(change.unchanged!.authors, changedChronicle.authors);
 
@@ -368,6 +375,7 @@ class _CommitScreenState extends State<CommitScreen> {
   static Future<int> fetchChanges(ffi.Pointer<git_repository> repo) async {
     final repoPtr = repo.address;
     return await Isolate.run(() {
+      // TODO: free
       final ffi.Pointer<git_repository> repo = ffi.Pointer.fromAddress(repoPtr);
       ffi.Pointer<ffi.Pointer<git_remote>> remote = calloc();
       ffi.Pointer<git_fetch_options> options = calloc();
@@ -393,15 +401,58 @@ class _CommitScreenState extends State<CommitScreen> {
         App.git.git_revparse_single(remoteObject, repo, "origin/HEAD".toNativeUtf8().cast()),
         "nelze najít vzdálený poslední příspěvek",
       );
-      
       expectCode(
         App.git.git_graph_ahead_behind(aheadCount, behindCount, repo, remoteObject.value.cast(), localOid),
         "nelze porovnat stažené změny mezi",
       );
-
-      print("success: ${behindCount.value}, ${aheadCount.value}");
       return aheadCount.value;
     });
+  }
+  
+  void pullChanges(ffi.Pointer<git_repository> repo) async {
+    final repoPtr = repo.address;
+    try {
+      return await Isolate.run(() {
+        // TODO: free
+        final ffi.Pointer<git_repository> repo = ffi.Pointer.fromAddress(repoPtr);
+        ffi.Pointer<git_checkout_options> opts = calloc();
+        ffi.Pointer<git_strarray> indexPath = calloc<git_strarray>();
+        ffi.Pointer<ffi.Pointer<ffi.Char>> indexPathArray = calloc();
+        ffi.Pointer<ffi.Pointer<git_annotated_commit>> fetchhead = calloc();
+        ffi.Pointer<ffi.Pointer<git_object>> fetchedObject = calloc();
+        ffi.Pointer<ffi.Pointer<git_reference>> head = calloc();
+        ffi.Pointer<ffi.Pointer<git_reference>> newRef = calloc();
+        expectCode(App.git.git_checkout_options_init(opts, GIT_CHECKOUT_OPTIONS_VERSION));
+        indexPathArray[0] = "index.dpc".toNativeUtf8().cast();
+        indexPath.ref.strings = indexPathArray;
+        indexPath.ref.count = 1;
+        expectCode(
+          App.git.git_annotated_commit_from_revspec(fetchhead, repo, "FETCH_HEAD".toNativeUtf8().cast()),
+        );
+        final fetchedOid = App.git.git_annotated_commit_id(fetchhead.value);
+
+        expectCode(
+          App.git.git_repository_head(head, repo),
+        );
+
+        expectCode(
+          App.git.git_object_lookup(fetchedObject, repo, fetchedOid, git_object_t.GIT_OBJECT_COMMIT),
+        );
+        expectCode(
+          App.git.git_checkout_options_init(opts, GIT_CHECKOUT_OPTIONS_VERSION),
+        );
+        opts.ref.checkout_strategy = git_checkout_strategy_t.GIT_CHECKOUT_FORCE;
+        expectCode(
+          App.git.git_checkout_tree(repo, fetchedObject.value, opts),
+        );
+        expectCode(
+          App.git.git_reference_set_target(newRef, head.value, fetchedOid, ffi.nullptr),
+        );
+        print("success");
+      });
+    } on Exception catch(e, t) {
+      showException(context, "", e, t);
+    }
   }
 }
 
@@ -480,6 +531,7 @@ enum ChangeType {
   modification,
 }
 
+// TODO: use inheritance
 class Change<T> {
   ChangeType type;
   int index;
