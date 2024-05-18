@@ -1,0 +1,2 @@
+- konečně!: stahování změn ze vzdáleného repozitáře
+- opraveno mazání více lidí na stránce se změnami

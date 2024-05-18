@@ -1,0 +1,2 @@
+- finally!: pulling changes from your remote repo
+- fixed deleting more than one person from the changes page
