@@ -364,7 +364,7 @@ class _CommitScreenState extends State<CommitScreen> {
       showException(context, error.message, error.exception, error.trace);
     }
     try {
-      readUnchanged(context, App.pedigree!.dir, App.pedigree!.repo);
+      loadUnchanged(context, App.pedigree!.dir, App.pedigree!.repo);
     } on Exception catch (e, t) {
       showException(context, "Nelze porovnat rodokmen s právě zveřejněnou verzí.", e, t);
       App.unchangedPedigree = App.pedigree!.clone();
