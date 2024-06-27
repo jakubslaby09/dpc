@@ -388,6 +388,7 @@ class _CommitScreenState extends State<CommitScreen> {
         "nelze zjistit, odkud stáhnout změny",
       );
       expectCode(App.git.git_fetch_options_init(options, GIT_FETCH_OPTIONS_VERSION));
+      options.ref.callbacks.certificate_check = ffi.Pointer.fromFunction<ffi.Int Function(ffi.Pointer<git_cert>, ffi.Int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Void>)>(_badCertificateCallback, minusOne);
       // TODO: options.ref.callbacks.transfer_progress
       expectCode(
         App.git.git_remote_fetch(remote.value, ffi.nullptr, options, ffi.nullptr),
@@ -647,4 +648,14 @@ List<Change<T>> diff<T>(List<T> original, List<T> changed, bool Function(T a, T 
   }
 
   return result;
+}
+
+int _badCertificateCallback(ffi.Pointer<git_cert> cert, int valid, ffi.Pointer<ffi.Char> host, ffi.Pointer<ffi.Void> payloadPtr) {
+  if(Platform.isAndroid) {
+    // TODO: don't do such a stupid thing
+    print("ignoring a bad certificate");
+    return 0;
+  }
+  // TODO: ask the user
+  return 1;
 }
