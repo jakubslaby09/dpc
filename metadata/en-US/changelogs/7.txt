@@ -1,0 +1,2 @@
+- better libgit error reporting
+- fix: fetching changes

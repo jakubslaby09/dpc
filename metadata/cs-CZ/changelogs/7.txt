@@ -1,0 +1,2 @@
+- lepší nahlašování chyb z libgitu
+- oprava: stahování změn
