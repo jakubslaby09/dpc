@@ -362,6 +362,11 @@ class Person implements Child, HasOtherParent {
 
     return result;
   }
+
+  @override
+  String toString() {
+    return "<$id: $name>";
+  }
 }
 
 class Chronicle {
