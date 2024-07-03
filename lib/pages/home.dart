@@ -3,6 +3,7 @@ import 'package:dpc/pages/screens/chronicle.dart';
 import 'package:dpc/pages/screens/commit.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/pages/screens/list.dart';
+import 'package:dpc/pages/screens/tree.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,6 +26,13 @@ class _HomePageState extends State<HomePage> {
       label: "Seznam",
       screen: ListScreen(key: GlobalKey()),
       icon: Icons.list,
+      needsPedigree: true,
+    ),
+    const Destination(
+      label: "Stromeček",
+      screen: TreeScreen(),
+      icon: Icons.park_outlined,
+      activeIcon: Icons.park,
       needsPedigree: true,
     ),
     Destination(

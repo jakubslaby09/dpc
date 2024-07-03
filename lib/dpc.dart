@@ -233,6 +233,42 @@ class Person implements Child, HasOtherParent {
   Iterable<Child> getChildren(Pedigree pedigree) {
     return children.map((childId) => Child(childId, pedigree));
   }
+  
+  List<(Person?, List<Child>)> getChildrenByPartners(Pedigree pedigree) {
+    final children = getChildren(pedigree).toList();
+    final List<(Person?, List<Child>)> partners = [];
+    for (final child in children) {
+      final partner = child is HasOtherParent ? (child as HasOtherParent).otherParent(this, pedigree) : null;
+      final partnerId = partners.indexWhere((p) => p.$1?.id == partner?.id);
+      if(partnerId == -1) {
+        partners.add((partner, [child]));
+      } else {
+        partners[partnerId].$2.add(child);
+      }
+    }
+    return partners;
+  }
+
+  Person? getParent(Pedigree pedigree, Sex sex) {
+    final id = sex == Sex.male ? father : mother;
+    return id == null ? null : pedigree.people.elementAtOrNull(id);
+  }
+
+  Person rootGrandParent(Pedigree pedigree, Sex sex) {
+    // TODO: a better way to detect loops
+    Person person = this;
+    print("$person's father: ${person.getParent(pedigree, sex)}");
+    for (int iterations = 0; iterations < pedigree.people.length; iterations++) {
+      Person? parent = person.getParent(pedigree, sex);
+      print("    $iterations: $parent");
+      if(parent == null) {
+        return person;
+      }
+      person = parent;
+    }
+    // throw Exception("counted more iterations than there are people when finding the root grand father");
+    return person;
+  }
 
   void addChild(num id, Person? otherParent, Pedigree pedigree, [int? position]) {
     // TODO: make ui for already added child id

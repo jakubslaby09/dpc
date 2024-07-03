@@ -1,0 +1,82 @@
+import 'package:dpc/dpc.dart';
+import 'package:dpc/main.dart';
+import 'package:dpc/widgets/avatar.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
+class TreeScreen extends StatelessWidget {
+  const TreeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final painter = DefaultPedigreePainter();
+    return InteractiveViewer(
+      child: CustomPaint(
+        painter: painter,
+        /* child: ValueListenableBuilder(
+          valueListenable: painter.people,
+          builder: (context, people, child) => Stack(
+            alignment: Alignment.topCenter,
+            children: people ?? [],
+          ),
+        ), */
+        child: ListenableBuilder(
+          listenable: painter.peopleNotifier,
+          builder: (context, child) => Stack(
+            alignment: Alignment.topCenter,
+            children: painter.people,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+abstract class PedigreePainter extends CustomPainter {
+  PedigreePainter();
+
+  // final ValueNotifier<List<Widget>?> people = ValueNotifier(null);
+  final List<Widget> people = [];
+  final ChangeNotifier peopleNotifier = ChangeNotifier();
+
+  void paintPedigree(Canvas canvas, Size size, PersonDrawer drawPerson);
+
+  @override
+  @protected
+  void paint(Canvas canvas, Size size) {
+    // final List<Widget> widgets = [];
+    people.clear();
+    paintPedigree(canvas, size, (positon, person) => people.add(Positioned(
+      top: positon.dx,
+      bottom: positon.dy,
+      child: PersonAvatar(
+        person: person,
+        repoDir: App.pedigree!.dir,
+      ),
+    )));
+    // people.value = widgets;
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) => peopleNotifier.notifyListeners());
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // TODO: implement shouldRepaint
+    return false;
+  }
+}
+
+class DefaultPedigreePainter extends PedigreePainter {
+  @override
+  void paintPedigree(Canvas canvas, Size size, PersonDrawer drawPerson) {
+    drawPerson(Offset(-200, 40), App.pedigree!.people[2]);
+    final paint = Paint()
+    ..color = Colors.black
+    ..strokeWidth = 4;
+    // canvas.drawColor(Colors.purple, BlendMode.src);
+    canvas.drawLine(Offset(100, 40), Offset(0, 200), paint);
+    canvas.drawCircle(Offset(100, 40), 10, paint);
+  }
+}
+
+// typedef PedigreeRenderer = void Function(Canvas canvas, PersonDrawer drawPerson);
+typedef PersonDrawer = void Function(Offset positon, Person person);
