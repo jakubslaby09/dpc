@@ -201,7 +201,7 @@ class _CommitScreenState extends State<CommitScreen> {
                             icon: const Icon(Icons.backspace_outlined),
                             onPressed: () => setState(() {
                               if(childChange.type == ChangeType.addition) {
-                                person.removeChild(childChange.index, App.pedigree!);
+                                person.removeChild(person.children[childChange.index], App.pedigree!);
                               } else if(childChange.type == ChangeType.removal) {
                                 // TODO: fix ordering
                                 person.addChild(childChange.unchanged!, null, App.pedigree!, childChange.index);
