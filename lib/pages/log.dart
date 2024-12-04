@@ -16,6 +16,7 @@ class LogPage extends StatelessWidget {
     }
     return Uri.https("github.com", "/jakubslaby09/dpc/issues/new", {
       if(title != null) "title": title,
+      // TODO: add device info
       "body": "```$title```\n```${shortenedLog ?? log}\n```",
     });
   }
