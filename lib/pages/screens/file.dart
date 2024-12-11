@@ -147,7 +147,7 @@ class _FileScreenState extends State<FileScreen> {
         return;
       }
     }
-    
+
     Pointer<Pointer<git_repository>> repo = calloc();
     final repoOpenResult = App.git.git_repository_open(repo, directory.toNativeUtf8().cast());
     switch (repoOpenResult) {
@@ -160,7 +160,7 @@ class _FileScreenState extends State<FileScreen> {
         showException(context, "Git repozitář se nepodařilo otevřít. Skrytá podsložka `.git` je možná poškozená.", Exception(repoOpenResult));
         return;
     }
-    
+
     bool broken = false;
     try {
       String indexString;
@@ -210,7 +210,7 @@ class _FileScreenState extends State<FileScreen> {
     recents.insert(broken && App.pedigree != null && recents.isNotEmpty ? 1 : 0, directory);
     App.prefs.recentFiles = recents;
   }
-  
+
   // TODO: move into sheet file
   createRepo(BuildContext context) async {
     final pickerResult = await FilePicker.platform.getDirectoryPath(
@@ -231,6 +231,9 @@ class _FileScreenState extends State<FileScreen> {
     }
 
     try {
+      // just to test ownership
+      await Directory("${directory.path}/.git").create(recursive: true);
+
       // TODO: free memory
       Pointer<Pointer<git_repository>> repo = calloc();
       Pointer<Pointer<git_signature>> signature = calloc();
@@ -269,8 +272,9 @@ class _FileScreenState extends State<FileScreen> {
       } on Exception catch (e, t) {
         showException(context, "Nelze pro nový repozitář nastavit Váš podpis", e, t);
       }
+    } on PathAccessException catch (e, t) {
+      showException(context, "Nemáte přístup potřebný pro založení Git repozitáře", e, t);
     } on Exception catch (e, t) {
-        // TODO: specific error message for PathAccessException
       showException(context, "Nelze pro nový rodokmen založit Git repozitář", e, t);
     }
 
@@ -297,7 +301,7 @@ void saveDefaultSignature(Pointer<git_repository> repo, Pointer<Char> name, Poin
 void loadUnchanged(BuildContext context, String directory, Pointer<git_repository> repo) {
   String text = readUnchangedString(repo);
   dynamic values = json.decode(text);
-  
+
   final version = values['version'] as int;
   App.unchangedPedigree = Pedigree.upgrade(values, directory, repo);
   App.unchangedPedigree!.version = version;
