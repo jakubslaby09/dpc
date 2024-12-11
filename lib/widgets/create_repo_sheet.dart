@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 
 class CreateRepoSheet extends StatefulWidget {
   CreateRepoSheet(this.directory, {super.key})
-  : useSubdir = directory.listSync().isNotEmpty;
+  : useSubdir = tryUseSubdir(directory);
 
   final Directory directory;
   final bool useSubdir;
@@ -22,6 +22,14 @@ class CreateRepoSheet extends StatefulWidget {
       builder: (_) => CreateRepoSheet(directory),
     );
   }
+}
+
+bool tryUseSubdir(Directory dir) {
+    try {
+        return dir.listSync().isNotEmpty;
+    } catch (e) {
+        return false;
+    }
 }
 
 // TODO: add a field for setting a remote, push the repo there

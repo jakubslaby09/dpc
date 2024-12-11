@@ -222,8 +222,14 @@ class _FileScreenState extends State<FileScreen> {
     final sheetResult = await CreateRepoSheet.show(context, directory);
     if(sheetResult == null) return;
     directory = Directory(sheetResult.dir);
-    await directory.create(recursive: true);
-    
+    try {
+        await directory.create(recursive: true);
+    } on PathAccessException catch (e) {
+        showException(context, "Ke složce pro rodokmen, kterou jste vybrali, nemáte přístup.", e);
+    } on Exception catch (e) {
+        showException(context, "Nelze vytvořit složku pro rodokmen.", e);
+    }
+
     try {
       // TODO: free memory
       Pointer<Pointer<git_repository>> repo = calloc();
@@ -257,13 +263,14 @@ class _FileScreenState extends State<FileScreen> {
         0,
         nullptr,
       ));
-      
+
       try {
         saveDefaultSignature(repo.value, name, email);
       } on Exception catch (e, t) {
         showException(context, "Nelze pro nový repozitář nastavit Váš podpis", e, t);
       }
     } on Exception catch (e, t) {
+        // TODO: specific error message for PathAccessException
       showException(context, "Nelze pro nový rodokmen založit Git repozitář", e, t);
     }
 
