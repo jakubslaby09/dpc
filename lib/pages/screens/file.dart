@@ -274,8 +274,10 @@ class _FileScreenState extends State<FileScreen> {
       }
     } on PathAccessException catch (e, t) {
       showException(context, "Nemáte přístup potřebný pro založení Git repozitáře", e, t);
+      return;
     } on Exception catch (e, t) {
       showException(context, "Nelze pro nový rodokmen založit Git repozitář", e, t);
+      return;
     }
 
     await openRepo(context, directory.path);
