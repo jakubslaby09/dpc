@@ -125,7 +125,7 @@ class NoPedigreeScreen extends StatelessWidget {
             color: Theme.of(context).colorScheme.errorContainer,
             shape: BoxShape.circle,
           ),
-          padding: EdgeInsets.all(32),
+          padding: const EdgeInsets.all(32),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Icon(
