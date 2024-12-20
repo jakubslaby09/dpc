@@ -5,10 +5,10 @@ import 'package:path/path.dart' as p;
 
 class CreateRepoSheet extends StatefulWidget {
   CreateRepoSheet(this.directory, {super.key})
-  : useSubdir = tryUseSubdir(directory);
+  : repoDirState = checkNewRepoDir(directory);
 
   final Directory directory;
-  final bool useSubdir;
+  final NewRepoDirResult repoDirState;
 
   @override
   State<CreateRepoSheet> createState() => _CreateRepoSheetState();
@@ -24,11 +24,12 @@ class CreateRepoSheet extends StatefulWidget {
   }
 }
 
-bool tryUseSubdir(Directory dir) {
+// TODO: make it async
+NewRepoDirResult checkNewRepoDir(Directory dir) {
     try {
-        return dir.listSync().isNotEmpty;
-    } catch (e) {
-        return false;
+        return dir.listSync().isEmpty ? NewRepoDirState.empty : NewRepoDirState.full;
+    } on PathAccessException catch (e) {
+        return NewRepoDirException(e.path, e.osError);
     }
 }
 
@@ -54,7 +55,15 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
           child: Column(
             children: [
               // TODO: add an override button
-              if(widget.useSubdir) Card(
+              if(widget.repoDirState is NewRepoDirException) Card(
+                margin: const EdgeInsets.only(bottom: 24),
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: const ListTile(
+                  leading: Icon(Icons.error_outlined),
+                  title: Text("Nelze přistupovat ke složce, kterou jste vybrali"),
+                ),
+              ),
+              if(widget.repoDirState == NewRepoDirState.full) Card(
                 margin: const EdgeInsets.only(bottom: 24),
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 child: const ListTile(
@@ -76,14 +85,14 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
               TextField(
                 controller: dirController,
                 decoration: InputDecoration(
-                  icon: Icon(widget.useSubdir ? Icons.folder_outlined : Icons.create_new_folder_outlined),
-                  labelText: widget.useSubdir ? "Cesta k novému repozitáři" : "Složka nového repozitáře",
+                  icon: Icon(widget.repoDirState == NewRepoDirState.full ? Icons.folder_outlined : Icons.create_new_folder_outlined),
+                  labelText: widget.repoDirState == NewRepoDirState.full ? "Cesta k novému repozitáři" : "Složka nového repozitáře",
                   border: const OutlineInputBorder(),
                 ),
                 enabled: false,
               ),
-              if(widget.useSubdir) const Divider(color: Colors.transparent),
-              if(widget.useSubdir) TextFormField(
+              if(widget.repoDirState == NewRepoDirState.full) const Divider(color: Colors.transparent),
+              if(widget.repoDirState == NewRepoDirState.full) TextFormField(
                 controller: subdirController,
                 decoration: const InputDecoration(
                   icon: Icon(Icons.create_new_folder_outlined),
@@ -170,7 +179,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
     );
   }
 
-  String get wholeDirectory => widget.useSubdir ? p.join(widget.directory.path, subdirController.text) : widget.directory.path;
+  String get wholeDirectory => widget.repoDirState == NewRepoDirState.full ? p.join(widget.directory.path, subdirController.text) : widget.directory.path;
 }
 
 class CreateRepoSheetResult {
@@ -182,3 +191,15 @@ class CreateRepoSheetResult {
   final String gitName;
   final String gitEmail;
 }
+
+abstract class NewRepoDirResult {}
+
+enum NewRepoDirState implements NewRepoDirResult {
+  empty,
+  full,
+}
+
+class NewRepoDirException extends PathAccessException implements NewRepoDirResult {
+    const NewRepoDirException(String? path, OSError? error) : super(path ?? "", error ?? const OSError());
+}
+
