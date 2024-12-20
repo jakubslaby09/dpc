@@ -19,7 +19,10 @@ class CreateRepoSheet extends StatefulWidget {
       isDismissible: false,
       enableDrag: false,
       context: context,
-      builder: (_) => CreateRepoSheet(directory),
+      builder: (context) => Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: CreateRepoSheet(directory),
+      ),
     );
   }
 }
