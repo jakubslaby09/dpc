@@ -61,6 +61,7 @@ class _FileScreenState extends State<FileScreen> {
               ),
               ...(App.pedigree == null ? App.prefs.recentFiles : App.prefs.recentFiles.length > 1 ? App.prefs.recentFiles.sublist(1) : []).map((filePath) => Card(
                 elevation: 0,
+                color: Colors.transparent,
                 child: ListTile(
                   leading: const Icon(Icons.file_copy_outlined),
                   onTap: () => openRepo(context, filePath).then((_) => setState(() {})),
