@@ -54,15 +54,15 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
           key: formKey,
           child: Column(
             children: [
-              // TODO: add an override button
               if(widget.repoDirState is NewRepoDirException) Card(
                 margin: const EdgeInsets.only(bottom: 24),
-                color: Theme.of(context).colorScheme.secondaryContainer,
+                color: Theme.of(context).colorScheme.errorContainer,
                 child: const ListTile(
                   leading: Icon(Icons.error_outlined),
                   title: Text("Nelze přistupovat ke složce, kterou jste vybrali"),
                 ),
               ),
+              // TODO: add an override button
               if(widget.repoDirState == NewRepoDirState.full) Card(
                 margin: const EdgeInsets.only(bottom: 24),
                 color: Theme.of(context).colorScheme.secondaryContainer,
@@ -82,6 +82,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                 validator: (value) => value?.trim().isEmpty ?? false ? "Zvolte si jméno kroniky" : null,
               ),
               const Divider(color: Colors.transparent),
+              // TODO: add a button to change the repo directory
               TextField(
                 controller: dirController,
                 decoration: InputDecoration(
@@ -152,7 +153,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                     const VerticalDivider(),
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () => setState(() {
+                        onPressed: widget.repoDirState is NewRepoDirException ? null : () => setState(() {
                           if(!formKey.currentState!.validate()) return;
                           Navigator.of(context).pop(CreateRepoSheetResult(
                             nameController.text,
