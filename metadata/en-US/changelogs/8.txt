@@ -1,0 +1,3 @@
+- prettier ui after selecting a directory for a new repozitory without permissions
+- fix keyboard covering the new repository sheet
+- fix removing children from people

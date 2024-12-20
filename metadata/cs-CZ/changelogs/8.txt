@@ -1,0 +1,3 @@
+- lepší vzhled při výběru složky pro nový repozitář, ke které nelze získat přístup
+- rozhraní pro založení nového repozitáře není zakrýváno klávesnicí
+- opravit chybu při odstraňování ze seznamu dětí osoby
