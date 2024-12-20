@@ -36,7 +36,7 @@ class _FileScreenState extends State<FileScreen> {
             children: [
               if (App.pedigree != null) Card(
                 child: ListTile(
-                  leading: Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onBackground),
+                  leading: Icon(Icons.file_open_outlined, color: Theme.of(context).colorScheme.onSurface),
                   title: Text(App.pedigree!.name),
                   subtitle: Text(App.pedigree!.dir, overflow: TextOverflow.ellipsis),
                   trailing: Row(
@@ -73,7 +73,7 @@ class _FileScreenState extends State<FileScreen> {
                       // const Icon(Icons.file_copy_outlined),
                       Expanded(child: Text(filePath)),
                       IconButton(
-                        color: Theme.of(context).colorScheme.onBackground,
+                        color: Theme.of(context).colorScheme.onSurface,
                         icon: const Icon(Icons.clear),
                         onPressed: () => setState(() {
                           final recents = App.prefs.recentFiles;

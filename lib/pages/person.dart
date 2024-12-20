@@ -79,7 +79,7 @@ class _PersonPageState extends State<PersonPage> {
                       nameController = TextEditingController(text: person.name);
                       scheduleSave(context);
                     }) : null,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const Divider(height: 16, color: Colors.transparent),
@@ -103,7 +103,7 @@ class _PersonPageState extends State<PersonPage> {
                       birthController = TextEditingController(text: person.birth);
                       scheduleSave(context);
                     }) : null,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 ListTile(
@@ -126,7 +126,7 @@ class _PersonPageState extends State<PersonPage> {
                       deathController = TextEditingController(text: person.death);
                       scheduleSave(context);
                     }) : null,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const Divider(height: 16, color: Colors.transparent),
@@ -149,7 +149,7 @@ class _PersonPageState extends State<PersonPage> {
                       person.setParent(unchangedPerson!.father, Sex.male, App.pedigree!);
                       scheduleSave(context);
                     }) : null,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 ListTile(
@@ -171,7 +171,7 @@ class _PersonPageState extends State<PersonPage> {
                       person.setParent(unchangedPerson!.mother, Sex.female, App.pedigree!);
                       scheduleSave(context);
                     }) : null,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const Divider(),

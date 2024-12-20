@@ -137,7 +137,7 @@ class _CommitScreenState extends State<CommitScreen> {
                             }
                             scheduleSave(context);
                           }),
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if(change.unchanged != null && person.birth != change.unchanged!.birth) ListTile(
@@ -148,7 +148,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           onPressed: () => setState(() {
                             person.birth = App.unchangedPedigree!.people[change.index].birth;
                           }),
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if(change.unchanged != null && person.death != change.unchanged!.death) ListTile(
@@ -159,7 +159,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           onPressed: () => setState(() {
                             person.death = App.unchangedPedigree!.people[change.index].death;
                           }),
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if(change.unchanged != null && person.father != change.unchanged!.father) ListTile(
@@ -170,7 +170,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           onPressed: () => setState(() {
                             person.setParent(App.unchangedPedigree!.people[change.index].father, Sex.male, App.pedigree!);
                           }),
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if(change.unchanged != null && person.mother != change.unchanged!.mother) ListTile(
@@ -181,7 +181,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           onPressed: () => setState(() {
                             person.setParent(App.unchangedPedigree!.people[change.index].mother, Sex.female, App.pedigree!);
                           }),
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if(
@@ -274,7 +274,7 @@ class _CommitScreenState extends State<CommitScreen> {
                             }
                             scheduleSave(context);
                           }),
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if(change.type == ChangeType.modification && (changedChronicle?.files.length != change.unchanged!.files.length || changedChronicle?.files.safeFirstWhere((e) => !change.unchanged!.files.contains(e)) != null)) ...simpleDiff(change.unchanged!.files, changedChronicle!.files).map((fileChange) {
