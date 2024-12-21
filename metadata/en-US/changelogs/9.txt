@@ -1,0 +1,7 @@
+1.6.1:
+- použit flutter 3.27.1
+
+1.6.0:
+- prettier ui after selecting a directory for a new repozitory without permissions
+- fix keyboard covering the new repository sheet
+- fix removing children from people
