@@ -1,5 +1,5 @@
-1.6.1:
-- using flutter 3.27.1
+1.6.1 and 1.6.2:
+- updated dependencies
 
 1.6.0:
 - prettier ui after selecting a directory for a new repozitory without permissions

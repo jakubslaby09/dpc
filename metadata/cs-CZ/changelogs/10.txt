@@ -1,0 +1,7 @@
+1.6.1 a 1.6.2:
+- aktualizované závislosti
+
+1.6.0:
+- lepší vzhled při výběru složky pro nový repozitář, ke které nelze získat přístup
+- rozhraní pro založení nového repozitáře není zakrýváno klávesnicí
+- opravit chybu při odstraňování ze seznamu dětí osoby
