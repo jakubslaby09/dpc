@@ -25,6 +25,11 @@ android {
         versionName = flutter.versionName
     }
 
+    sourceSets.main.jniLibs.srcDirs = [
+        '../../lib/libgit2/openssl/out.jni',
+        '../../lib/libgit2/build',
+    ]
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
