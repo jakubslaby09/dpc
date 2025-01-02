@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId "cz.slaby.dpc"
-        resourceConfigurations = ["en", "cs", "de"]
+        resourceConfigurations = ["en", "cs"]
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

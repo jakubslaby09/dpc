@@ -14,29 +14,29 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static final List<Destination> _destinations = [
-    const Destination(
-      label: "Soubor",
-      screen: FileScreen(),
+  static List<Destination> _destinations(S s) => [
+    Destination(
+      label: s.navFilesPage,
+      screen: const FileScreen(),
       icon: Icons.file_open_outlined,
       activeIcon: Icons.file_open,
       
     ),
     Destination(
-      label: "Seznam",
+      label: s.navListPage,
       screen: ListScreen(key: GlobalKey()),
       icon: Icons.list,
       needsPedigree: true,
     ),
     Destination(
-      label: "Kronika",
+      label: s.navChroniclePage,
       screen: ChronicleScreen(key: GlobalKey()),
       icon: Icons.history_edu,
       // activeIcon: Icons.library_books,
       needsPedigree: true,
     ),
     Destination(
-      label: "Změny",
+      label: s.navCommitPage,
       screen: CommitScreen(key: GlobalKey()),
       icon: Icons.commit,
       needsPedigree: true,
@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           if (MediaQuery.of(context).orientation == Orientation.landscape) NavigationRail(
             labelType: NavigationRailLabelType.selected,
-            destinations: _destinations.map((destination) => 
+            destinations: _destinations(S.of(context)).map((destination) => 
               NavigationRailDestination(
                 icon: Icon(destination.icon),
                 selectedIcon: destination.activeIcon != null ? Icon(destination.activeIcon) : null,
@@ -82,9 +82,12 @@ class _HomePageState extends State<HomePage> {
           // const VerticalDivider(thickness: 1, width: 1),
           Expanded(
             // width: MediaQuery.of(context).size.width - (MediaQuery.of(context).orientation == Orientation.landscape ? 80 : 0),
-            child: App.pedigree != null || !_destinations[_viewedScreen].needsPedigree ? _destinations[_viewedScreen].screen : NoPedigreeScreen(
-              onHome: () => setState(() => _viewedScreen = 0),
-            ),
+            child: App.pedigree != null
+              || !_destinations(S.of(context))[_viewedScreen].needsPedigree
+                ? _destinations(S.of(context))[_viewedScreen].screen
+                : NoPedigreeScreen(
+                  onHome: () => setState(() => _viewedScreen = 0),
+                ),
           ),
         ],
       ),
@@ -94,7 +97,7 @@ class _HomePageState extends State<HomePage> {
           child: NavigationBar(
             // type: BottomNavigationBarType.fixed,
             // enableFeedback: true,
-            destinations: _destinations.map((destination) => 
+            destinations: _destinations(S.of(context)).map((destination) => 
               NavigationDestination(
                 label: destination.label,
                 icon: Icon(destination.icon),
@@ -106,7 +109,11 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButton: (App.pedigree != null || !_destinations[_viewedScreen].needsPedigree) && _destinations[_viewedScreen].screen is FABScreen ? (_destinations[_viewedScreen].screen as FABScreen).fab(context) : null,
+      floatingActionButton: (
+        App.pedigree != null || !_destinations(S.of(context))[_viewedScreen].needsPedigree)
+          && _destinations(S.of(context))[_viewedScreen].screen is FABScreen
+            ? (_destinations(S.of(context))[_viewedScreen].screen as FABScreen).fab(context)
+            : null,
     );
   }
 }

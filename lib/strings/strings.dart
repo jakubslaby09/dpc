@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dpc/strings/cz.dart';
-import 'package:dpc/strings/de.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -15,13 +14,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 final supportedLocales = <Locale, S>{
   Locale('en'): S(),
   Locale('cs'): Czech(),
-  Locale('de'): Deutsch(),
 };
 
 // English
 class S {
   String get noFileOpenNotice => "No file open!";
   String get noFileOpenButton => "Go to files";
+  String get navFilesPage => "Files";
+  String get navListPage => "People";
+  String get navChroniclePage => "Chronicle";
+  String get navCommitPage => "Changes";
 
   static S of(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S();
