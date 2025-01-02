@@ -24,6 +24,11 @@ class S {
   String get navListPage => "People";
   String get navChroniclePage => "Chronicle";
   String get navCommitPage => "Changes";
+  String get noRepoOpened => "Nothing's here...";
+  String get openRepo => "Open a repository";
+  String get downloadRepo => "Download a repository";
+  String get createRepo => "Create a repository";
+  String get preferences => "Settings";
 
   static S of(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S();

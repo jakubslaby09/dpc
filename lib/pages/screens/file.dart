@@ -18,6 +18,8 @@ import 'package:dpc/main.dart';
 import 'package:dpc/pages/preferences.dart';
 import 'package:dpc/pages/log.dart';
 
+import '../../strings/strings.dart';
+
 class FileScreen extends StatefulWidget {
   const FileScreen({super.key});
 
@@ -47,7 +49,7 @@ class _FileScreenState extends State<FileScreen> {
                     ],
                   ),
                 ),
-              ) else const Card(
+              ) else Card(
                 // shape: RoundedRectangleBorder( // TODO: dashed borders
                 //   borderRadius: BorderRadius.all(Radius.circular(8)),
                 //   side: BorderSide(
@@ -55,8 +57,8 @@ class _FileScreenState extends State<FileScreen> {
                 //   )
                 // ),
                 child: ListTile(
-                  leading: Icon(Icons.clear),
-                  title: Center(child: Text("Nic tu není...")),
+                  leading: const Icon(Icons.clear),
+                  title: Center(child: Text(S.of(context).noRepoOpened)),
                 ),
               ),
               ...(App.pedigree == null ? App.prefs.recentFiles : App.prefs.recentFiles.length > 1 ? App.prefs.recentFiles.sublist(1) : []).map((filePath) => Card(
@@ -92,12 +94,12 @@ class _FileScreenState extends State<FileScreen> {
         const Divider(),
         ListTile(
           leading: const Icon(Icons.file_upload_outlined),
-          title: const Text("Otevřít repozitář"),
+          title: Text(S.of(context).openRepo),
           onTap: () => openRepo(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.download_for_offline_outlined),
-          title: const Text("Stáhnout repozitář"),
+          title: Text(S.of(context).downloadRepo),
           onTap: () async {
             final path = await CloneRepoSheet.show(context);
             if(path == null) return;
@@ -108,12 +110,12 @@ class _FileScreenState extends State<FileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.create_new_folder_outlined),
-          title: const Text("Založit nový repozitář"),
+          title: Text(S.of(context).createRepo),
           onTap: () => createRepo(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
-          title: const Text("Předvolby"),
+          title: Text(S.of(context).preferences),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => const PreferencesPage(),
           )).then((_) => setState(() {})),
