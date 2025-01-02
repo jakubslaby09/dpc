@@ -38,6 +38,23 @@ class S {
   String get chronicleFilePickerTitle => "Vybrat soubory do kroniky";
   String get chronicleFileImportSheetTitle => "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění";
   String get chronicleFileImportSheetSuggestedDirectory => "kronika";
+  String get fetchingCommits => "Downloading changes...";
+  String get couldNotFetchCommits => "Could not fetch remote changes";
+  String fetchedCommits(int count, bool localChanges) => "There ${count > 1 ? "are" : "is"} ${count > 1 ? "are $count new commits" : "a new commit"} in the remote repository.${localChanges ? " Downloading ${count > 1 ? "it" : "them"} will overwrite your local changes." : ""}";
+  String get repoUpToDate => "Your repository is up to date";
+  String get overwriteWorktree => "Overwrite";
+  String ffCommits(int count) => "Download${count > 1 ? "" : " $count commits"}";
+  String get fetchErrorDetails => "See details";
+  String get indexUpgradeChange => "Indexu version upgrade";
+  String get commitCannotReadHead => "Could not read the commit you just have published";
+  String get fetchCouldNotLookupRemote => "Could not read from which remote repository to download changes";
+  String get fetchCouldNotFetchRemote => "Could not download changes from the remote repository";
+  String get fetchCouldNotReadHead => "Could not read your latest commit";
+  String get fetchCouldNotReadFetchHead => "Could not read the latest commit you have just downloaded";
+  String get fetchCouldNotCompareRemote => "Could not compare your changes with the remote ones";
+  String get changesCouldNotDeleteFile => "Could not delete the file";
+  String get changesCouldNotInitDiffOptions => "Could not initialize the comparison of your changes";
+  String get changesCouldNotDiffNew => "Could not compare your attachment files";
 
   static S of(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S();
@@ -48,8 +65,6 @@ class S {
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
   ];
-
-
 }
 
 class _Delegate extends LocalizationsDelegate<S> {

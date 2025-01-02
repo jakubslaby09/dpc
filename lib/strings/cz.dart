@@ -21,4 +21,22 @@ class Czech implements S {
   @override String get chronicleFilePickerTitle => "Vybrat soubory do kroniky";
   @override String get chronicleFileImportSheetTitle => "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění";
   @override String get chronicleFileImportSheetSuggestedDirectory => "kronika";
+  @override String get fetchingCommits => "Stahování změn...";
+  @override String get couldNotFetchCommits => "Nelze zkontrolovat změny z internetu";
+  @override String fetchedCommits(int count, bool localChanges) => "Ve vzdáleném repozitáři je $count ${count > 1 ? "nových příspěvků" : "nový příspěvek"}.${localChanges ? " Přijetím své změny přepíšete." : ""}";
+  @override String get repoUpToDate => "Váš repozitář je aktuální";
+  @override String get overwriteWorktree => "Zahodit a přijmout";
+  @override String ffCommits(int count) => "Přijmout $count ${count > 1 ? "příspěvků" : "příspěvek"}";
+  @override String get fetchErrorDetails => "Více";
+  @override String get indexUpgradeChange => "Upgrade indexu";
+  @override String get commitCannotReadHead => "nelze porovnat rodokmen s právě zveřejněnou verzí.";
+  @override String get fetchCouldNotLookupRemote => "nelze zjistit, odkud stáhnout změny";
+  @override String get fetchCouldNotFetchRemote => "nelze stáhnout změny";
+  @override String get fetchCouldNotReadHead => "nelze najít místní poslední příspěvek";
+  @override String get fetchCouldNotReadFetchHead => "nelze najít vzdálený poslední příspěvek";
+  @override String get fetchCouldNotCompareRemote => "nelze porovnat stažené změny s místními";
+  @override String get changesCouldNotDeleteFile => "nelze smazat soubor";
+  @override String get changesCouldNotInitDiffOptions => "chyba při nastavování zjišťování stavu ostatních souborů";
+  @override String get changesCouldNotDiffNew => "nelze získat stav ostatních souborů";
+
 }
