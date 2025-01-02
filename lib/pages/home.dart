@@ -3,6 +3,7 @@ import 'package:dpc/pages/screens/chronicle.dart';
 import 'package:dpc/pages/screens/commit.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/pages/screens/list.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -136,10 +137,11 @@ class NoPedigreeScreen extends StatelessWidget {
           ),
         ),
         // TODO: creating a new repo
-        const Text("Nemáte otevřený repozitář s rodokmenem.\nNa první stránce ho můžete otevřít, nebo založit nový.", textAlign: TextAlign.center),
+        // const Text("Nemáte otevřený repozitář s rodokmenem.\nNa první stránce ho můžete otevřít, nebo založit nový.", textAlign: TextAlign.center),
+        Text(S.of(context).noFileOpenNotice, textAlign: TextAlign.center),
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: FilledButton.tonal(onPressed: onHome, child: const Text("Přejít na první stránku")),
+          child: FilledButton.tonal(onPressed: onHome, child: Text(S.of(context).noFileOpenButton)),
         ),
       ],
     );

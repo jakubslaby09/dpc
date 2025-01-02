@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dpc/dpc.dart';
 import 'package:dpc/pages/log.dart';
 import 'package:dpc/pages/preferences.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -67,6 +68,8 @@ class App extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         themeMode: themeMode,
         darkTheme: ThemeData.dark(useMaterial3: true),
+        supportedLocales: supportedLocales.keys,
+        localizationsDelegates: S.localizationsDelegates,
         home: const HomePage(),
       )
     );
