@@ -7,6 +7,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 /// A map of supported locales.
+/// 
+/// When adding a language here, don't forget to add it to:
+/// - android/app/build.gradle (to resourceConfigurations)
+/// - android/app/src/main/res/xml/locales_config.xml
+/// - and create android/app/src/main/res/values-??
 final supportedLocales = <Locale, S>{
   Locale('en'): S(),
   Locale('cs'): Czech(),
