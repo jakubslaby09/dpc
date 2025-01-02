@@ -12,4 +12,7 @@ class Czech implements S {
   @override String get downloadRepo => "Stáhnout repozitář";
   @override String get createRepo => "Založit nový repozitář";
   @override String get preferences => "Předvolby";
+  @override String get searchLabel => "Hledat";
+  @override String get peopleNameColumn => "Jméno";
+  @override String get peopleBirthColumn => "Narození";
 }

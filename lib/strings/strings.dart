@@ -29,6 +29,9 @@ class S {
   String get downloadRepo => "Download a repository";
   String get createRepo => "Create a repository";
   String get preferences => "Settings";
+  String get searchLabel => "Search";
+  String get peopleNameColumn => "Name";
+  String get peopleBirthColumn => "Birth";
 
   static S of(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S();
@@ -39,6 +42,8 @@ class S {
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
   ];
+
+
 }
 
 class _Delegate extends LocalizationsDelegate<S> {
