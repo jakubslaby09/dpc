@@ -32,6 +32,12 @@ class S {
   String get searchLabel => "Search";
   String get peopleNameColumn => "Name";
   String get peopleBirthColumn => "Birth";
+  String get chronicleNameHint => "Name the chronicle";
+  String get chronicleAddAuthor => "Add an author";
+  String get chronicleAddFiles => "Přidat soubory";
+  String get chronicleFilePickerTitle => "Vybrat soubory do kroniky";
+  String get chronicleFileImportSheetTitle => "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění";
+  String get chronicleFileImportSheetSuggestedDirectory => "kronika";
 
   static S of(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S();

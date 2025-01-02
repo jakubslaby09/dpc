@@ -15,4 +15,10 @@ class Czech implements S {
   @override String get searchLabel => "Hledat";
   @override String get peopleNameColumn => "Jméno";
   @override String get peopleBirthColumn => "Narození";
+  @override String get chronicleNameHint => "Pojmenujte kroniku";
+  @override String get chronicleAddAuthor => "Přidat autora";
+  @override String get chronicleAddFiles => "Přidat soubory";
+  @override String get chronicleFilePickerTitle => "Vybrat soubory do kroniky";
+  @override String get chronicleFileImportSheetTitle => "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění";
+  @override String get chronicleFileImportSheetSuggestedDirectory => "kronika";
 }
