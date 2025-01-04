@@ -30,7 +30,7 @@ class _AddChildSheetState extends State<AddChildSheet> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 24, bottom: 16),
+          padding: const EdgeInsets.only(top: 24, bottom: 16, left: 16, right: 16),
           child: SegmentedButton<AddChildOptions>(
             segments: [
               ButtonSegment(
