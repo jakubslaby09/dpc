@@ -35,10 +35,10 @@ class S {
   String get peopleBirthColumn => "Birth";
   String get chronicleNameHint => "Name the chronicle";
   String get chronicleAddAuthor => "Add an author";
-  String get chronicleAddFiles => "Přidat soubory";
-  String get chronicleFilePickerTitle => "Vybrat soubory do kroniky";
-  String get chronicleFileImportSheetTitle => "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění";
-  String get chronicleFileImportSheetSuggestedDirectory => "kronika";
+  String get chronicleAddFiles => "Attach files";
+  String get chronicleFilePickerTitle => "Attach files to a chronicle";
+  String get chronicleFileImportSheetTitle => "The file isn't in the repository yet. Pick a place for it.";
+  String get chronicleFileImportSheetSuggestedDirectory => "kronika"; //TODO: check if it's safe to translate
   String get fetchingCommits => "Downloading changes...";
   String get couldNotFetchCommits => "Could not fetch remote changes";
   String fetchedCommits(int count, bool localChanges) => "There ${count > 1 ? "are" : "is"} ${count > 1 ? "are $count new commits" : "a new commit"} in the remote repository.${localChanges ? " Downloading ${count > 1 ? "it" : "them"} will overwrite your local changes." : ""}";
