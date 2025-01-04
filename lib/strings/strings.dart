@@ -12,12 +12,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 /// - android/app/src/main/res/xml/locales_config.xml
 /// - and create android/app/src/main/res/values-??
 final supportedLocales = <Locale, S>{
-  Locale('en'): S(),
-  Locale('cs'): Czech(),
+  Locale('en'): const S.english(),
+  Locale('cs'): const Czech(),
 };
 
-// English
 class S {
+  const S.english();
+
   String get noFileOpenNotice => "No file open!";
   String get noFileOpenButton => "Go to files";
   String get navFilesPage => "Files";
@@ -63,8 +64,8 @@ class S {
   String get father => "Father";
   String get addChild => "Add child";
 
-  static S of(BuildContext context) {
-    return Localizations.of<S>(context, S) ?? S();
+  factory S(BuildContext context) {
+    return Localizations.of<S>(context, S) ?? S.english();
   }
   static const LocalizationsDelegate<S> delegate = _Delegate();
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate>[

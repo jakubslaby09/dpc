@@ -36,17 +36,17 @@ class _AddChildSheetState extends State<AddChildSheet> {
               ButtonSegment(
                 icon: const Icon(Icons.child_care_outlined),
                 value: AddChildOptions.existingChild,
-                label: Text(S.of(context).existingChild),
+                label: Text(S(context).existingChild),
               ),
               ButtonSegment(
                 icon: const Icon(Icons.person_off_outlined),
                 value: AddChildOptions.unknownChild,
-                label: Text(S.of(context).unknownChild),
+                label: Text(S(context).unknownChild),
               ),
               ButtonSegment(
                 icon: const Icon(Icons.person_add_disabled_outlined),
                 value: AddChildOptions.unknownChildren,
-                label: Text(S.of(context).unknownChildren),
+                label: Text(S(context).unknownChildren),
               ),
             ],
             selected: { selectedOption },
@@ -59,7 +59,7 @@ class _AddChildSheetState extends State<AddChildSheet> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: PersonField(
-            labelText: S.of(context).child,
+            labelText: S(context).child,
             icon: const Icon(Icons.child_friendly_outlined),
             enabled: selectedOption == AddChildOptions.existingChild,
             onPick: (id) => setState(() {
@@ -71,7 +71,7 @@ class _AddChildSheetState extends State<AddChildSheet> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: PersonField(
-            labelText: widget.parent.sex == Sex.male ? S.of(context).mother : S.of(context).father,
+            labelText: widget.parent.sex == Sex.male ? S(context).mother : S(context).father,
             sex: widget.parent.sex == Sex.male ? Sex.female : Sex.male,
             controller: otherParentIdController,
             enabled: selectedOption == AddChildOptions.unknownChildren,
@@ -81,7 +81,7 @@ class _AddChildSheetState extends State<AddChildSheet> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: FilledButton(
-            child: Text(S.of(context).addChild),
+            child: Text(S(context).addChild),
             onPressed: id == null && selectedOption == AddChildOptions.existingChild ? null : () {
               final num id;
               switch (selectedOption) {

@@ -59,7 +59,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                         initialValue: chronicle.name,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: S.of(context).chronicleNameHint,
+                          hintText: S(context).chronicleNameHint,
                         ),
                         onChanged: (newName) {
                           chronicle.name = newName;
@@ -99,7 +99,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                     )),
                     if(chronicle.authors.isEmpty) OutlinedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: Text(S.of(context).chronicleAddAuthor),
+                      label: Text(S(context).chronicleAddAuthor),
                       onPressed: () => addAuthor(chronicle),
                     ),
                     if(chronicle.authors.isNotEmpty) SizedBox(
@@ -153,7 +153,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                       padding: EdgeInsets.only(right: 8.0),
                       child: Icon(Icons.add),
                     ),
-                    Text(S.of(context).chronicleAddFiles, textAlign: TextAlign.center),
+                    Text(S(context).chronicleAddFiles, textAlign: TextAlign.center),
                   ],
                 ),
                 onTap: () => addFile(context, chronicle).then((_) => setState(() {})),
@@ -199,7 +199,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
 Future<void> addFile(BuildContext context, Chronicle chronicle) async {
   // TODO: use allowedExtensions
   final picked = await FilePicker.platform.pickFiles(
-    dialogTitle: S.of(context).chronicleFilePickerTitle,
+    dialogTitle: S(context).chronicleFilePickerTitle,
     allowMultiple: true,
     initialDirectory: App.pedigree?.dir,
   );
@@ -223,8 +223,8 @@ Future<void> addFile(BuildContext context, Chronicle chronicle) async {
       final filePath = await showFileImportSheet(
         context,
         sourceFile.path,
-        S.of(context).chronicleFileImportSheetTitle,
-        S.of(context).chronicleFileImportSheetSuggestedDirectory,
+        S(context).chronicleFileImportSheetTitle,
+        S(context).chronicleFileImportSheetSuggestedDirectory,
       );
       if(filePath == null) {
         return;

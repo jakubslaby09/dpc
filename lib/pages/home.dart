@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           if (MediaQuery.of(context).orientation == Orientation.landscape) NavigationRail(
             labelType: NavigationRailLabelType.selected,
-            destinations: _destinations(S.of(context)).map((destination) => 
+            destinations: _destinations(S(context)).map((destination) => 
               NavigationRailDestination(
                 icon: Icon(destination.icon),
                 selectedIcon: destination.activeIcon != null ? Icon(destination.activeIcon) : null,
@@ -83,8 +83,8 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             // width: MediaQuery.of(context).size.width - (MediaQuery.of(context).orientation == Orientation.landscape ? 80 : 0),
             child: App.pedigree != null
-              || !_destinations(S.of(context))[_viewedScreen].needsPedigree
-                ? _destinations(S.of(context))[_viewedScreen].screen
+              || !_destinations(S(context))[_viewedScreen].needsPedigree
+                ? _destinations(S(context))[_viewedScreen].screen
                 : NoPedigreeScreen(
                   onHome: () => setState(() => _viewedScreen = 0),
                 ),
@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
           child: NavigationBar(
             // type: BottomNavigationBarType.fixed,
             // enableFeedback: true,
-            destinations: _destinations(S.of(context)).map((destination) => 
+            destinations: _destinations(S(context)).map((destination) => 
               NavigationDestination(
                 label: destination.label,
                 icon: Icon(destination.icon),
@@ -110,9 +110,9 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: (
-        App.pedigree != null || !_destinations(S.of(context))[_viewedScreen].needsPedigree)
-          && _destinations(S.of(context))[_viewedScreen].screen is FABScreen
-            ? (_destinations(S.of(context))[_viewedScreen].screen as FABScreen).fab(context)
+        App.pedigree != null || !_destinations(S(context))[_viewedScreen].needsPedigree)
+          && _destinations(S(context))[_viewedScreen].screen is FABScreen
+            ? (_destinations(S(context))[_viewedScreen].screen as FABScreen).fab(context)
             : null,
     );
   }
@@ -145,10 +145,10 @@ class NoPedigreeScreen extends StatelessWidget {
         ),
         // TODO: creating a new repo
         // const Text("Nemáte otevřený repozitář s rodokmenem.\nNa první stránce ho můžete otevřít, nebo založit nový.", textAlign: TextAlign.center),
-        Text(S.of(context).noFileOpenNotice, textAlign: TextAlign.center),
+        Text(S(context).noFileOpenNotice, textAlign: TextAlign.center),
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: FilledButton.tonal(onPressed: onHome, child: Text(S.of(context).noFileOpenButton)),
+          child: FilledButton.tonal(onPressed: onHome, child: Text(S(context).noFileOpenButton)),
         ),
       ],
     );

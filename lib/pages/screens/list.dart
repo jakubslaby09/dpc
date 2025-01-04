@@ -52,7 +52,7 @@ class _ListScreenState extends State<ListScreen> {
             decoration: InputDecoration(
               icon: const Icon(Icons.search),
               // hintText: "",
-              labelText: S.of(context).searchLabel,
+              labelText: S(context).searchLabel,
             ),
             onChanged: (value) => setState(() {
               filter = value;
@@ -64,8 +64,8 @@ class _ListScreenState extends State<ListScreen> {
           sortColumnIndex: sortedColumn,
           showCheckboxColumn: false,
           columns: [
-            DataColumn(label: Text(S.of(context).peopleNameColumn), onSort: (i, a) => setState(() => sortPeople(i, a))),
-            DataColumn(label: Text(S.of(context).peopleBirthColumn), onSort: (i, a) => setState(() => sortPeople(i, a))),
+            DataColumn(label: Text(S(context).peopleNameColumn), onSort: (i, a) => setState(() => sortPeople(i, a))),
+            DataColumn(label: Text(S(context).peopleBirthColumn), onSort: (i, a) => setState(() => sortPeople(i, a))),
           ],
           rows: filterPeople()!.map((person) => DataRow(
             cells: [

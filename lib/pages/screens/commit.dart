@@ -52,8 +52,8 @@ class _CommitScreenState extends State<CommitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    files = changedFiles(App.pedigree!.repo, S.of(context));
-    remoteChanges = fetchChanges(App.pedigree!.repo, S.of(context));
+    files = changedFiles(App.pedigree!.repo, S(context));
+    remoteChanges = fetchChanges(App.pedigree!.repo, S(context));
     return ListView(
       children: [
         // Card(
@@ -84,20 +84,20 @@ class _CommitScreenState extends State<CommitScreen> {
                         : const Icon(Icons.cloud_download_outlined),
                     title: !remoteChanges.hasData
                     ? remoteChanges.hasError
-                      ? Text(S.of(context).couldNotFetchCommits)
-                      : Text(S.of(context).fetchingCommits)
+                      ? Text(S(context).couldNotFetchCommits)
+                      : Text(S(context).fetchingCommits)
                     : remoteChanges.data! > 0
-                      ? Text(S.of(context).fetchedCommits(remoteChanges.data!, someChanges))
-                      : Text(S.of(context).repoUpToDate),
+                      ? Text(S(context).fetchedCommits(remoteChanges.data!, someChanges))
+                      : Text(S(context).repoUpToDate),
                     trailing: (remoteChanges.data ?? 0) > 0 ? FilledButton.icon(
                       icon: const Icon(Icons.download_for_offline_outlined),
                       style: someChanges
                         ? FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error)
                         : null,
-                      label: someChanges ? Text(S.of(context).overwriteWorktree) : Text(S.of(context).ffCommits(remoteChanges.data!)),
+                      label: someChanges ? Text(S(context).overwriteWorktree) : Text(S(context).ffCommits(remoteChanges.data!)),
                       onPressed: () => pullChanges(App.pedigree!.repo),
                     ) : remoteChanges.error is Exception ? TextButton(
-                      child: Text(S.of(context).fetchErrorDetails),
+                      child: Text(S(context).fetchErrorDetails),
                       onPressed: () => showExceptionPage(context, remoteChanges.error as Exception),
                     ) : null,
                   ),
@@ -107,7 +107,7 @@ class _CommitScreenState extends State<CommitScreen> {
               if(App.unchangedPedigree!.version != App.pedigree!.version) Card(
                 child: ListTile(
                   leading: const Icon(Icons.upgrade),
-                  title: Text(S.of(context).indexUpgradeChange),
+                  title: Text(S(context).indexUpgradeChange),
                 ),
               ),
               ...peopleChanges.map((change) {
@@ -337,9 +337,9 @@ class _CommitScreenState extends State<CommitScreen> {
                               await File(absolutePath).delete();
                             }
                           } on Exception catch (e, t) {
-                            showException(context, S.of(context).changesCouldNotDeleteFile, e, t);
+                            showException(context, S(context).changesCouldNotDeleteFile, e, t);
                           }
-                          this.files = changedFiles(App.pedigree!.repo, S.of(context));
+                          this.files = changedFiles(App.pedigree!.repo, S(context));
                           setState(() { });
                         },
                       ) : null,
@@ -370,7 +370,7 @@ class _CommitScreenState extends State<CommitScreen> {
     try {
       loadUnchanged(context, App.pedigree!.dir, App.pedigree!.repo);
     } on Exception catch (e, t) {
-      showException(context, S.of(context).commitCannotReadHead, e, t);
+      showException(context, S(context).commitCannotReadHead, e, t);
       App.unchangedPedigree = App.pedigree!.clone();
     }
     setState(() { });

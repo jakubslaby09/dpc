@@ -58,7 +58,7 @@ class _FileScreenState extends State<FileScreen> {
                 // ),
                 child: ListTile(
                   leading: const Icon(Icons.clear),
-                  title: Center(child: Text(S.of(context).noRepoOpened)),
+                  title: Center(child: Text(S(context).noRepoOpened)),
                 ),
               ),
               ...(App.pedigree == null ? App.prefs.recentFiles : App.prefs.recentFiles.length > 1 ? App.prefs.recentFiles.sublist(1) : []).map((filePath) => Card(
@@ -94,12 +94,12 @@ class _FileScreenState extends State<FileScreen> {
         const Divider(),
         ListTile(
           leading: const Icon(Icons.file_upload_outlined),
-          title: Text(S.of(context).openRepo),
+          title: Text(S(context).openRepo),
           onTap: () => openRepo(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.download_for_offline_outlined),
-          title: Text(S.of(context).downloadRepo),
+          title: Text(S(context).downloadRepo),
           onTap: () async {
             final path = await CloneRepoSheet.show(context);
             if(path == null) return;
@@ -110,12 +110,12 @@ class _FileScreenState extends State<FileScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.create_new_folder_outlined),
-          title: Text(S.of(context).createRepo),
+          title: Text(S(context).createRepo),
           onTap: () => createRepo(context).then((_) => setState(() {})),
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
-          title: Text(S.of(context).preferences),
+          title: Text(S(context).preferences),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => const PreferencesPage(),
           )).then((_) => setState(() {})),
