@@ -55,6 +55,13 @@ class S {
   String get changesCouldNotDeleteFile => "Could not delete the file";
   String get changesCouldNotInitDiffOptions => "Could not initialize the comparison of your changes";
   String get changesCouldNotDiffNew => "Could not compare your attachment files";
+  String get child => "Child";
+  String get existingChild => "Existing child";
+  String get unknownChild => "Unknown child";
+  String get unknownChildren => "Unknown children";
+  String get mother => "Mother";
+  String get father => "Father";
+  String get addChild => "Add child";
 
   static S of(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S();

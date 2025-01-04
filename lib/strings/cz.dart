@@ -38,5 +38,13 @@ class Czech implements S {
   @override String get changesCouldNotDeleteFile => "nelze smazat soubor";
   @override String get changesCouldNotInitDiffOptions => "chyba při nastavování zjišťování stavu ostatních souborů";
   @override String get changesCouldNotDiffNew => "nelze získat stav ostatních souborů";
+  @override String get child => "Dítě";
+  @override String get existingChild => "Známé dítě";
+  @override String get unknownChild => "Neznámé dítě";
+  @override String get unknownChildren => "Neznámé děti";
+  @override String get mother => "Matka";
+  @override String get father => "Otec";
+  @override String get addChild => "Přidat";
 
 }
+  // @override String get _ => "";
