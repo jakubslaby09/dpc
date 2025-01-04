@@ -47,6 +47,34 @@ class Czech implements S {
   @override String get mother => "Matka";
   @override String get father => "Otec";
   @override String get addChild => "Přidat";
+  @override String get cloneGithub => "Github";
+  @override String get cloneCustomUrl => "Vlastní URL";
+  @override String get cloneTargetDir => "Složka repozitáře";
+  @override String get clonePickTargetDir => "Vybrat novou složku pro repozitář";
+  @override String get cloneMissingTargetDir => "Vyberte si, kam repozitář stáhnete";
+  @override String get cloneNonexistentTargetDir => "Taková složka neexistuje. Nezapoměli jste ji vytvořit?";
+  @override String get cloneDirtyTargetDir => "Složka není prázdná";
+  @override String get cloneUrl => "URL adresa vzdáleného repozitáře";
+  @override String get cloneMissingUrl => "Vyberte si, odkud repozitář stáhnete";
+  @override String get cloneInvalidUrl => "Toto nevypadá jako URL, ani jako absolutní URI";
+  @override String cloneMissingUsername(String host) => "Adresa obsahuje '@', ale ne ':'. Použijte prosím formát jméno:$host";
+  @override String get cloneGithubRepoName => "Jméno repozitáře";
+  @override String get cloneGithubMissingRepoName => "Vyberte si repozitář";
+  @override String get cloneMissingGithubUser => "Uveďte prosím vlastníka repozitáře, ve formátu vlastník/repozitář";
+  @override String cloneGithubUrlTooManySlashes(String username, String repo) => "Uveďte prosím pouze repozitář a vlastníka. Možná zkuste: $username/$repo";
+  @override String cloneProgressMiB(int mib) => "$mib MiB";
+  @override String cloneProgressPercent(String percent) => "$percent %";
+  @override String get cloneAbort => "Přerušit";
+  @override String get cloneCancel => "Zahodit";
+  @override String get cloneStoragePermissionRejected => "oprávnění zamítnuto";
+  @override String cloneCouldNotCreateDir(Exception e) => "nelze vytvořit složku. Zkuste ji vytvořit sami: $e";
+  @override String get cloneTryAgain => "Zkusit znovu";
+  @override String get cloneConfirm => "Stáhnout";
+  @override String get cloneGithubConfirm => "Přihlásit se a stáhnout";
+  @override String get cloneCanceled => "Zrušeno";
+  @override String get cloneOAuthHtmlText => "Nyní můžete toto okno zavřít";
+  @override String get cloneCouldNotInit => "chyba při nastavování výchozího nastavení";
+  @override String get cloneCouldNotClone => "nelze stáhnout repozitář";
 
 }
   // @override String get _ => "";

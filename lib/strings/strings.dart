@@ -63,6 +63,34 @@ class S {
   String get mother => "Mother";
   String get father => "Father";
   String get addChild => "Add child";
+  String get cloneGithub => "Github";
+  String get cloneCustomUrl => "Custom URL";
+  String get cloneTargetDir => "Repository directory";
+  String get clonePickTargetDir => "Choose a new repository folder";
+  String get cloneMissingTargetDir => "Choose where you'd like to store the repository";
+  String get cloneNonexistentTargetDir => "The folder doesn't exist. Did you create it?";
+  String get cloneDirtyTargetDir => "The folder is not empty";
+  String get cloneUrl => "Repository URL";
+  String get cloneMissingUrl => "Specify an address to download from";
+  String get cloneInvalidUrl => "This isn't a valid URL nor a valid absolute URI";
+  String cloneMissingUsername(String host) => "'@' is included, but ':' is missing. Please specify a username: user:$host";
+  String get cloneGithubRepoName => "Repository name";
+  String get cloneGithubMissingRepoName => "Pick a github repository";
+  String get cloneMissingGithubUser => "Please specify the repository owner, e.g. owner/repository";
+  String cloneGithubUrlTooManySlashes(String username, String repo) => "Please provide only an author and their repository. Consider: $username/$repo";
+  String cloneProgressMiB(int mib) => "$mib MiB";
+  String cloneProgressPercent(String percent) => "$percent %";
+  String get cloneAbort => "Abort";
+  String get cloneCancel => "Cancel";
+  String get cloneStoragePermissionRejected => "Permission denied";
+  String cloneCouldNotCreateDir(Exception e) => "Could not create folder. Try creating it manually: $e";
+  String get cloneTryAgain => "Try again";
+  String get cloneConfirm => "Download";
+  String get cloneGithubConfirm => "Log in & download";
+  String get cloneCanceled => "Canceled";
+  String get cloneOAuthHtmlText => "You can close this window now";
+  String get cloneCouldNotInit => "Could not initialize cloning the repository";
+  String get cloneCouldNotClone => "Could not download";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();

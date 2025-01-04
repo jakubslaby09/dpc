@@ -8,6 +8,7 @@ import 'dart:ui';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/secrets.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -58,16 +59,16 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
             Padding(
               padding: const EdgeInsets.only(top: 24, bottom: 16),
               child: SegmentedButton<AuthOptions>(
-                segments: const [
+                segments: [
                   ButtonSegment(
-                    icon: Icon(Icons.cloud_outlined),
+                    icon: const Icon(Icons.cloud_outlined),
                     value: AuthOptions.github,
-                    label: Text("Github"),
+                    label: Text(S(context).cloneGithub),
                   ),
                   ButtonSegment(
-                    icon: Icon(Icons.settings_outlined),
+                    icon: const Icon(Icons.settings_outlined),
                     value: AuthOptions.manual,
-                    label: Text("Vlastní URL"),
+                    label: Text(S(context).cloneCustomUrl),
                   ),
                 ],
                 selected: { selectedAuthOption },
@@ -81,7 +82,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
               child: TextFormField(
                 decoration: InputDecoration(
                   icon: const Icon(Icons.file_copy_outlined),
-                  labelText: "Složka repozitáře",
+                  labelText: S(context).cloneTargetDir,
                   border: const OutlineInputBorder(),
                   suffixIcon: Padding(
                     padding: const EdgeInsets.only(right: 8),
@@ -89,7 +90,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                       icon: const Icon(Icons.file_open_outlined),
                       onPressed: () async {
                         final dir = await FilePicker.platform.getDirectoryPath(
-                          dialogTitle: "Vybrat novou složku pro repozitář",
+                          dialogTitle: S(context).clonePickTargetDir,
                         );
                         if(dir == null) return;
                         pathController.text = dir;
@@ -101,15 +102,15 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                 // TODO: make the validator async
                 validator: (value) {
                   if(value == null || value.trim().isEmpty) {
-                    return "Vyberte si, kam repozitář stáhnete";
+                    return S(context).cloneMissingTargetDir;
                   }
                   final dir = Directory(value);
                   if(Platform.isAndroid && !dir.existsSync()) {
-                    return "Taková složka neexistuje. Nezapoměli jste ji vytvořit?";
+                    return S(context).cloneNonexistentTargetDir;
                   }
                   if(dir.listSync().isNotEmpty) {
                     // TODO: add ui to override this check
-                    return "Složka není prázdná";
+                    return S(context).cloneDirtyTargetDir;
                   }
                   // TODO: check write permissions
                   return null;
@@ -119,25 +120,25 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
             if(selectedAuthOption == AuthOptions.manual) Padding(
               padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
               child: TextFormField(
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.link),
-                  labelText: "URL Adresa vzdáleného repozitáře",
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.link),
+                  labelText: S(context).cloneUrl,
                   errorMaxLines: 5,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 enabled: selectedAuthOption == AuthOptions.manual,
                 controller: urlController,
                 // TODO: make the validator async
                 validator: (value) {
                   if(value == null || value.trim().isEmpty) {
-                    return "Vyberte si, odkud repozitář stáhnete";
+                    return S(context).cloneMissingUrl;
                   }
                   if(!(Uri.tryParse(value)?.isAbsolute ?? false)) {
-                    return "Toto nevypadá jako URL, ani jako absolutní URI";
+                    return S(context).cloneInvalidUrl;
                   }
                   final uri = Uri.parse(value);
                   if(uri.userInfo.isNotEmpty && !uri.userInfo.contains(":")) {
-                    return "Adresa obsahuje '@', ale ne ':'. Použijte prosím formát jméno:${uri.userInfo}";
+                    return S(context).cloneMissingUsername(uri.userInfo);
                   }
                   return null;
                 },
@@ -146,25 +147,25 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
             if(selectedAuthOption == AuthOptions.github) Padding(
               padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
               child: TextFormField(
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.share_outlined),
-                  labelText: "Jméno repozitáře",
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.share_outlined),
+                  labelText: S(context).cloneGithubRepoName,
+                  border: const OutlineInputBorder(),
                 ),
                 enabled: selectedAuthOption == AuthOptions.github,
                 controller: repoNameController,
                 validator: (value) {
                   if(value == null || value.trim().isEmpty) {
-                    return "Vyberte si repozitář";
+                    return S(context).cloneGithubMissingRepoName;
                   }
 
                   final split = value.split("/");
                   if(split.length < 2) {
-                    return "Uveďte prosím vlastníka repozitáře, ve formátu vlastník/repozitář";
+                    return S(context).cloneMissingGithubUser;
                   }
 
                   if(split.length > 2) {
-                    return "Uveďte prosím pouze repozitář a vlastníka. Možná zkuste: ${split[split.length - 2]}/${split[split.length - 1]}";
+                    return S(context).cloneGithubUrlTooManySlashes(split[split.length - 2], split[split.length - 1]);
                   }
 
                   return null;
@@ -185,7 +186,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                 children: [
                   if(progress?.bytes != null) Padding(
                     padding: const EdgeInsets.only(right: 16),
-                    child: Text("${((progress!.bytes ?? 0) / 1048576).round()} MiB"),
+                    child: Text(S(context).cloneProgressMiB(((progress!.bytes ?? 0) / 1048576).round())),
                   ),
                   Expanded(
                     child: LinearProgressIndicator(
@@ -197,7 +198,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                   ),
                   if(progress != null) Padding(
                     padding: const EdgeInsets.only(left: 16),
-                    child: Text("${(progress!.ratio * 100).round().toString().padLeft(1, "0")} %"),
+                    child: Text(S(context).cloneProgressPercent((progress!.ratio * 100).round().toString().padLeft(1, "0"))),
                   ),
                 ],
               ),
@@ -220,7 +221,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                         minimumSize: const Size.fromHeight(40),
                       ),
                       icon: Icon(inProgress ? Icons.disabled_by_default_outlined : Icons.cancel_outlined),
-                      label: Text(inProgress ? "Přerušit" : "Zahodit"),
+                      label: Text(inProgress ? S(context).cloneAbort : S(context).cloneCancel),
                     ),
                   ),
                   const VerticalDivider(),
@@ -230,7 +231,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                         // TODO: check file permissions before asking
                         if(Platform.isAndroid && !await Permission.manageExternalStorage.isGranted) {
                           if((await Permission.manageExternalStorage.request()).isGranted) {
-                            error = "oprávnění zamítnuto";
+                            error = S(context).cloneStoragePermissionRejected;
                           }
                         }
 
@@ -238,7 +239,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                           try {
                             File(pathController.text).createSync(recursive: true);
                           } on Exception catch(e) {
-                            error = "nelze vytvořit složku. Zkuste ji vytvořit sami: $e";
+                            error = S(context).cloneCouldNotCreateDir(e);
                           }
                         }
 
@@ -283,7 +284,13 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
                         minimumSize: const Size.fromHeight(40),
                       ),
                       icon: Icon(error != null ? Icons.restart_alt : Icons.download_for_offline_outlined),
-                      label: Text(error != null ? "Zkusit znovu" : selectedAuthOption == AuthOptions.manual ? "Stáhnout" : "Přihlásit se a stáhnout"),
+                      label: Text(
+                        error != null
+                        ? S(context).cloneTryAgain
+                        : selectedAuthOption == AuthOptions.manual
+                          ? S(context).cloneConfirm
+                          : S(context).cloneGithubConfirm,
+                      ),
                     ),
                   ),
                 ],
@@ -322,7 +329,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
 
       setState(() {
         if(errorString.contains(git_error_code.GIT_EUSER.toString())) {
-          error = "Zrušeno";
+          error = S(context).cloneCanceled;
         } else {
           error = errorString;
         }
@@ -337,7 +344,7 @@ class _CloneRepoSheetState extends State<CloneRepoSheet> {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080, shared: true);
     server.forEach((req) {
       req.response.headers.contentType = ContentType.html;
-      req.response.write("<script>window.close()</script><h1>Nyní můžete toto okno zavřít</h1>");
+      req.response.write("<script>window.close()</script><h1>${S(context).cloneOAuthHtmlText}</h1>");
       req.response.close();
       server.close();
       if(!req.uri.queryParameters.containsKey("code")) {
@@ -425,6 +432,7 @@ class DownloadIsolateMessage {
     required this.path,
     required this.abortPtr,
     required this.name,
+    required this.s,
     this.email,
   });
 
@@ -433,6 +441,7 @@ class DownloadIsolateMessage {
   final String path;
   final int abortPtr;
   final String name;
+  final S s;
   final String? email;
 }
 
@@ -483,7 +492,7 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
   ffi.Pointer<ProgressCallbackPayload> payload = ffi.calloc();
   message.sender.send(CloneProgress(ratio: 0));
 
-  expectCode(App.git.git_clone_options_init(options, GIT_CLONE_OPTIONS_VERSION), "chyba při nastavování výchozího nastavení");
+  expectCode(App.git.git_clone_options_init(options, GIT_CLONE_OPTIONS_VERSION), message.s.cloneCouldNotInit);
   // TODO: try to use less confusing identifier than nativePort
   IsolateNameServer.registerPortWithName(message.sender, message.sender.nativePort.toString());
   payload.ref.nativeSender = message.sender.nativePort;
@@ -499,7 +508,7 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
     message.url.toNativeUtf8().cast(),
     message.path.toNativeUtf8().cast(),
     options,
-  ), "nelze stáhnout repozitář");
+  ), message.s.cloneCouldNotClone);
 
   saveDefaultSignature(
     repo.value, message.name.toNativeUtf8().cast(), message.email?.toNativeUtf8().cast(),
@@ -521,6 +530,7 @@ Future<DownloadHandle> spawnDownload(BuildContext context, String url, String pa
       path: path,
       abortPtr: abortPtr.address,
       name: name,
+      s: S(context),
       email: email,
     ),
     onError: errorReceiver.sendPort,
