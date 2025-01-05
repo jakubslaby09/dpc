@@ -91,6 +91,22 @@ class S {
   String get cloneOAuthHtmlText => "You can close this window now";
   String get cloneCouldNotInit => "Could not initialize cloning the repository";
   String get cloneCouldNotClone => "Could not download";
+  String get commitChanges => "Publish";
+  String get commitMessage => "Commit message";
+  String get commitMessageMissing => "Please describe your changes";
+  String get commitDescription => "Long description";
+  String get commitSignature => "Author signature";
+  String get commitSignatureName => "Name";
+  String get commitSignatureNameMissing => "Please specify who made the changes";
+  String get commitSignatureEmail => "Email";
+  String get commitSignatureEmailMissing => "Please provide the author's email";
+  String get commitSignatureSave => "Remember this signature";
+  String get commitCancel => "Cancel";
+  String get commitPush => "Send commit";
+  String get commitCouldNotCreateCommit => "Could not create the commit";
+  String get commitCouldNotLookupRemote => "Could not read which remote repository to send the commit to";
+  String get commitCouldNotSaveSignature => "Could not save the signature";
+  String commitCouldNotCommit(Exception e) => "Could not send your changes: $e";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();

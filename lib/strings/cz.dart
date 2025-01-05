@@ -75,6 +75,20 @@ class Czech implements S {
   @override String get cloneOAuthHtmlText => "Nyní můžete toto okno zavřít";
   @override String get cloneCouldNotInit => "chyba při nastavování výchozího nastavení";
   @override String get cloneCouldNotClone => "nelze stáhnout repozitář";
-
+  @override String get commitChanges => "Zveřejnit změny";
+  @override String get commitMessage => "Zpráva příspěvku";
+  @override String get commitMessageMissing => "Napište k příspěvku zprávu";
+  @override String get commitDescription => "Popis příspěvku";
+  @override String get commitSignature => "Podpis autora";
+  @override String get commitSignatureName => "Jméno autora příspěvku";
+  @override String get commitSignatureNameMissing => "Zvolte si jméno autora";
+  @override String get commitSignatureEmail => "Email autora příspěvku";
+  @override String get commitSignatureEmailMissing => "Zadejte prosím email autora";
+  @override String get commitSignatureSave => "Zapamatovat";
+  @override String get commitCancel => "Zahodit";
+  @override String get commitPush => "Odeslat";
+  @override String get commitCouldNotCreateCommit => "Could not create the commit";
+  @override String get commitCouldNotLookupRemote => "nelze zjistit, kam změny poslat";
+  @override String get commitCouldNotSaveSignature => "Nelze uložit podpis autora";
+  @override String commitCouldNotCommit(Exception e) => "Nepodařilo se zveřejnit Vaše změny: $e";
 }
-  // @override String get _ => "";
