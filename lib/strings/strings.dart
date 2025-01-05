@@ -41,7 +41,7 @@ class S {
   String get chronicleFileImportSheetSuggestedDirectory => "kronika"; //TODO: check if it's safe to translate
   String get fetchingCommits => "Downloading changes...";
   String get couldNotFetchCommits => "Could not fetch remote changes";
-  String fetchedCommits(int count, bool localChanges) => "There ${count > 1 ? "are" : "is"} ${count > 1 ? "are $count new commits" : "a new commit"} in the remote repository.${localChanges ? " Downloading ${count > 1 ? "it" : "them"} will overwrite your local changes." : ""}";
+  String fetchedCommits(int count, bool localChanges) => "There ${count > 1 ? "are $count new commits" : "is a new commit"} in the remote repository.${localChanges ? " Downloading ${count > 1 ? "it" : "them"} will overwrite your local changes." : ""}";
   String get repoUpToDate => "Your repository is up to date";
   String get overwriteWorktree => "Overwrite";
   String ffCommits(int count) => "Download${count > 1 ? "" : " $count commits"}";
