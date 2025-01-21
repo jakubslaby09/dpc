@@ -107,33 +107,34 @@ class _CommitScreenState extends State<CommitScreen> {
                 ),
               ),
               ...peopleChanges.map((change) {
-                final person = App.pedigree!.people.elementAtOrNull(change.index) ?? change.unchanged!;
-                  return Card(
+                // there shouldn't be an index error since only additions have null unchanged
+                final person = change.unchanged ?? App.pedigree!.people.elementAt(change.index);
+                return Card(
                   child: Column(
                     children: [
                       ListTile(
                         leading: Icon(person.sex.icon),
                         title: Text(person.name),
-                        trailing: change.type == ChangeType.modification && person.name == change.unchanged?.name && person.sex == change.unchanged?.sex ? null : IconButton(
+                        trailing: change.isModificationAnd((change) => person.name == change.unchanged.name && person.sex == change.unchanged.sex) ?? false ? null : IconButton(
                           icon: const Icon(Icons.backspace_outlined),
                           onPressed: () => setState(() {
-                            switch (change.type) {
-                              case ChangeType.modification:
-                                person.sex = App.unchangedPedigree!.people[change.index].sex;
-                                person.name = App.unchangedPedigree!.people[change.index].name;
-                                break;
-                              case ChangeType.addition:
+                            change.mapType(
+                              ifModification: (change) {
+                                person.sex = change.unchanged.sex;
+                                person.name = change.unchanged.name;
+                              },
+                              ifAddition: (change) {
                                 App.pedigree!.removePerson(change.index);
-                                break;
-                              case ChangeType.removal:
+                              },
+                              ifRemoval: (change) {
                                 // TODO: fix ordering
                                 try {
-                                  App.pedigree!.people.insert(change.index, change.unchanged!);
+                                  App.pedigree!.people.insert(change.index, change.unchanged);
                                 } on RangeError catch (_) {
-                                  App.pedigree!.people.add(change.unchanged!);
+                                  App.pedigree!.people.add(change.unchanged);
                                 }
-                                break;
-                            }
+                              },
+                            );
                             scheduleSave(context);
                           }),
                           color: Theme.of(context).colorScheme.onSurface,
@@ -184,28 +185,31 @@ class _CommitScreenState extends State<CommitScreen> {
                         ),
                       ),
                       if(
-                        change.type == ChangeType.modification &&
-                        change.unchanged!.children.length != person.children.length &&
-                        person.children.safeFirstWhere((id) => !change.unchanged!.children.contains(id)) != null
-                        )
+                        change.isModificationAnd(
+                          (change) => change.unchanged.children.length != person.children.length
+                            && person.children.safeFirstWhere((id) => !change.unchanged.children.contains(id)) != null
+                        ) ?? false)
                         ...simpleDiff(change.unchanged!.children, person.children).map((childChange) {
                         final child = Child(childChange.unchanged ?? person.children[childChange.index], App.pedigree!);
                         return ListTile(
-                          tileColor: childChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
-                          textColor: childChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
-                          iconColor: childChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          tileColor: childChange is Removal ? Theme.of(context).colorScheme.errorContainer : null,
+                          textColor: childChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          iconColor: childChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
                           leading: const Icon(Icons.child_friendly_outlined),
                           title: Text(child is Person ? child.name : "id: ${child.id}"),
                           trailing: IconButton(
                             icon: const Icon(Icons.backspace_outlined),
                             onPressed: () => setState(() {
-                              if(childChange.type == ChangeType.addition) {
-                                person.removeChild(person.children[childChange.index], App.pedigree!);
-                              } else if(childChange.type == ChangeType.removal) {
-                                // TODO: fix ordering
-                                person.addChild(childChange.unchanged!, null, App.pedigree!, childChange.index);
-                                // person.children.add(childChange.unchanged!);
-                              }
+                              childChange.mapType(
+                                ifAddition: (childChange) {
+                                  person.removeChild(person.children[childChange.index], App.pedigree!);
+                                },
+                                ifRemoval: (childChange) {
+                                  // TODO: fix ordering
+                                  person.addChild(childChange.unchanged, null, App.pedigree!, childChange.index);
+                                },
+                                ifModification: (_) {},
+                              );
                               scheduleSave(context);
                             }),
                           ),
@@ -222,13 +226,13 @@ class _CommitScreenState extends State<CommitScreen> {
 
                 return Card(
                 // child: Text("${change.type.name}: ${changed}"),
-                  color: change.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
-                  // elevation: change.type == ChangeType.removal ? 0 : null,
+                  color: change is Removal ? Theme.of(context).colorScheme.errorContainer : null,
+                  // elevation: change is Removal ? 0 : null,
                   // elevation: 0,
                   child: Column(
                     children: [
                       ListTile(
-                        leading: Icon(change.type == ChangeType.removal ? Icons.delete_outline : Icons.auto_stories_outlined),
+                        leading: Icon(change is Removal ? Icons.delete_outline : Icons.auto_stories_outlined),
                         title: Text(changedChronicle?.name ?? "test"),
                         subtitle: authorsDiff?.isEmpty ?? true ? null : Row(
                           // TODO: fix overflow
@@ -237,59 +241,70 @@ class _CommitScreenState extends State<CommitScreen> {
                               // TODO: make a more robust person lookup fuction
                               person: App.pedigree!.people[(authorChange.unchanged ?? changedChronicle!.authors[authorChange.index]).round()],
                               repoDir: App.pedigree!.dir,
-                              backgroundColor: authorChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
-                              nameColor: authorChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
-                              avatarBackgroundColor: authorChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
+                              backgroundColor: authorChange is Removal ? Theme.of(context).colorScheme.errorContainer : null,
+                              nameColor: authorChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                              avatarBackgroundColor: authorChange is Removal ? Theme.of(context).colorScheme.errorContainer : null,
                               removeIcon: const Icon(Icons.backspace_outlined),
                               onRemove: () => setState(() {
-                                if(authorChange.type == ChangeType.addition) {
-                                  changedChronicle!.authors.removeAt(authorChange.index);
-                                } else if(authorChange.type == ChangeType.removal) {
-                                  // TODO: fix ordering
-                                  try {
-                                    changedChronicle!.authors.insert(authorChange.index, authorChange.unchanged!);
-                                  } on RangeError catch (_) {
-                                    changedChronicle!.authors.add(authorChange.unchanged!);
-                                  }
-                                }
+                                authorChange.mapType(
+                                  ifAddition: (change) {
+                                    changedChronicle!.authors.removeAt(authorChange.index);
+                                  },
+                                  ifRemoval: (change) {
+                                    // TODO: fix ordering
+                                    try {
+                                      changedChronicle!.authors.insert(authorChange.index, authorChange.unchanged!);
+                                    } on RangeError catch (_) {
+                                      changedChronicle!.authors.add(authorChange.unchanged!);
+                                    }
+                                  },
+                                  ifModification: (change) {},
+                                );
                               }),
                             )),
                           ],
                         ),
-                        trailing: change.type == ChangeType.modification && changedChronicle?.name == change.unchanged?.name ? null : IconButton(
-                          icon: Icon(change.type == ChangeType.addition ? Icons.delete_forever_outlined : Icons.backspace_outlined),
+                        trailing: change is Modification && changedChronicle?.name == change.unchanged?.name ? null : IconButton(
+                          icon: Icon(change is Addition ? Icons.delete_forever_outlined : Icons.backspace_outlined),
                           onPressed: () => setState(() {
-                            if(change.type == ChangeType.modification) {
-                              changedChronicle?.name = change.unchanged!.name;
-                            } else if(change.type == ChangeType.removal) {
-                              // TODO: fix ordering
-                              try {
-                                App.pedigree!.chronicle.insert(change.index, change.unchanged!);
-                              } on RangeError catch (_) {
-                                App.pedigree!.chronicle.add(change.unchanged!);
-                              }
-                            } else if(change.type == ChangeType.addition)  {
-                              App.pedigree!.chronicle.removeAt(change.index);
-                            }
+                            change.mapType(
+                              ifModification: (change) {
+                                changedChronicle?.name = change.unchanged.name;
+                              },
+                              ifRemoval: (change) {
+                                // TODO: fix ordering
+                                try {
+                                  App.pedigree!.chronicle.insert(change.index, change.unchanged);
+                                } on RangeError catch (_) {
+                                  App.pedigree!.chronicle.add(change.unchanged);
+                                }
+                              },
+                              ifAddition: (change) {
+                                App.pedigree!.chronicle.removeAt(change.index);
+                              },
+                            );
                             scheduleSave(context);
                           }),
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
-                      if(change.type == ChangeType.modification && (changedChronicle?.files.length != change.unchanged!.files.length || changedChronicle?.files.safeFirstWhere((e) => !change.unchanged!.files.contains(e)) != null)) ...simpleDiff(change.unchanged!.files, changedChronicle!.files).map((fileChange) {
+                      if(
+                        change.isModificationAnd((change) => changedChronicle?.files.length != change.unchanged.files.length
+                          || changedChronicle?.files.safeFirstWhere((e) => !change.unchanged.files.contains(e)) != null) ?? false
+                      ) ...simpleDiff(change.unchanged!.files, changedChronicle!.files).map((fileChange) {
                         final filePath = fileChange.unchanged ?? changedChronicle.files[fileChange.index];
                         return ListTile(
-                          tileColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.errorContainer : null,
-                          textColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
-                          iconColor: fileChange.type == ChangeType.removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          tileColor: fileChange is Removal ? Theme.of(context).colorScheme.errorContainer : null,
+                          textColor: fileChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
+                          iconColor: fileChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
                           leading: Icon(fileTypeFromPath(filePath).icon),
                           title: Text(filePath),
                           trailing: IconButton(
                             icon: const Icon(Icons.backspace_outlined),
                             onPressed: () => setState(() {
-                              if(fileChange.type == ChangeType.addition) {
+                              if(fileChange is Addition) {
                                 changedChronicle.files.removeAt(fileChange.index);
-                              } else if(fileChange.type == ChangeType.removal) {
+                              } else if(fileChange is Removal) {
                                 // TODO: fix ordering
                                 try {
                                   changedChronicle.files.insert(fileChange.index, fileChange.unchanged!);
@@ -531,48 +546,94 @@ enum ChangeType {
   modification,
 }
 
-// TODO: use inheritance
-class Change<T> {
-  ChangeType type;
-  int index;
-  /// only set when the type is [ChangeType.modification] or [ChangeType.removal]
-  T? unchanged;
+abstract class Change<T> {
+  const Change(this.index);
+  final int index;
 
-  Change.addition(this.index)
-  : type = ChangeType.addition;
-  
-  Change.removal(this.index, this.unchanged)
-  : type = ChangeType.removal;
-  
-  Change.modification(this.index, this.unchanged)
-  : type = ChangeType.modification;
+  // TODO: implement
+  @override
+  String toString();
 
-  static List<Change<T>> additions<T>(int startInclusive, int end) {
-    if(end <= startInclusive) return [];
-    return List.generate(end - startInclusive, (index) => Change<T>.addition(index + startInclusive));
+  T? get unchanged;
+
+  M mapType<M>({
+    required M Function(Addition<T> change) ifAddition,
+    required M Function(Modification<T> change) ifModification,
+    required M Function(Removal<T> change) ifRemoval,
+  });
+
+  M? isModificationAnd<M>(M Function(Modification<T> change) map) {
+    return null;
   }
-  
-  static List<Change<T>> removals<T>(int startInclusive, List<T> unchanged) {
-    return List.generate(unchanged.length, (index) => Change.removal(index + startInclusive, unchanged[index]));
+}
+
+class Addition<T> extends Change<T> {
+  const Addition(super.index);
+
+  @override
+  Null get unchanged => null;
+
+  static List<Addition<T>> range<T>(int startInclusive, int end) {
+    if(end <= startInclusive) return [];
+    return List.generate(end - startInclusive, (index) => Addition(index + startInclusive));
   }
 
   @override
-  String toString() {
-    if(unchanged != null) {
-      return "[${type.name} of `$unchanged` at $index]";
-    } else {
-      return "[${type.name} at $index]";
-    }
+  M mapType<M>({
+    required M Function(Addition<T> change) ifAddition,
+    required M Function(Modification<T> change) ifModification,
+    required M Function(Removal<T> change) ifRemoval,
+  }) {
+    return ifAddition(this);
+  }
+}
+
+class Removal<T> extends Change<T> {
+  const Removal(super.index, this.unchanged);
+  @override
+  final T unchanged;
+
+  static List<Removal<T>> range<T>(int startInclusive, List<T> unchanged) {
+    return List.generate(unchanged.length, (index) => Removal(index + startInclusive, unchanged[index]));
+  }
+
+  @override
+  M mapType<M>({
+    required M Function(Addition<T> change) ifAddition,
+    required M Function(Modification<T> change) ifModification,
+    required M Function(Removal<T> change) ifRemoval,
+  }) {
+    return ifRemoval(this);
+  }
+}
+
+class Modification<T> extends Change<T> {
+  const Modification(super.index, this.unchanged);
+  @override
+  final T unchanged;
+
+  @override
+  M isModificationAnd<M>(M Function(Modification<T> change) map) {
+    return map(this);
+  }
+
+  @override
+  M mapType<M>({
+    required M Function(Addition<T> change) ifAddition,
+    required M Function(Modification<T> change) ifModification,
+    required M Function(Removal<T> change) ifRemoval,
+  }) {
+    return ifModification(this);
   }
 }
 
 List<Change<T>> simpleDiff<T>(List<T> original, List<T> changed) {
   List<Change<T>> result = original.indexedFilteredMap<Change<T>>(
-    (originalItem, index) => !changed.contains(originalItem) ? Change.removal(index, originalItem) : null
+    (originalItem, index) => !changed.contains(originalItem) ? Removal(index, originalItem) : null
   ).toList();
 
   result.addAll(changed.indexedFilteredMap<Change<T>>(
-    (changedItem, index) => !original.contains(changedItem) ? Change.addition(index) : null
+    (changedItem, index) => !original.contains(changedItem) ? Addition(index) : null
   ));
 
   return result;
@@ -590,7 +651,7 @@ List<Change<T>> diff<T>(List<T> original, List<T> changed, bool Function(T a, T 
     if(changed.length <= originalIndex + indexDelta) {
       // print("reached end of changed array.");
       // print("removed ${original.sublist(originalIndex)}");
-      result.addAll(Change.removals(originalIndex + indexDelta, original.sublist(originalIndex)));
+      result.addAll(Removal.range(originalIndex + indexDelta, original.sublist(originalIndex)));
       break;
     }
 
@@ -614,7 +675,7 @@ List<Change<T>> diff<T>(List<T> original, List<T> changed, bool Function(T a, T 
         if(comparator(peekedChangedItem, originalItem)) {
           // print("   ${peekIndex + indexDelta}. changed item ($peekedChangedItem) is $originalIndex. original item ($originalItem)");
           // print("added ${changed.sublist(originalIndex + indexDelta, peekIndex + indexDelta)}");
-          result.addAll(Change.additions<T>(originalIndex + indexDelta, peekIndex + indexDelta));
+          result.addAll(Addition.range<T>(originalIndex + indexDelta, peekIndex + indexDelta));
           additions += peekIndex - originalIndex;
           continue outer;
         } else {
@@ -627,7 +688,7 @@ List<Change<T>> diff<T>(List<T> original, List<T> changed, bool Function(T a, T 
         if(comparator(peekedOriginalItem, changedItem)) {
           // print("   ${peekIndex}. original item ($peekedOriginalItem) is ${originalIndex + indexDelta}. changed item ($changedItem)");
           // print("removed ${original.sublist(originalIndex, peekIndex)}");
-          result.addAll(Change.removals(originalIndex + indexDelta, original.sublist(originalIndex, peekIndex)));
+          result.addAll(Removal.range(originalIndex + indexDelta, original.sublist(originalIndex, peekIndex)));
           removals += peekIndex - originalIndex;
           continue outer;
         } else {
@@ -638,12 +699,12 @@ List<Change<T>> diff<T>(List<T> original, List<T> changed, bool Function(T a, T 
 
     // print("$originalIndex. original item ($originalItem) could been ${originalIndex + indexDelta}. changed item ($changedItem)");
     // print("changed $originalItem to $changedItem");
-    result.add(Change.modification(originalIndex + indexDelta, originalItem));
+    result.add(Modification(originalIndex + indexDelta, originalItem));
   }
   // print("reached end of original array. results: $additions+ $removals-");
   if(changed.length > original.length + additions - removals) {
     // print("added ${changed.sublist(original.length + additions - removals)}");
-    result.addAll(Change.additions(original.length + additions - removals, changed.length));
+    result.addAll(Addition.range(original.length + additions - removals, changed.length));
   }
 
   return result;
