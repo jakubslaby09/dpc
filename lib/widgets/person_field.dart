@@ -118,10 +118,11 @@ class _PersonPickerState extends State<PersonPicker> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
           child: TextField(
             decoration: const InputDecoration(
-              label: Text("Search"),
+              icon: Icon(Icons.search),
+              hintText: "Jméno",
             ),
             onChanged: (filter) => setState(() => filtered = filterPeople(filter)),
           ),
@@ -131,7 +132,7 @@ class _PersonPickerState extends State<PersonPicker> {
           child: ListView.builder(
             // shrinkWrap: true,
             itemCount: filtered.length,
-            itemBuilder: (_, index) => ListTile(
+            itemBuilder: (context, index) => ListTile(
               leading: PersonAvatar(person: filtered[index], repoDir: App.pedigree!.dir),
               title: Text(filtered[index].name),
               trailing: Text(
