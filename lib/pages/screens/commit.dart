@@ -107,8 +107,10 @@ class _CommitScreenState extends State<CommitScreen> {
                 ),
               ),
               ...peopleChanges.map((change) {
-                // there shouldn't be an index error since only additions have null unchanged
-                final person = change.unchanged ?? App.pedigree!.people.elementAt(change.index);
+                final person = App.pedigree!.people.elementAtOrNull(change.index) ?? change.unchanged;
+                if(person == null) {
+                  throw Exception("The person change isn't a removal, but it has an out-of-bounds index");
+                }
                 return Card(
                   child: Column(
                     children: [
