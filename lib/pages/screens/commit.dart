@@ -44,13 +44,12 @@ class CommitScreen extends UniqueWidget implements FABScreen {
 class _CommitScreenState extends State<CommitScreen> {
   Future<List<(File, ChangeType)>> files = changedFiles(App.pedigree!.repo);
   Future<int> remoteChanges = fetchChanges(App.pedigree!.repo);
-  List<Change<Person>> peopleChanges = diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b));
-  List<Change<Chronicle>> chronicleChanges = diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b));
-
-  bool get someChanges => peopleChanges.isNotEmpty || chronicleChanges.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
+    List<Change<Person>> peopleChanges = diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b));
+    List<Change<Chronicle>> chronicleChanges = diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b));
+    bool someChanges = peopleChanges.isNotEmpty || chronicleChanges.isNotEmpty;
     return ListView(
       children: [
         // Card(
