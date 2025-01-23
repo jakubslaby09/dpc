@@ -130,4 +130,18 @@ class Czech implements S {
   @override String get logTitleUnexpected => "Právě se někde stala chyba!";
   @override String get logDetailButton => "Zobrazit detaily";
   @override String get logReportButton => "Nahlásit";
+  @override String get preferencesAppearance => "Vzhled";
+  @override String get preferencesTitle => "Předvolby";
+  @override String get preferencesAutoTheme => "Tmavý režim dle systému";
+  @override String get preferencesDarkTheme => "Tmavý režim";
+  @override String get preferencesColoredAvatars => "Barevné ikony osob";
+  @override String get preferencesRecentFiles => "Nedávno otevřené soubory";
+  @override String get preferencesRecentFilesCapacity => "Kapacita";
+  @override String get preferencesRecentFilesDisabled => " Nezobrazovat ";
+  @override String get preferencesRecentFilesSaveBroken => "Pamatovat si rozbité soubory";
+  @override String get preferencesChanges => "Změny";
+  @override String get preferencesChangesSaveDelay => "Prodleva před uložením";
+  @override String preferencesChangesSaveDelaySeconds(int count) => "$count";
+  @override String get preferencesChangesSaveDelayDisabled => " Ukládat okamžitě ";
+  @override String get preferencesAutoUpgrade => "Bez ptaní upgradovat soubory";
 }

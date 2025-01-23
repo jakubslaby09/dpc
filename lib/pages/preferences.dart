@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dpc/strings/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,13 +33,13 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Předvolby"),
+        title: Text(S(context).preferences),
       ),
       body: ListView(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text("Vzhled", style: Theme.of(context).textTheme.titleMedium),
+            child: Text(S(context).preferencesAppearance, style: Theme.of(context).textTheme.titleMedium),
           ),
           SwitchListTile(
             value: App.themeNotifier.value == ThemeMode.system,
@@ -57,7 +58,7 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
                 themeModeSwitchControler.forward();
               }
             }),
-            title: const Text("Tmavý režim dle systému"),
+            title: Text(S(context).preferencesAutoTheme),
             secondary: const Icon(Icons.auto_awesome),
           ),
           SizeTransition(
@@ -68,33 +69,33 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
             child: SwitchListTile(
               value: App.themeNotifier.value == ThemeMode.dark,
               onChanged: (dark) => changeThemeMode(dark ? ThemeMode.dark : ThemeMode.light, context),
-              title: const Text("Tmavý režim"),
+              title: Text(S(context).preferencesDarkTheme),
               secondary: const Icon(Icons.lightbulb_outline),
             ),
           ),
           SwitchListTile(
             value: App.prefs.filledAvatarIcons,
             onChanged: (value) => setState(() => App.prefs.filledAvatarIcons = value),
-            title: const Text("Barevné ikony osob"),
+            title: Text(S(context).preferencesColoredAvatars),
             secondary: const Icon(Icons.face_retouching_natural_outlined),
           ),
           const Divider(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text("Nedávno otevřené soubory", style: Theme.of(context).textTheme.titleMedium),
+            child: Text(S(context).preferencesRecentFiles, style: Theme.of(context).textTheme.titleMedium),
           ),
           ListTile(
             leading: const Icon(Icons.clear_all),
             title: Row(
               children: [
-                const Text("Kapacita"),
+                Text(S(context).preferencesRecentFilesCapacity),
                 Expanded(
                   child: Slider(
                     value: _maxRecents.toDouble(),
                     max: 20,
                     min: 1,
                     divisions: 19,
-                    label: _maxRecents == 1 ? " Nezobrazovat " : _maxRecents.toString(),
+                    label: _maxRecents == 1 ? S(context).preferencesRecentFilesDisabled : _maxRecents.toString(),
                     onChanged: (value) => setState(() {
                       if (value > 1) {
                         brokenRecentsSwitchControler.forward();
@@ -123,27 +124,29 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
             child: SwitchListTile(
               value: App.prefs.saveBrokenRecentFiles,
               onChanged: (value) => setState(() => App.prefs.saveBrokenRecentFiles = value),
-              title: const Text("Pamatovat si rozbité soubory"),
+              title: Text(S(context).preferencesRecentFilesSaveBroken),
               secondary: const Icon(Icons.broken_image_outlined),
             ),
           ),
           const Divider(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text("Změny", style: Theme.of(context).textTheme.titleMedium),
+            child: Text(S(context).preferencesChanges, style: Theme.of(context).textTheme.titleMedium),
           ),
           ListTile(
             leading: const Icon(Icons.timer_outlined),
             title: Row(
               children: [
-                const Text("Prodleva před uložením"),
+                Text(S(context).preferencesChangesSaveDelay),
                 Expanded(
                   child: Slider(
                     value: _saveDelaySeconds.toDouble(),
                     max: 30,
                     min: 0,
                     divisions: 12,
-                    label: _saveDelaySeconds == 0 ? " Ukládat okamžitě " : "${_saveDelaySeconds}s",
+                    label: _saveDelaySeconds == 0
+                      ? S(context).preferencesChangesSaveDelayDisabled
+                      : S(context).preferencesChangesSaveDelaySeconds(_saveDelaySeconds),
                     onChanged: (value) => setState(() {
                       _saveDelaySeconds = value.floor();
                     }),
@@ -159,7 +162,7 @@ class _PreferencesPageState extends State<PreferencesPage> with TickerProviderSt
           SwitchListTile(
             value: App.prefs.autoUpgradeFiles,
             onChanged: (value) => setState(() => App.prefs.autoUpgradeFiles = value),
-            title: const Text("Bez ptaní upgradovat soubory"),
+            title: Text(S(context).preferencesAutoUpgrade),
             secondary: const Icon(Icons.upgrade),
           ),
         ],

@@ -146,6 +146,20 @@ class S {
   String get logTitleUnexpected => "An error has just happened!";
   String get logDetailButton => "See more";
   String get logReportButton => "Report";
+  String get preferencesAppearance => "Appearance";
+  String get preferencesTitle => "Preferences";
+  String get preferencesAutoTheme => "Use system's theme";
+  String get preferencesDarkTheme => "Dark theme";
+  String get preferencesColoredAvatars => "Colored avatar icons";
+  String get preferencesRecentFiles => "Recently opened";
+  String get preferencesRecentFilesCapacity => "Capacity";
+  String get preferencesRecentFilesDisabled => " Don't show ";
+  String get preferencesRecentFilesSaveBroken => "Remember broken files";
+  String get preferencesChanges => "Your changes";
+  String get preferencesChangesSaveDelay => "Save delay";
+  String preferencesChangesSaveDelaySeconds(int count) => "${count}s";
+  String get preferencesChangesSaveDelayDisabled => " Save immediately ";
+  String get preferencesAutoUpgrade => "Upgrade files without confirmation";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();
