@@ -111,7 +111,16 @@ class _FileScreenState extends State<FileScreen> {
         ListTile(
           leading: const Icon(Icons.create_new_folder_outlined),
           title: Text(S(context).createRepo),
-          onTap: () => createRepo(context).then((_) => setState(() {})),
+          onTap: () async {
+            final pickerResult = await FilePicker.platform.getDirectoryPath(
+              dialogTitle: S(context).createRepoDialogTitle,
+            );
+            if(pickerResult == null) return;
+            final newDir = await CreateRepoSheet.show(context, Directory(pickerResult));
+            if(newDir == null) return;
+            await openRepo(context, newDir.path);
+            setState(() { });
+          },
         ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
@@ -208,79 +217,6 @@ class _FileScreenState extends State<FileScreen> {
     recents.removeWhere((recentPath) => recentPath == directory);
     recents.insert(broken && App.pedigree != null && recents.isNotEmpty ? 1 : 0, directory);
     App.prefs.recentFiles = recents;
-  }
-
-  // TODO: move into sheet file
-  createRepo(BuildContext context) async {
-    final pickerResult = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: S(context).createRepoDialogTitle,
-    );
-    if(pickerResult == null) return;
-
-    Directory directory = Directory(pickerResult);
-    final sheetResult = await CreateRepoSheet.show(context, directory);
-    if(sheetResult == null) return;
-    directory = Directory(sheetResult.dir);
-    try {
-        await directory.create(recursive: true);
-    } on PathAccessException catch (e) {
-        showException(context, S(context).createRepoInaccessibleDir, e);
-    } on Exception catch (e) {
-        showException(context, S(context).createRepoCouldNotCreateDir, e);
-    }
-
-    try {
-      // just to test ownership
-      // TODO: use join instead
-      await Directory("${directory.path}/.git").create(recursive: true);
-
-      // TODO: free memory
-      Pointer<Pointer<git_repository>> repo = calloc();
-      Pointer<Pointer<git_signature>> signature = calloc();
-      Pointer<Pointer<git_index>> index = calloc();
-      Pointer<git_oid> treeId = calloc();
-      Pointer<Pointer<git_tree>> tree = calloc();
-      Pointer<git_oid> commitId = calloc();
-      expectCode(App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
-
-      final pedigree = Pedigree.empty(sheetResult.name, directory.path, repo.value);
-      await pedigree.save(context, true);
-
-      final Pointer<Char> name = sheetResult.gitName.toNativeUtf8().cast();
-      final Pointer<Char> email = sheetResult.gitEmail.toNativeUtf8().cast();
-      expectCode(App.git.git_signature_now(signature, name, email));
-      expectCode(App.git.git_repository_index(index, repo.value));
-      expectCode(App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
-      expectCode(App.git.git_index_write(index.value));
-      expectCode(App.git.git_index_write_tree(treeId, index.value));
-      expectCode(App.git.git_tree_lookup(tree, repo.value, treeId));
-      expectCode(App.git.git_commit_create(
-        commitId,
-        repo.value,
-        "HEAD".toNativeUtf8().cast(),
-        signature.value,
-        signature.value,
-        "UTF-8".toNativeUtf8().cast(),
-        sheetResult.commitMessage.toNativeUtf8().cast(),
-        tree.value,
-        0,
-        nullptr,
-      ));
-
-      try {
-        saveDefaultSignature(repo.value, name, email, S(context));
-      } on Exception catch (e, t) {
-        showException(context, S(context).createRepoCouldNotSaveSig, e, t);
-      }
-    } on PathAccessException catch (e, t) {
-      showException(context, S(context).createRepoInaccessibleGitDir, e, t);
-      return;
-    } on Exception catch (e, t) {
-      showException(context, S(context).createRepoCouldNotCreateGitDir, e, t);
-      return;
-    }
-
-    await openRepo(context, directory.path);
   }
 }
 

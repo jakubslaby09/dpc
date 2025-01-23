@@ -1,7 +1,14 @@
+import 'dart:ffi' as ffi;
 import 'dart:io';
 
+import 'package:dpc/dpc.dart';
+import 'package:dpc/main.dart';
+import 'package:dpc/pages/log.dart';
+import 'package:dpc/pages/screens/file.dart';
 import 'package:dpc/strings/strings.dart';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
+import 'package:git2dart_binaries/git2dart_binaries.dart';
 import 'package:path/path.dart' as p;
 
 class CreateRepoSheet extends StatefulWidget {
@@ -14,8 +21,8 @@ class CreateRepoSheet extends StatefulWidget {
   @override
   State<CreateRepoSheet> createState() => _CreateRepoSheetState();
 
-  static Future<CreateRepoSheetResult?> show(BuildContext context, Directory directory) {
-    return showModalBottomSheet(
+  static Future<Directory?> show(BuildContext context, Directory directory) {
+    return showModalBottomSheet<Directory>(
       isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
@@ -147,7 +154,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                   children: [
                     Expanded(
                       child: TextButton.icon(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.of(context).pop(null),
                         style: FilledButton.styleFrom(
                           minimumSize: const Size.fromHeight(40),
                         ),
@@ -158,16 +165,19 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                     const VerticalDivider(),
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: widget.repoDirState is NewRepoDirException ? null : () => setState(() {
-                          if(!formKey.currentState!.validate()) return;
-                          Navigator.of(context).pop(CreateRepoSheetResult(
-                            nameController.text,
-                            wholeDirectory,
-                            commitMessageController.text,
-                            gitNameController.text,
-                            gitEmailController.text,
+                        onPressed: widget.repoDirState is NewRepoDirException ? null : () async {
+                          if(!formKey.currentState!.validate()) {
+                            return;
+                          }
+                          Navigator.of(context).pop(await createRepo(
+                            context: context,
+                            name: nameController.text,
+                            directory: Directory(wholeDirectory),
+                            firstMessage: commitMessageController.text,
+                            sigName: gitNameController.text,
+                            sigEmail: gitEmailController.text,
                           ));
-                        }),
+                        },
                         style: FilledButton.styleFrom(
                           minimumSize: const Size.fromHeight(40),
                         ),
@@ -186,6 +196,76 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
   }
 
   String get wholeDirectory => widget.repoDirState == NewRepoDirState.full ? p.join(widget.directory.path, subdirController.text) : widget.directory.path;
+}
+
+Future<Directory?> createRepo({
+  required BuildContext context,
+  required String name,
+  required Directory directory,
+  required String firstMessage,
+  required String sigName,
+  required String sigEmail
+}) async {
+    try {
+        await directory.create(recursive: true);
+    } on PathAccessException catch (e) {
+        showException(context, S(context).createRepoInaccessibleDir, e);
+    } on Exception catch (e) {
+        showException(context, S(context).createRepoCouldNotCreateDir, e);
+    }
+
+    try {
+      // just to test ownership
+      // TODO: use join instead
+      await Directory("${directory.path}/.git").create(recursive: true);
+
+      // TODO: free memory
+      ffi.Pointer<ffi.Pointer<git_repository>> repo = calloc();
+      ffi.Pointer<ffi.Pointer<git_signature>> signature = calloc();
+      ffi.Pointer<ffi.Pointer<git_index>> index = calloc();
+      ffi.Pointer<git_oid> treeId = calloc();
+      ffi.Pointer<ffi.Pointer<git_tree>> tree = calloc();
+      ffi.Pointer<git_oid> commitId = calloc();
+      expectCode(App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
+
+      final pedigree = Pedigree.empty(sigName, directory.path, repo.value);
+      await pedigree.save(context, true);
+
+      final ffi.Pointer<ffi.Char> name = sigName.toNativeUtf8().cast();
+      final ffi.Pointer<ffi.Char> email = sigEmail.toNativeUtf8().cast();
+      expectCode(App.git.git_signature_now(signature, name, email));
+      expectCode(App.git.git_repository_index(index, repo.value));
+      expectCode(App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
+      expectCode(App.git.git_index_write(index.value));
+      expectCode(App.git.git_index_write_tree(treeId, index.value));
+      expectCode(App.git.git_tree_lookup(tree, repo.value, treeId));
+      expectCode(App.git.git_commit_create(
+        commitId,
+        repo.value,
+        "HEAD".toNativeUtf8().cast(),
+        signature.value,
+        signature.value,
+        "UTF-8".toNativeUtf8().cast(),
+        firstMessage.toNativeUtf8().cast(),
+        tree.value,
+        0,
+        ffi.nullptr,
+      ));
+
+      try {
+        saveDefaultSignature(repo.value, name, email, S(context));
+      } on Exception catch (e, t) {
+        showException(context, S(context).createRepoCouldNotSaveSig, e, t);
+      }
+    } on PathAccessException catch (e, t) {
+      showException(context, S(context).createRepoInaccessibleGitDir, e, t);
+      return null;
+    } on Exception catch (e, t) {
+      showException(context, S(context).createRepoCouldNotCreateGitDir, e, t);
+      return null;
+    }
+
+    return directory;
 }
 
 class CreateRepoSheetResult {
