@@ -48,23 +48,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: PreferredSize(
-      //   preferredSize: const Size.fromHeight(80),
-      //   child: OrientationBuilder(
-      //     builder: (context, orientation) => Visibility(
-      //       visible: orientation == Orientation.portrait,
-      //       child: AppBar(
-      //         title: const Text("Digitální kronika"), // TODO: Display opened pedigree name
-      //         leading: IconButton(
-      //           icon: const Icon(Icons.settings_outlined),
-      //           onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-      //             builder: (context) => PreferencesPage(),
-      //           )),
-      //         ),
-      //       ),
-      //     ),
-      //   ),
-      // ),
       body: Row(
         children: [
           if (MediaQuery.of(context).orientation == Orientation.landscape) NavigationRail(
@@ -144,7 +127,6 @@ class NoPedigreeScreen extends StatelessWidget {
           ),
         ),
         // TODO: creating a new repo
-        // const Text("Nemáte otevřený repozitář s rodokmenem.\nNa první stránce ho můžete otevřít, nebo založit nový.", textAlign: TextAlign.center),
         Text(S(context).noFileOpenNotice, textAlign: TextAlign.center),
         Padding(
           padding: const EdgeInsets.only(top: 16),

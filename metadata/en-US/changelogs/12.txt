@@ -1,0 +1,2 @@
+1.6.4:
+- fixed removing newly added people from the commit screen
