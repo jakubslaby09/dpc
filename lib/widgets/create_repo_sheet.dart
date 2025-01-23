@@ -91,7 +91,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                   hintText: S(context).createRepoChronicleNameHint,
                   border: const OutlineInputBorder(),
                 ),
-                validator: (value) => value?.trim().isEmpty ?? false ? S(context).createRepoMissingName : null,
+                validator: (value) => value?.trim().isEmpty ?? true ? S(context).createRepoMissingName : null,
               ),
               const Divider(color: Colors.transparent),
               // TODO: add a button to change the repo directory
@@ -228,12 +228,12 @@ Future<Directory?> createRepo({
       ffi.Pointer<git_oid> commitId = calloc();
       expectCode(App.git.git_repository_init(repo, directory.path.toNativeUtf8().cast(), 0));
 
-      final pedigree = Pedigree.empty(sigName, directory.path, repo.value);
+      final pedigree = Pedigree.empty(name, directory.path, repo.value);
       await pedigree.save(context, true);
 
-      final ffi.Pointer<ffi.Char> name = sigName.toNativeUtf8().cast();
-      final ffi.Pointer<ffi.Char> email = sigEmail.toNativeUtf8().cast();
-      expectCode(App.git.git_signature_now(signature, name, email));
+      final ffi.Pointer<ffi.Char> sigNamePointer = sigName.toNativeUtf8().cast();
+      final ffi.Pointer<ffi.Char> sigEmailPointer = sigEmail.toNativeUtf8().cast();
+      expectCode(App.git.git_signature_now(signature, sigNamePointer, sigEmailPointer));
       expectCode(App.git.git_repository_index(index, repo.value));
       expectCode(App.git.git_index_add_bypath(index.value, "index.dpc".toNativeUtf8().cast()));
       expectCode(App.git.git_index_write(index.value));
@@ -253,7 +253,7 @@ Future<Directory?> createRepo({
       ));
 
       try {
-        saveDefaultSignature(repo.value, name, email, S(context));
+        saveDefaultSignature(repo.value, sigNamePointer, sigEmailPointer, S(context));
       } on Exception catch (e, t) {
         showException(context, S(context).createRepoCouldNotSaveSig, e, t);
       }
