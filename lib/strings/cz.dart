@@ -96,4 +96,22 @@ class Czech implements S {
   @override String get upgradeRepoFromVersion => "z verze ";
   @override String get upgradeRepoToVersion => "na verzi ";
   @override String get upgradeRepoButton => "Upgradovat";
+  @override String get createRepoDefaultCommitMessage => "Vytvořit repozitář";
+  @override String get createRepoCouldNotAccessDir => "Nelze přistupovat ke složce, kterou jste vybrali";
+  @override String get createRepoDirtyDir => "Složka, kterou jste vybrali, není prázdná. Bude tedy vytvořena podsložka.";
+  @override String get createRepoChronicleNameLabel => "Jméno kroniky";
+  @override String get createRepoChronicleNameHint => "Novákovi";
+  @override String get createRepoMissingName => "Zvolte si jméno kroniky";
+  @override String get createRepoDirName => "Složka nového repozitáře";
+  @override String get createRepoDirWithSubdirName => "Cesta k novému repozitáři";
+  @override String get createRepoSubirName => "Jméno složky repozitáře";
+  @override String get createRepoMissingSubdirName => "Zvolte si jméno nové složky";
+  @override String get createRepoCommitMessage => "Zpráva prvního příspěvku";
+  @override String get createRepoMissingCommitMessage => "Zvolte si zprávu příspěvku";
+  @override String get createRepoSignatureName => "Jméno autora příspěvku";
+  @override String get createRepoMissingSignatureName => "Napište prosím jméno autora";
+  @override String get createRepoSignatureEmail => "Email autora příspěvku";
+  @override String get createRepoMissingSignatureEmail => "Napište prosím email autora";
+  @override String get createRepoAbort => "Zahodit";
+  @override String get createRepoConfirm => "Vytvořit";
 }

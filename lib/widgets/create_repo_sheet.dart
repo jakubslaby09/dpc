@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dpc/strings/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
@@ -41,7 +42,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dirController = TextEditingController();
   final TextEditingController subdirController = TextEditingController();
-  final TextEditingController commitMessageController = TextEditingController(text: "Vytvořit repozitář");
+  final TextEditingController commitMessageController = TextEditingController();
   final TextEditingController gitNameController = TextEditingController();
   final TextEditingController gitEmailController = TextEditingController();
   final formKey = GlobalKey<FormState>();
@@ -49,6 +50,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
   @override
   Widget build(BuildContext context) {
     dirController.text = wholeDirectory;
+    commitMessageController.text = S(context).createRepoDefaultCommitMessage;
 
     return SingleChildScrollView(
       child: Padding(
@@ -60,29 +62,29 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
               if(widget.repoDirState is NewRepoDirException) Card(
                 margin: const EdgeInsets.only(bottom: 24),
                 color: Theme.of(context).colorScheme.errorContainer,
-                child: const ListTile(
-                  leading: Icon(Icons.error_outlined),
-                  title: Text("Nelze přistupovat ke složce, kterou jste vybrali"),
+                child: ListTile(
+                  leading: const Icon(Icons.error_outlined),
+                  title: Text(S(context).createRepoCouldNotAccessDir),
                 ),
               ),
               // TODO: add an override button
               if(widget.repoDirState == NewRepoDirState.full) Card(
                 margin: const EdgeInsets.only(bottom: 24),
                 color: Theme.of(context).colorScheme.secondaryContainer,
-                child: const ListTile(
-                  leading: Icon(Icons.warning_amber_outlined),
-                  title: Text("Složka, kterou jste vybrali, není prázdná. Bude tedy vytvořena podsložka."),
+                child: ListTile(
+                  leading: const Icon(Icons.warning_amber_outlined),
+                  title: Text(S(context).createRepoDirtyDir),
                 ),
               ),
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.face_2_outlined),
-                  labelText: "Jméno kroniky",
-                  hintText: "Novákovi",
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.face_2_outlined),
+                  labelText: S(context).createRepoChronicleNameLabel,
+                  hintText: S(context).createRepoChronicleNameHint,
+                  border: const OutlineInputBorder(),
                 ),
-                validator: (value) => value?.trim().isEmpty ?? false ? "Zvolte si jméno kroniky" : null,
+                validator: (value) => value?.trim().isEmpty ?? false ? S(context).createRepoMissingName : null,
               ),
               const Divider(color: Colors.transparent),
               // TODO: add a button to change the repo directory
@@ -90,7 +92,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                 controller: dirController,
                 decoration: InputDecoration(
                   icon: Icon(widget.repoDirState == NewRepoDirState.full ? Icons.folder_outlined : Icons.create_new_folder_outlined),
-                  labelText: widget.repoDirState == NewRepoDirState.full ? "Cesta k novému repozitáři" : "Složka nového repozitáře",
+                  labelText: widget.repoDirState == NewRepoDirState.full ?  S(context).createRepoDirWithSubdirName : S(context).createRepoDirName,
                   border: const OutlineInputBorder(),
                 ),
                 enabled: false,
@@ -98,45 +100,45 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
               if(widget.repoDirState == NewRepoDirState.full) const Divider(color: Colors.transparent),
               if(widget.repoDirState == NewRepoDirState.full) TextFormField(
                 controller: subdirController,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.create_new_folder_outlined),
-                  labelText: "Jméno složky repozitáře",
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.create_new_folder_outlined),
+                  labelText: S(context).createRepoSubirName,
+                  border: const OutlineInputBorder(),
                 ),
-                validator: (value) => value?.trim().isEmpty ?? false ? "Zvolte si jméno nové složky" : null,
+                validator: (value) => value?.trim().isEmpty ?? false ? S(context).createRepoMissingSubdirName : null,
                 onChanged: (_) => setState(() {}),
               ),
               const Divider(color: Colors.transparent),
               TextFormField(
                 controller: commitMessageController,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.commit),
-                  labelText: "Zpráva prvního příspěvku",
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.commit),
+                  labelText: S(context).createRepoCommitMessage,
+                  border: const OutlineInputBorder(),
                 ),
-                validator: (value) => value?.trim().isEmpty ?? false ? "Zvolte si jméno kroniky" : null,
+                validator: (value) => value?.trim().isEmpty ?? false ? S(context).createRepoMissingCommitMessage : null,
               ),
               // TODO: add an option to use git_signature_default
               const Divider(color: Colors.transparent),
               TextFormField(
                 controller: gitNameController,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.contact_mail_outlined),
-                  labelText: "Jméno autora příspěvku",
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.contact_mail_outlined),
+                  labelText: S(context).createRepoSignatureName,
+                  border: const OutlineInputBorder(),
                 ),
-                validator: (value) => value?.trim().isEmpty ?? false ? "Napište prosím jméno autora" : null,
+                validator: (value) => value?.trim().isEmpty ?? false ? S(context).createRepoMissingSignatureName : null,
               ),
               const Divider(color: Colors.transparent),
               TextFormField(
                 controller: gitEmailController,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.email_outlined),
-                  labelText: "Email autora příspěvku",
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.email_outlined),
+                  labelText: S(context).createRepoSignatureEmail,
+                  border: const OutlineInputBorder(),
                 ),
                 // TODO: validate with email_validator
-                validator: (value) => value?.trim().isEmpty ?? false ? "Napište prosím email autora" : null,
+                validator: (value) => value?.trim().isEmpty ?? false ? S(context).createRepoMissingSignatureEmail : null,
               ),
               // TODO: add an option to push the repo after creation
               Padding(
@@ -150,7 +152,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                           minimumSize: const Size.fromHeight(40),
                         ),
                         icon: const Icon(Icons.cancel_outlined),
-                        label: const Text("Zahodit"),
+                        label: Text(S(context).createRepoAbort),
                       ),
                     ),
                     const VerticalDivider(),
@@ -170,7 +172,7 @@ class _CreateRepoSheetState extends State<CreateRepoSheet> {
                           minimumSize: const Size.fromHeight(40),
                         ),
                         icon: const Icon(Icons.cake_outlined),
-                        label: const Text("Vytvořit"),
+                        label: Text(S(context).createRepoConfirm),
                       ),
                     ),
                   ],

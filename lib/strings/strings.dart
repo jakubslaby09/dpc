@@ -112,6 +112,24 @@ class S {
   String get upgradeRepoFromVersion => "from version ";
   String get upgradeRepoToVersion => "to version ";
   String get upgradeRepoButton => "Upgrade";
+  String get createRepoDefaultCommitMessage => "Create repository";
+  String get createRepoCouldNotAccessDir => "This directory is not accessible";
+  String get createRepoDirtyDir => "This directory is not empty. A subdirectory will be created.";
+  String get createRepoChronicleNameLabel => "Chronicle name";
+  String get createRepoChronicleNameHint => "The Glanzmanns";
+  String get createRepoMissingName => "Please name the chronicle";
+  String get createRepoDirName => "New repository directory";
+  String get createRepoDirWithSubdirName => "Path to the repository";
+  String get createRepoSubirName => "Repository directory name";
+  String get createRepoMissingSubdirName => "Please choose a directory name";
+  String get createRepoCommitMessage => "First commit message";
+  String get createRepoMissingCommitMessage => "Please choose a commit message";
+  String get createRepoSignatureName => "Commit signature name";
+  String get createRepoMissingSignatureName => "Please provide a signature name";
+  String get createRepoSignatureEmail => "Commit signature email";
+  String get createRepoMissingSignatureEmail => "Please provide a signature email";
+  String get createRepoAbort => "Cancel";
+  String get createRepoConfirm => "Create";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();
