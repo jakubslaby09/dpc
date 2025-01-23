@@ -1,1 +1,1 @@
-Otevřená aplikace pro záznam rodinného rodokmenu, kroniky a jejich synchronizaci pomocí Git s podporou autentikace přes Github.
+Otevřená aplikace pro záznam rodinného rodokmenu, kroniky a jejich synchronizaci pomocí Git s podporou přihlašování přes Github.
