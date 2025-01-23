@@ -160,6 +160,20 @@ class S {
   String preferencesChangesSaveDelaySeconds(int count) => "${count}s";
   String get preferencesChangesSaveDelayDisabled => " Save immediately ";
   String get preferencesAutoUpgrade => "Upgrade files without confirmation";
+  String personPictureDialogTitle(String name) => "Picture of $name";
+  String personPictureImportTitle(String name) => "Name $name's picture";
+  String get personPictureDefaultImportDir => "profile pictures";
+  String get personPictureCouldNotCopy => "Could not copy the profile picture";
+  String get personPictureCouldNotLoad => "Could not load the profile picture";
+  String get personNameAndSex => "Name";
+  String get personBirth => "Date of birth";
+  String get personDeath => "Date of death";
+  String get personFather => "Father";
+  String get personMother => "Mother";
+  String get personAddChild => "Add a child";
+  String get personUnknownChild => "unknown child";
+  String get personUnknownChildren => "unknown children";
+  String personUnknownChildrenWith(String name) => "unknown children with $name";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();

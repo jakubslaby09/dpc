@@ -144,4 +144,18 @@ class Czech implements S {
   @override String preferencesChangesSaveDelaySeconds(int count) => "$count";
   @override String get preferencesChangesSaveDelayDisabled => " Ukládat okamžitě ";
   @override String get preferencesAutoUpgrade => "Bez ptaní upgradovat soubory";
+  @override String personPictureDialogTitle(String name) => "Fotka - $name";
+  @override String personPictureImportTitle(String name) => "Pojmenujte fotku";
+  @override String get personPictureDefaultImportDir => "profilové fotky";
+  @override String get personPictureCouldNotCopy => "nelze zkopírovat profilovou fotku";
+  @override String get personPictureCouldNotLoad => "nelze načíst profilovou fotku";
+  @override String get personNameAndSex => "Jméno";
+  @override String get personBirth => "Narození";
+  @override String get personDeath => "Úmrtí";
+  @override String get personFather => "Otec";
+  @override String get personMother => "Matka";
+  @override String get personAddChild => "Přidat dítě";
+  @override String get personUnknownChild => "neznámé dítě";
+  @override String get personUnknownChildren => "neznámé děti";
+  @override String personUnknownChildrenWith(String name) => "neznámé děti ($name)";
 }

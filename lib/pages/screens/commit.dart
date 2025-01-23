@@ -201,6 +201,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           textColor: childChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
                           iconColor: childChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
                           leading: const Icon(Icons.child_friendly_outlined),
+                          // TODO: display negative ids properly
                           title: Text(child is Person ? child.name : "id: ${child.id}"),
                           trailing: IconButton(
                             icon: const Icon(Icons.backspace_outlined),
