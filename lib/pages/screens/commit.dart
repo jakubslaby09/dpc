@@ -43,13 +43,13 @@ class CommitScreen extends UniqueWidget implements FABScreen {
 // TODO: make people listTiles navigate to their pages on tap
 // TODO: display dividers only when needed
 class _CommitScreenState extends State<CommitScreen> {
-  late Future<List<(File, ChangeType)>> files;
-  late Future<int> remoteChanges;
+  Future<List<(File, ChangeType)>>? files;
+  Future<int>? remoteChanges;
 
   @override
   Widget build(BuildContext context) {
-    files = changedFiles(App.pedigree!.repo, S(context));
-    remoteChanges = fetchChanges(App.pedigree!.repo, S(context));
+    files ??= changedFiles(App.pedigree!.repo, S(context));
+    remoteChanges ??= fetchChanges(App.pedigree!.repo, S(context));
     List<Change<Person>> peopleChanges = diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b));
     List<Change<Chronicle>> chronicleChanges = diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b));
     bool someChanges = peopleChanges.isNotEmpty || chronicleChanges.isNotEmpty;
