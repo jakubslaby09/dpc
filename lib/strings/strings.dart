@@ -139,6 +139,7 @@ class S {
   String get importFileSourceDoesNotExist => "The file does not exist anymore. Did you delete it?";
   String get importFileDestOutsideRepo => "The destination must be inside the repository";
   String importFileInvalidExt(String requiredExt) => "The file extension is not the same. Try changing it to $requiredExt";
+  String get personFieldSearchHint => "Name";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();
