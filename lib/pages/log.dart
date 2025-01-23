@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dpc/strings/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,7 +29,7 @@ class LogPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(openedUnexpectedly ? "Právě se někde stala chyba!" : "Záznam chyby"),
+        title: Text(openedUnexpectedly ? S(context).logTitleUnexpected : S(context).logTitle),
         backgroundColor: openedUnexpectedly ? Theme.of(context).colorScheme.error : null,
         foregroundColor: openedUnexpectedly ? Theme.of(context).colorScheme.onError : null,
         actions: [
@@ -71,7 +72,7 @@ class LogPage extends StatelessWidget {
           child: FloatingActionButton.extended(
             backgroundColor: Theme.of(context).colorScheme.error,
             foregroundColor: Theme.of(context).colorScheme.onError,
-            label: const Text("Nahlásit"),
+            label: Text(S(context).logReportButton),
             icon: const Icon(Icons.bug_report_outlined),
             onPressed: () => launchUrl(reportUrl),
           ),
@@ -91,7 +92,7 @@ void showException(BuildContext context, String message, [Exception? exception, 
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     content: Text(message),
     action: exception == null ? null : SnackBarAction(
-      label: "Zobrazit detaily",
+      label: S(context).logDetailButton,
       onPressed: () => showExceptionPage(context, exception, trace),
     ),
   ));

@@ -126,4 +126,8 @@ class Czech implements S {
   @override String get personFieldSearchHint => "Jméno";
   @override String get pedigreeSaveMissingFile => "Nelze uložit Vaše úpravy do souboru s rodokmenem. Nesmazali jste ho?";
   @override String get pedigreeSaveCouldNotSave => "Nelze uložit Vaše úpravy.";
+  @override String get logTitle => "Záznam chyby";
+  @override String get logTitleUnexpected => "Právě se někde stala chyba!";
+  @override String get logDetailButton => "Zobrazit detaily";
+  @override String get logReportButton => "Nahlásit";
 }

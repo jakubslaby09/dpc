@@ -142,6 +142,10 @@ class S {
   String get personFieldSearchHint => "Name";
   String get pedigreeSaveMissingFile => "Could not save your changes to the chronicle file. Did you delete it?";
   String get pedigreeSaveCouldNotSave => "Could not save your changes.";
+  String get logTitle => "Error log";
+  String get logTitleUnexpected => "An error has just happened!";
+  String get logDetailButton => "See more";
+  String get logReportButton => "Report";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();
