@@ -91,4 +91,9 @@ class Czech implements S {
   @override String get commitCouldNotLookupRemote => "nelze zjistit, kam změny poslat";
   @override String get commitCouldNotSaveSignature => "Nelze uložit podpis autora";
   @override String commitCouldNotCommit(Exception e) => "Nepodařilo se zveřejnit Vaše změny: $e";
+  @override String get upgradeRepo => "Upgradovat index rodokmenu?";
+  @override String upgradeRepoDir(String path) => "Ve složce $path";
+  @override String get upgradeRepoFromVersion => "z verze ";
+  @override String get upgradeRepoToVersion => "na verzi ";
+  @override String get upgradeRepoButton => "Upgradovat";
 }

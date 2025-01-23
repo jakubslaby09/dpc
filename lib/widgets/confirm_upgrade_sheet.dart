@@ -1,4 +1,5 @@
 import 'package:dpc/dpc.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:flutter/material.dart';
 
 class UpgradeSheet extends StatelessWidget {
@@ -23,19 +24,19 @@ class UpgradeSheet extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(24),
-          child: Text("Upgradovat index?", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+          child: Text(S(context).upgradeRepo, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
         ),
-        Text("Rodokmen ve složce $dirPath"),
+        Text(S(context).upgradeRepoDir(dirPath)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("z verze "),
+            Text(S(context).upgradeRepoFromVersion),
             Text(indexValues.toString(), style: const TextStyle(fontSize: 20)),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 4),
               child: Icon(Icons.arrow_forward),
             ),
-            const Text("na verzi "),
+            Text(S(context).upgradeRepoToVersion),
             const Text("${Pedigree.maxVersion}", style: TextStyle(fontSize: 20)),
           ],
         ),
@@ -46,7 +47,7 @@ class UpgradeSheet extends StatelessWidget {
               Expanded(
                 child: FilledButton.icon(
                   icon: const Icon(Icons.update_outlined),
-                  label: const Text("Upgradovat"),
+                  label: Text(S(context).upgradeRepoButton),
                   onPressed: () => Navigator.of(context).pop(true),
                 ),
               ),

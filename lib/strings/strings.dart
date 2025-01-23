@@ -107,6 +107,11 @@ class S {
   String get commitCouldNotLookupRemote => "Could not read which remote repository to send the commit to";
   String get commitCouldNotSaveSignature => "Could not save the signature";
   String commitCouldNotCommit(Exception e) => "Could not send your changes: $e";
+  String get upgradeRepo => "Upgrade pedigree index?";
+  String upgradeRepoDir(String path) => "In $path";
+  String get upgradeRepoFromVersion => "from version ";
+  String get upgradeRepoToVersion => "to version ";
+  String get upgradeRepoButton => "Upgrade";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();
