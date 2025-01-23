@@ -12,8 +12,8 @@ import 'package:git2dart_binaries/git2dart_binaries.dart';
 class CommitSheet extends StatefulWidget {
   const CommitSheet({super.key});
 
-  static Future<CommitSheetError?> show(BuildContext context) {
-    return showModalBottomSheet<CommitSheetError>(
+  static Future<CommitSheetResult?> show(BuildContext context) {
+    return showModalBottomSheet<CommitSheetResult>(
       context: context,
       enableDrag: false,
       isDismissible: false,
@@ -155,7 +155,7 @@ class _CommitSheetState extends State<CommitSheet> {
                 children: [
                   Expanded(
                     child: TextButton.icon(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => Navigator.of(context).pop(null),
                       icon: const Icon(Icons.cancel_outlined),
                       label: Text(S(context).commitCancel),
                     ),
@@ -168,6 +168,7 @@ class _CommitSheetState extends State<CommitSheet> {
                           return;
                         }
                         commit(context, customSignature());
+                        Navigator.of(context).pop(CommitSheetSuccess());
                       },
                       icon: const Icon(Icons.send_outlined),
                       label: Text(S(context).commitPush),
@@ -285,8 +286,6 @@ class _CommitSheetState extends State<CommitSheet> {
     setState(() => inProgress = false);
 
     App.git.git_signature_free(signature);
-
-    Navigator.of(context).pop(null);
   }
 
   ffi.Pointer<git_signature>? readDefaultSignature(ffi.Pointer<git_repository> repo) {
@@ -310,7 +309,9 @@ class _CommitSheetState extends State<CommitSheet> {
   }
 }
 
-class CommitSheetError {
+abstract class CommitSheetResult {}
+class CommitSheetSuccess implements CommitSheetResult {}
+class CommitSheetError implements CommitSheetResult {
   final String message;
   final Exception exception;
   final StackTrace trace;

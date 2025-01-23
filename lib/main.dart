@@ -90,18 +90,6 @@ class App extends StatelessWidget {
   }
 }
 
-class Result<T, E> {
-  Result(this.value);
-  Result.error(this.error);
-
-  T? value;
-  E? error;
-
-  bool isOk() {
-    return value != null;
-  }
-}
-
 extension ListExtension<T> on List<T> {
   List<T> safeSublist(int start, int? end) {
     if(end != null && end < start) {

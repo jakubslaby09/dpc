@@ -379,9 +379,10 @@ class _CommitScreenState extends State<CommitScreen> {
   }
 
   void commit(BuildContext context) async {
-    final error = await CommitSheet.show(context);
-    if(error != null && context.mounted) {
-      showException(context, error.message, error.exception, error.trace);
+    final res = await CommitSheet.show(context);
+    if(res == null) return;
+    if(res is CommitSheetError && context.mounted) {
+      showException(context, res.message, res.exception, res.trace);
     }
     try {
       loadUnchanged(context, App.pedigree!.dir, App.pedigree!.repo);
