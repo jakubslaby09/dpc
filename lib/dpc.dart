@@ -118,8 +118,14 @@ class Pedigree {
       if(createFile) await index.create();
       await index.writeAsString(toJson());
     } on Exception catch (e, t) {
-      if(createFile) throw Exception("Nelze vytvořit nový soubor s rodokmenem.");
-      showException(context, S(context).pedigreeSaveCouldNotSave, e, t);
+      showException(
+        context,
+        createFile
+        ? S(context).pedigreeSaveCouldNotSave
+        : S(context).pedigreeSaveCouldCreateFile,
+        e,
+        t,
+      );
     }
   }
 
@@ -462,10 +468,6 @@ enum Sex {
 }
 
 extension SexExtension on Sex? {
-  String get string {
-    return this == null ? "osoba" : this == Sex.male ? "muž" : "žena";
-  }
-
   IconData get icon {
     return this == null ? Icons.face_outlined : this == Sex.male ? Icons.face_6_outlined : Icons.face_3_outlined;
   }

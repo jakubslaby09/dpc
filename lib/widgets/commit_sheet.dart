@@ -269,7 +269,7 @@ class _CommitSheetState extends State<CommitSheet> {
       
       if(saveSignature) {
         try {
-          saveDefaultSignature(App.pedigree!.repo, signature.ref.name, signature.ref.email);
+          saveDefaultSignature(App.pedigree!.repo, signature.ref.name, signature.ref.email, S(context));
         } on Exception catch (e, t) {
           Navigator.of(context).pop(CommitSheetError(S(context).commitCouldNotSaveSignature, e, t));
         }

@@ -75,6 +75,7 @@ class Czech implements S {
   @override String get cloneOAuthHtmlText => "Nyní můžete toto okno zavřít";
   @override String get cloneCouldNotInit => "chyba při nastavování výchozího nastavení";
   @override String get cloneCouldNotClone => "nelze stáhnout repozitář";
+  @override String get commitFAB => "Zveřejnit";
   @override String get commitChanges => "Zveřejnit změny";
   @override String get commitMessage => "Zpráva příspěvku";
   @override String get commitMessageMissing => "Napište k příspěvku zprávu";
@@ -114,6 +115,15 @@ class Czech implements S {
   @override String get createRepoMissingSignatureEmail => "Napište prosím email autora";
   @override String get createRepoAbort => "Zahodit";
   @override String get createRepoConfirm => "Vytvořit";
+  @override String get createRepoDialogTitle => "Vybrat složku pro nový repozitář";
+  @override String get createRepoInaccessibleDir => "Ke složce pro rodokmen, kterou jste vybrali, nemáte přístup.";
+  @override String get createRepoCouldNotCreateDir => "Nelze vytvořit složku pro rodokmen.";
+  @override String get createRepoCouldNotSaveSig => "Nelze pro nový repozitář nastavit Váš podpis";
+  @override String get createRepoInaccessibleGitDir => "Nemáte přístup potřebný pro založení Git repozitáře";
+  @override String get createRepoCouldNotCreateGitDir => "Nelze pro nový rodokmen založit Git repozitář";
+  @override String get createRepoCouldNotOpenGitConfig => "nelze číst z configu repozitáře";
+  @override String get createRepoCouldNotSaveSigName => "nelze uložit jméno v configu repozitáře";
+  @override String get createRepoCouldNotSaveSigEmail => "nelze uložit email v configu repozitáře";
   @override String get importFileSourceFile => "Zdrojový soubor";
   @override String get importFileDestFile => "Soubor v repozitáři";
   @override String get importFileCancel => "Zahodit";
@@ -126,6 +136,7 @@ class Czech implements S {
   @override String get personFieldSearchHint => "Jméno";
   @override String get pedigreeSaveMissingFile => "Nelze uložit Vaše úpravy do souboru s rodokmenem. Nesmazali jste ho?";
   @override String get pedigreeSaveCouldNotSave => "Nelze uložit Vaše úpravy.";
+  @override String get pedigreeSaveCouldCreateFile => "Nelze vytvořit soubor s Vašimi změnami.";
   @override String get logTitle => "Záznam chyby";
   @override String get logTitleUnexpected => "Právě se někde stala chyba!";
   @override String get logDetailButton => "Zobrazit detaily";
@@ -158,4 +169,13 @@ class Czech implements S {
   @override String get personUnknownChild => "neznámé dítě";
   @override String get personUnknownChildren => "neznámé děti";
   @override String personUnknownChildrenWith(String name) => "neznámé děti ($name)";
+  @override String get openRepoDialogTitle => "Otevřít repozitář";
+  @override String get openRepoDialogMissingIndex => "Ve vybraném repozitáři se nepodařilo přečíst index. Vybrali jste správnou složku?";
+  @override String get openRepoFromRecentsMissingIndex => "V uloženém repozitáři se nepodařilo přečíst index. Možná jste ho přesunuli, nebo smazali.";
+  @override String get openRepoMissingGitDir => "Vybraná složka není Git repozitář. Vybrali jste správnou složku? Možná jste smazali skrytou podsložku `.git`.";
+  @override String get openRepoCouldNotOpenGitRepo => "Git repozitář se nepodařilo otevřít. Skrytá podsložka `.git` je možná poškozená.";
+  @override String get openRepoCouldNotLoadUnchanged => "Nelze porovnat rodokmen s verzí bez aktuálních změn.";
+  @override String get openRepoInaccessibleRepo => "Aplikaci nebylo povoleno přečíst rodokmen.";
+  @override String get openRepoOutdatedIndex => "Rodokmen je příliš starý a není již podporován.";
+  @override String get openRepoInvalidIndex => "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?";
 }

@@ -27,12 +27,12 @@ class CommitScreen extends UniqueWidget implements FABScreen {
   Widget fab(_) => OrientationBuilder(
     builder: (context, orientation) => orientation == Orientation.portrait ? FloatingActionButton(
         onPressed: () => (currentState as _CommitScreenState?)?.commit(context),
-        tooltip: "Zveřejnit",
+        tooltip: S(context).commitFAB,
         child: const Icon(Icons.cloud_upload_outlined),
       ) : FloatingActionButton.extended(
         onPressed: () => (currentState as _CommitScreenState?)?.commit(context),
         icon: const Icon(Icons.cloud_upload_outlined),
-        label: const Text("Zveřejnit"),
+        label: Text(S(context).commitFAB),
       ),
   );
 }
@@ -239,7 +239,7 @@ class _CommitScreenState extends State<CommitScreen> {
                     children: [
                       ListTile(
                         leading: Icon(change is Removal ? Icons.delete_outline : Icons.auto_stories_outlined),
-                        title: Text(changedChronicle?.name ?? "test"),
+                        title: Text(changedChronicle?.name ?? ""),
                         subtitle: authorsDiff?.isEmpty ?? true ? null : Row(
                           // TODO: fix overflow
                           children: [

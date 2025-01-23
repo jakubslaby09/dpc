@@ -511,7 +511,10 @@ void _isolateEntryPoint(DownloadIsolateMessage message) async {
   ), message.s.cloneCouldNotClone);
 
   saveDefaultSignature(
-    repo.value, message.name.toNativeUtf8().cast(), message.email?.toNativeUtf8().cast(),
+    repo.value,
+    message.name.toNativeUtf8().cast(),
+    message.email?.toNativeUtf8().cast(),
+    message.s,
   );
 
   message.sender.send(CloneProgress(ratio: 1));

@@ -91,6 +91,7 @@ class S {
   String get cloneOAuthHtmlText => "You can close this window now";
   String get cloneCouldNotInit => "Could not initialize cloning the repository";
   String get cloneCouldNotClone => "Could not download";
+  String get commitFAB => "Publish";
   String get commitChanges => "Publish";
   String get commitMessage => "Commit message";
   String get commitMessageMissing => "Please describe your changes";
@@ -130,6 +131,15 @@ class S {
   String get createRepoMissingSignatureEmail => "Please provide a signature email";
   String get createRepoAbort => "Cancel";
   String get createRepoConfirm => "Create";
+  String get createRepoDialogTitle => "Choose new repository directory";
+  String get createRepoInaccessibleDir => "You do not have access to the chosen directory";
+  String get createRepoCouldNotCreateDir => "Could not create the repository directory";
+  String get createRepoCouldNotSaveSig => "Could not save your signature";
+  String get createRepoInaccessibleGitDir => "You do not have access to the git subdirectory";
+  String get createRepoCouldNotCreateGitDir => "Could not create a git directory";
+  String get createRepoCouldNotOpenGitConfig => "Could not open git config";
+  String get createRepoCouldNotSaveSigName => "Could not save git signature name";
+  String get createRepoCouldNotSaveSigEmail => "Could not save git signature email";
   String get importFileSourceFile => "Source file";
   String get importFileDestFile => "Destination in the repository";
   String get importFileCancel => "Cancel";
@@ -142,6 +152,7 @@ class S {
   String get personFieldSearchHint => "Name";
   String get pedigreeSaveMissingFile => "Could not save your changes to the chronicle file. Did you delete it?";
   String get pedigreeSaveCouldNotSave => "Could not save your changes.";
+  String get pedigreeSaveCouldCreateFile => "Could create the chronicle file.";
   String get logTitle => "Error log";
   String get logTitleUnexpected => "An error has just happened!";
   String get logDetailButton => "See more";
@@ -174,6 +185,15 @@ class S {
   String get personUnknownChild => "unknown child";
   String get personUnknownChildren => "unknown children";
   String personUnknownChildrenWith(String name) => "unknown children with $name";
+  String get openRepoDialogTitle => "Open a chronicle repository";
+  String get openRepoDialogMissingIndex => "Could not find the index file in the directory you chose. Did you choose the right one?";
+  String get openRepoFromRecentsMissingIndex => "Could not find the index file. Did you move or delete it?";
+  String get openRepoMissingGitDir => "This is not a git directory. Did you choose the right directory? You may have deleted a hidden subdirectory `.git`.";
+  String get openRepoCouldNotOpenGitRepo => "Could not open a git repository. The hidden subdirectory `.git` seems to be damaged.";
+  String get openRepoCouldNotLoadUnchanged => "Could not compare your changes with the rest of the repository.";
+  String get openRepoInaccessibleRepo => "You do not have access to the directory.";
+  String get openRepoOutdatedIndex => "The chronicle is outdated and not supported.";
+  String get openRepoInvalidIndex => "The index seems to be broken! Are you sure this is a chronicle directory?";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();

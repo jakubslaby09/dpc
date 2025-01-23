@@ -131,22 +131,18 @@ class _FileScreenState extends State<FileScreen> {
       // index = await File(path).readAsString();
       index = File(join(directory, "index.dpc"));
       if (!await index.exists()) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("V uloženém repozitáři se nepodařilo přečíst index. Možná jste ho přesunuli, nebo smazali."),
-        ));
+        showException(context, S(context).openRepoFromRecentsMissingIndex);
         return;
       }
     } else {
       directory = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: "Otevřít repozitář",
+        dialogTitle: S(context).openRepoDialogTitle,
       );
 
       if (directory == null) return;
       index = File(join(directory, "index.dpc"));
       if (!await index.exists()) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Ve vybraném repozitáři se nepodařilo přečíst index. Vybrali jste správnou složku?"),
-        ));
+        showException(context, S(context).openRepoDialogMissingIndex);
         return;
       }
     }
@@ -157,10 +153,10 @@ class _FileScreenState extends State<FileScreen> {
       case 0:
         break;
       case git_error_code.GIT_ENOTFOUND:
-        showException(context, "Vybraná složka není Git repozitář. Vybrali jste správnou složku? Možná jste smazali skrytou podsložku `.git`.");
+        showException(context, S(context).openRepoMissingGitDir);
         return;
       default:
-        showException(context, "Git repozitář se nepodařilo otevřít. Skrytá podsložka `.git` je možná poškozená.", Exception(repoOpenResult));
+        showException(context, S(context).openRepoCouldNotOpenGitRepo, Exception(repoOpenResult));
         return;
     }
 
@@ -188,20 +184,20 @@ class _FileScreenState extends State<FileScreen> {
       try {
         loadUnchanged(context, directory, repo.value);
       } on Exception catch (e, t) {
-        showException(context, "Nelze porovnat rodokmen s verzí bez aktuálních změn.", e, t);
+        showException(context, S(context).openRepoCouldNotLoadUnchanged, e, t);
         App.unchangedPedigree = App.pedigree!.clone();
       }
 
     } on PathAccessException catch (e, t) {
-      showException(context, "Aplikaci nebylo povoleno přečíst rodokmen.", e, t);
+      showException(context, S(context).openRepoInaccessibleRepo, e, t);
     } on OutdatedPedigreeException catch (e, t) {
       broken = true;
-      showException(context, "Rodokmen je příliš starý a není již podporován.", e, t);
+      showException(context, S(context).openRepoOutdatedIndex, e, t);
       if (!App.prefs.saveBrokenRecentFiles) {
         return;
       }
     } on Exception catch (e, t) {
-      showException(context, "Vybraný soubor vypadá poškozeně! Opravdu je to soubor s rodokmenem?", e, t);
+      showException(context, S(context).openRepoInvalidIndex, e, t);
       if (!App.prefs.saveBrokenRecentFiles) {
         return;
       }
@@ -217,7 +213,7 @@ class _FileScreenState extends State<FileScreen> {
   // TODO: move into sheet file
   createRepo(BuildContext context) async {
     final pickerResult = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: "Vybrat složku pro nový repozitář",
+      dialogTitle: S(context).createRepoDialogTitle,
     );
     if(pickerResult == null) return;
 
@@ -228,13 +224,14 @@ class _FileScreenState extends State<FileScreen> {
     try {
         await directory.create(recursive: true);
     } on PathAccessException catch (e) {
-        showException(context, "Ke složce pro rodokmen, kterou jste vybrali, nemáte přístup.", e);
+        showException(context, S(context).createRepoInaccessibleDir, e);
     } on Exception catch (e) {
-        showException(context, "Nelze vytvořit složku pro rodokmen.", e);
+        showException(context, S(context).createRepoCouldNotCreateDir, e);
     }
 
     try {
       // just to test ownership
+      // TODO: use join instead
       await Directory("${directory.path}/.git").create(recursive: true);
 
       // TODO: free memory
@@ -271,15 +268,15 @@ class _FileScreenState extends State<FileScreen> {
       ));
 
       try {
-        saveDefaultSignature(repo.value, name, email);
+        saveDefaultSignature(repo.value, name, email, S(context));
       } on Exception catch (e, t) {
-        showException(context, "Nelze pro nový repozitář nastavit Váš podpis", e, t);
+        showException(context, S(context).createRepoCouldNotSaveSig, e, t);
       }
     } on PathAccessException catch (e, t) {
-      showException(context, "Nemáte přístup potřebný pro založení Git repozitáře", e, t);
+      showException(context, S(context).createRepoInaccessibleGitDir, e, t);
       return;
     } on Exception catch (e, t) {
-      showException(context, "Nelze pro nový rodokmen založit Git repozitář", e, t);
+      showException(context, S(context).createRepoCouldNotCreateGitDir, e, t);
       return;
     }
 
@@ -287,17 +284,17 @@ class _FileScreenState extends State<FileScreen> {
   }
 }
 
-void saveDefaultSignature(Pointer<git_repository> repo, Pointer<Char> name, Pointer<Char>? email) {
+void saveDefaultSignature(Pointer<git_repository> repo, Pointer<Char> name, Pointer<Char>? email, S s) {
   Pointer<Pointer<git_config>> config = calloc();
-  expectCode(App.git.git_repository_config(config, repo), "nelze číst z configu repozitáře");
+  expectCode(App.git.git_repository_config(config, repo), s.createRepoCouldNotOpenGitConfig);
   expectCode(
     App.git.git_config_set_string(config.value, "user.name".toNativeUtf8().cast(), name),
-    "nelze uložit jméno v configu repozitáře",
+    s.createRepoCouldNotSaveSigName,
   );
   if(email != null) {
     expectCode(
       App.git.git_config_set_string(config.value, "user.email".toNativeUtf8().cast(), email),
-      "nelze uložit email v configu repozitáře",
+      s.createRepoCouldNotSaveSigEmail,
     );
   }
   App.git.git_config_free(config.value);
@@ -348,10 +345,10 @@ class GitException implements Exception {
   String toString() {
     String? gitMessage = this.gitMessage;
     try {
-      gitMessage ??= "poslední chyba z libgitu: ${App.git.git_error_last().ref.message.toDartString()}";
+      gitMessage ??= ": last libgit error: ${App.git.git_error_last().ref.message.toDartString()}";
     } catch (e) {
-      gitMessage = "(nelze získat poslední chybu z libgitu: ${e.toString()})";
+      gitMessage = " (could not get last libgit error: ${e.toString()})";
     }
-    return "Git Exception $code${message != null ? ": $message" : ""}: $gitMessage";
+    return "Git Exception $code${message != null ? ": $message" : ""}$gitMessage";
   }
 }
