@@ -114,4 +114,13 @@ class Czech implements S {
   @override String get createRepoMissingSignatureEmail => "Napište prosím email autora";
   @override String get createRepoAbort => "Zahodit";
   @override String get createRepoConfirm => "Vytvořit";
+  @override String get importFileSourceFile => "Zdrojový soubor";
+  @override String get importFileDestFile => "Soubor v repozitáři";
+  @override String get importFileCancel => "Zahodit";
+  @override String get importFileConfirm => "Přidat do kroniky";
+  @override String importFileDialogTitle(String filename) => "Vybrat umístění pro soubor $filename";
+  @override String get importFileDestinationAlreadyExists => "Takový soubor již existuje";
+  @override String get importFileSourceDoesNotExist => "Soubor, který jste vybrali, již neexistuje. Nesmazali jste ho?";
+  @override String get importFileDestOutsideRepo => "Nový soubor se musí nacházet v repozitáři kroniky";
+  @override String importFileInvalidExt(String requiredExt) => "Přípona souboru se neshoduje. Zkuste ji změnit na $requiredExt";
 }

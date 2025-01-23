@@ -130,6 +130,15 @@ class S {
   String get createRepoMissingSignatureEmail => "Please provide a signature email";
   String get createRepoAbort => "Cancel";
   String get createRepoConfirm => "Create";
+  String get importFileSourceFile => "Source file";
+  String get importFileDestFile => "Destination in the repository";
+  String get importFileCancel => "Cancel";
+  String get importFileConfirm => "Add to repository";
+  String importFileDialogTitle(String filename) => "Pick a destination for $filename";
+  String get importFileDestinationAlreadyExists => "That path already exists";
+  String get importFileSourceDoesNotExist => "The file does not exist anymore. Did you delete it?";
+  String get importFileDestOutsideRepo => "The destination must be inside the repository";
+  String importFileInvalidExt(String requiredExt) => "The file extension is not the same. Try changing it to $requiredExt";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();
