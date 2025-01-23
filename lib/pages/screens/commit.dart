@@ -189,7 +189,7 @@ class _CommitScreenState extends State<CommitScreen> {
                       if(
                         change.isModificationAnd(
                           (change) => change.unchanged.children.length != person.children.length
-                            && person.children.safeFirstWhere((id) => !change.unchanged.children.contains(id)) != null
+                            || person.children.safeFirstWhere((id) => !change.unchanged.children.contains(id)) != null
                         ) ?? false)
                         ...simpleDiff(change.unchanged!.children, person.children).map((childChange) {
                         final child = Child(childChange.unchanged ?? person.children[childChange.index], App.pedigree!);
