@@ -19,11 +19,14 @@ android {
 
     defaultConfig {
         applicationId "cz.slaby.dpc"
+        resourceConfigurations = ["en", "cs"]
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
+
+    androidResources.generateLocaleConfig = true
 
     sourceSets.main.jniLibs.srcDirs = [
         '../../lib/libgit2/openssl/out.jni',

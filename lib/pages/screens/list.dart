@@ -3,6 +3,7 @@ import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/person.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:dpc/widgets/avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -48,10 +49,10 @@ class _ListScreenState extends State<ListScreen> {
           padding: const EdgeInsets.all(8.0),
           child: TextField(
             enabled: sortedPeople != null,
-            decoration: const InputDecoration(
-              icon: Icon(Icons.search),
+            decoration: InputDecoration(
+              icon: const Icon(Icons.search),
               // hintText: "",
-              labelText: "Hledání",
+              labelText: S(context).searchLabel,
             ),
             onChanged: (value) => setState(() {
               filter = value;
@@ -63,8 +64,8 @@ class _ListScreenState extends State<ListScreen> {
           sortColumnIndex: sortedColumn,
           showCheckboxColumn: false,
           columns: [
-            DataColumn(label: const Text("Jméno"), onSort: (i, a) => setState(() => sortPeople(i, a))),
-            DataColumn(label: const Text("Narození"), onSort: (i, a) => setState(() => sortPeople(i, a))),
+            DataColumn(label: Text(S(context).peopleNameColumn), onSort: (i, a) => setState(() => sortPeople(i, a))),
+            DataColumn(label: Text(S(context).peopleBirthColumn), onSort: (i, a) => setState(() => sortPeople(i, a))),
           ],
           rows: filterPeople()!.map((person) => DataRow(
             cells: [

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/screens/file.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -52,20 +53,20 @@ class _CommitSheetState extends State<CommitSheet> {
           children: [
             Padding(
               padding: const EdgeInsets.all(24),
-              child: Text("Zveřejnit změny", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+              child: Text(S(context).commitChanges, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
               child: TextFormField(
                 controller: commitMessageController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  icon: Icon(Icons.message_outlined),
-                  labelText: "Zpráva příspěvku",
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  icon: const Icon(Icons.message_outlined),
+                  labelText: S(context).commitMessage,
                 ),
                 validator: (value) {
                   if(value == null || value.trim().isEmpty) {
-                    return "Napište k příspěvku zprávu";
+                    return S(context).commitMessageMissing;
                   }
                   return null;
                 },
@@ -78,32 +79,32 @@ class _CommitSheetState extends State<CommitSheet> {
                 minLines: 2,
                 maxLines: 5,
                 keyboardType: TextInputType.multiline,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  icon: Icon(Icons.more_horiz),
-                  labelText: "Popis příspěvku",
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  icon: const Icon(Icons.more_horiz),
+                  labelText: S(context).commitDescription,
                 ),
               ),
             ),
             ExpansionTile(
               controller: signatureTileController,
               leading: const Icon(Icons.contact_mail_outlined),
-              title: const Text("Podpis autora"),
+              title: Text(S(context).commitSignature),
               maintainState: true,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
                   child: TextFormField(
                     controller: authorNameController,
-                    decoration: const InputDecoration(
-                      labelText: "Jméno autora příspěvku",
-                      icon: Icon(Icons.contact_mail_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: S(context).commitSignatureName,
+                      icon: const Icon(Icons.contact_mail_outlined),
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if(value == null || value.trim().isEmpty) {
                         signatureTileController.expand();
-                        return "Zvolte si jméno autora";
+                        return S(context).commitSignatureNameMissing;
                       }
                       return null;
                     },
@@ -113,16 +114,16 @@ class _CommitSheetState extends State<CommitSheet> {
                   padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
                   child: TextFormField(
                     controller: authorEmailController,
-                    decoration: const InputDecoration(
-                      labelText: "Email autora příspěvku",
-                      icon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: S(context).commitSignatureEmail,
+                      icon: const Icon(Icons.email_outlined),
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       // TODO: check if email is valid
                       if(value == null || value.trim().isEmpty) {
                         signatureTileController.expand();
-                        return "Zadejte prosím email autora";
+                        return S(context).commitSignatureEmailMissing;
                       }
                       return null;
                     },
@@ -131,7 +132,7 @@ class _CommitSheetState extends State<CommitSheet> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   child: CheckboxListTile(
-                    title: const Text("Zapamatovat"),
+                    title: Text(S(context).commitSignatureSave),
                     value: saveSignature,
                     onChanged: (value) => setState(() {
                       // TODO: examine when value is null
@@ -156,7 +157,7 @@ class _CommitSheetState extends State<CommitSheet> {
                     child: TextButton.icon(
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.cancel_outlined),
-                      label: const Text("Zahodit"),
+                      label: Text(S(context).commitCancel),
                     ),
                   ),
                   const VerticalDivider(),
@@ -169,7 +170,7 @@ class _CommitSheetState extends State<CommitSheet> {
                         commit(context, customSignature());
                       },
                       icon: const Icon(Icons.send_outlined),
-                      label: const Text("Odeslat"),
+                      label: Text(S(context).commitPush),
                     ),
                   ),
                 ],
@@ -232,7 +233,7 @@ class _CommitSheetState extends State<CommitSheet> {
         tree.value,
         1,
         parent,
-      ), "couldn't create commit");
+      ), S(context).commitCouldNotCreateCommit);
 
       App.git.git_index_free(index.value);
       ffi.calloc.free(parentOid);
@@ -255,7 +256,7 @@ class _CommitSheetState extends State<CommitSheet> {
 
       expectCode(
         App.git.git_remote_lookup(remote, App.pedigree!.repo, "origin".toNativeUtf8().cast()),
-        "nelze zjistit, kam změny poslat",
+        S(context).commitCouldNotLookupRemote,
       );
       expectCode(App.git.git_push_options_init(pushOptions, GIT_PUSH_OPTIONS_VERSION));
       pushOptions.ref.callbacks.certificate_check = badCertCallback;
@@ -268,16 +269,16 @@ class _CommitSheetState extends State<CommitSheet> {
       
       if(saveSignature) {
         try {
-          saveDefaultSignature(App.pedigree!.repo, signature.ref.name, signature.ref.email);
+          saveDefaultSignature(App.pedigree!.repo, signature.ref.name, signature.ref.email, S(context));
         } on Exception catch (e, t) {
-          Navigator.of(context).pop(CommitSheetError("Nelze uložit podpis autora", e, t));
+          Navigator.of(context).pop(CommitSheetError(S(context).commitCouldNotSaveSignature, e, t));
         }
       }
 
     } on Exception catch(e) {
       setState(() {
         inProgress = false;
-        error = "Nepodařilo se zveřejnit Vaše změny: $e";
+        error = S(context).commitCouldNotCommit(e);
       });
       rethrow;
     }

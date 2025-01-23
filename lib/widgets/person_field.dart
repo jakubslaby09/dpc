@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:dpc/dpc.dart';
 import 'package:dpc/main.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:dpc/widgets/avatar.dart';
 import 'package:flutter/material.dart';
 
@@ -120,9 +121,9 @@ class _PersonPickerState extends State<PersonPicker> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
           child: TextField(
-            decoration: const InputDecoration(
-              icon: Icon(Icons.search),
-              hintText: "Jméno",
+            decoration: InputDecoration(
+              icon: const Icon(Icons.search),
+              hintText: S(context).personFieldSearchHint,
             ),
             onChanged: (filter) => setState(() => filtered = filterPeople(filter)),
           ),

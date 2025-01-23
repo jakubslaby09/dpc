@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:dpc/autosave.dart';
 import 'package:dpc/pages/log.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:dpc/widgets/add_child_sheet.dart';
 import 'package:dpc/widgets/file_import_sheet.dart';
 import 'package:file_picker/file_picker.dart';
@@ -55,7 +56,7 @@ class _PersonPageState extends State<PersonPage> {
                   title: TextField(
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
-                      labelText: "Jméno",
+                      labelText: S(context).personNameAndSex,
                       icon: IconButton(
                         icon: Icon(person.sex.icon),
                         onPressed: () => setState(() {
@@ -85,10 +86,10 @@ class _PersonPageState extends State<PersonPage> {
                 const Divider(height: 16, color: Colors.transparent),
                 ListTile(
                   title: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Narození",
-                      icon: Icon(Icons.today_outlined),
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: S(context).personBirth,
+                      icon: const Icon(Icons.today_outlined),
                     ),
                     controller: birthController,
                     onChanged: (birth) => setState(() {
@@ -108,10 +109,10 @@ class _PersonPageState extends State<PersonPage> {
                 ),
                 ListTile(
                   title: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Úmrtí",
-                      icon: Icon(Icons.event_outlined),
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: S(context).personDeath,
+                      icon: const Icon(Icons.event_outlined),
                     ),
                     controller: deathController,
                     onChanged: (death) => setState(() {
@@ -132,7 +133,7 @@ class _PersonPageState extends State<PersonPage> {
                 const Divider(height: 16, color: Colors.transparent),
                 ListTile(
                   title: PersonField(
-                    labelText: "Otec",
+                    labelText: S(context).personFather,
                     sex: Sex.male,
                     initialId: person.father,
                     onPick: (fatherId) => setState(() {
@@ -154,7 +155,7 @@ class _PersonPageState extends State<PersonPage> {
                 ),
                 ListTile(
                   title: PersonField(
-                    labelText: "Matka",
+                    labelText: S(context).personMother,
                     sex: Sex.female,
                     initialId: person.mother,
                     onPick: (motherId) => setState(() {
@@ -174,10 +175,11 @@ class _PersonPageState extends State<PersonPage> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
+                // TODO: children header
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.add),
-                  title: const Text("Přidat dítě"),
+                  title: Text(S(context).addChild),
                   onTap: () async {
                     final childId = await AddChildSheet.show(context, person);
                     if(childId == null) return;
@@ -203,7 +205,15 @@ class _PersonPageState extends State<PersonPage> {
                   title: Row(
                     children: [
                       Expanded(
-                        child: Text(child is Person ? child.name : child is UnknownChildren ? "neznámé děti (${child.subId})" : "neznámé dítě")
+                        child: Text(
+                          child is Person
+                          ? child.name
+                          : child is UnknownChildren
+                            ? child.subId != null && App.pedigree!.people.length > (child.subId as num)
+                              ? S(context).personUnknownChildrenWith(App.pedigree!.people[child.subId!].name)
+                              : S(context).unknownChildren
+                            : S(context).unknownChild,
+                        )
                       ),
                       if(child is HasOtherParent) const Padding(
                         padding: EdgeInsets.only(right: 12),
@@ -236,7 +246,7 @@ class _PersonPageState extends State<PersonPage> {
     try {
       imageProvider = await person.imageProvider(App.pedigree!.dir);
     } on Exception catch (e, t) {
-      showException(context, "nelze načíst profilovou fotku", e, t);
+      showException(context, S(context).personPictureCouldNotLoad, e, t);
     }
     setState(() {});
   }
@@ -270,14 +280,19 @@ class _PersonPageState extends State<PersonPage> {
                     onPressed: () async {
                       final fileResult = (await FilePicker.platform.pickFiles(
                         allowMultiple: false,
-                        dialogTitle: "Fotka - ${person.name}",
+                        dialogTitle: S(context).personPictureDialogTitle(person.name),
                         type: FileType.image,
                       ))?.files.elementAtOrNull(0);
                       if(fileResult == null) return;
                       final file = File(fileResult.path!);
 
                       // TODO: allow file overwrites
-                      final newPath = await showFileImportSheet(context, file.path, "Pojmenujte fotku", "profilové fotky");
+                      final newPath = await showFileImportSheet(
+                        context,
+                        file.path,
+                        S(context).personPictureImportTitle(person.name),
+                        S(context).personPictureDefaultImportDir,
+                      );
                       if(newPath == null) return;
 
                       try {
@@ -285,7 +300,7 @@ class _PersonPageState extends State<PersonPage> {
                         await file.copy(newPath);
                         // TODO: should we delete the original person.image file?
                       } on Exception catch (e, t) {
-                        showException(context, "nelze zkopírovat profilovou fotku", e, t);
+                        showException(context, S(context).personPictureCouldNotCopy, e, t);
                         return;
                       }
 

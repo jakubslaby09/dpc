@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/log.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -110,15 +111,21 @@ class Pedigree {
     final index = File(p.join(dir, "index.dpc"));
 
     if(!await index.exists() && !createFile) {
-      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem. Nesmazali jste ho?");
+      showException(context, S(context).pedigreeSaveMissingFile);
     }
 
     try {
       if(createFile) await index.create();
       await index.writeAsString(toJson());
     } on Exception catch (e, t) {
-      if(createFile) throw Exception("Nelze vytvořit nový soubor s rodokmenem.");
-      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem.", e, t);
+      showException(
+        context,
+        createFile
+        ? S(context).pedigreeSaveCouldNotSave
+        : S(context).pedigreeSaveCouldCreateFile,
+        e,
+        t,
+      );
     }
   }
 
@@ -461,10 +468,6 @@ enum Sex {
 }
 
 extension SexExtension on Sex? {
-  String get string {
-    return this == null ? "osoba" : this == Sex.male ? "muž" : "žena";
-  }
-
   IconData get icon {
     return this == null ? Icons.face_outlined : this == Sex.male ? Icons.face_6_outlined : Icons.face_3_outlined;
   }

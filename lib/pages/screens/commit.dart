@@ -9,6 +9,7 @@ import 'package:dpc/main.dart';
 import 'package:dpc/pages/home.dart';
 import 'package:dpc/pages/log.dart';
 import 'package:dpc/pages/screens/file.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:dpc/widgets/commit_sheet.dart';
 import 'package:dpc/widgets/person_chip.dart';
 import 'package:ffi/ffi.dart';
@@ -26,12 +27,12 @@ class CommitScreen extends UniqueWidget implements FABScreen {
   Widget fab(_) => OrientationBuilder(
     builder: (context, orientation) => orientation == Orientation.portrait ? FloatingActionButton(
         onPressed: () => (currentState as _CommitScreenState?)?.commit(context),
-        tooltip: "Zveřejnit",
+        tooltip: S(context).commitFAB,
         child: const Icon(Icons.cloud_upload_outlined),
       ) : FloatingActionButton.extended(
         onPressed: () => (currentState as _CommitScreenState?)?.commit(context),
         icon: const Icon(Icons.cloud_upload_outlined),
-        label: const Text("Zveřejnit"),
+        label: Text(S(context).commitFAB),
       ),
   );
 }
@@ -42,11 +43,13 @@ class CommitScreen extends UniqueWidget implements FABScreen {
 // TODO: make people listTiles navigate to their pages on tap
 // TODO: display dividers only when needed
 class _CommitScreenState extends State<CommitScreen> {
-  Future<List<(File, ChangeType)>> files = changedFiles(App.pedigree!.repo);
-  Future<int> remoteChanges = fetchChanges(App.pedigree!.repo);
+  Future<List<(File, ChangeType)>>? files;
+  Future<int>? remoteChanges;
 
   @override
   Widget build(BuildContext context) {
+    files ??= changedFiles(App.pedigree!.repo, S(context));
+    remoteChanges ??= fetchChanges(App.pedigree!.repo, S(context));
     List<Change<Person>> peopleChanges = diff(App.unchangedPedigree!.people, App.pedigree!.people, (a, b) => a.compare(b));
     List<Change<Chronicle>> chronicleChanges = diff(App.unchangedPedigree!.chronicle, App.pedigree!.chronicle, (a, b) => a.compare(b));
     bool someChanges = peopleChanges.isNotEmpty || chronicleChanges.isNotEmpty;
@@ -80,30 +83,30 @@ class _CommitScreenState extends State<CommitScreen> {
                         : const Icon(Icons.cloud_download_outlined),
                     title: !remoteChanges.hasData
                     ? remoteChanges.hasError
-                      ? const Text("Nelze zkontrolovat změny z internetu")
-                      : const Text("Stahování změn...")
+                      ? Text(S(context).couldNotFetchCommits)
+                      : Text(S(context).fetchingCommits)
                     : remoteChanges.data! > 0
-                      ? Text("Ve vzdáleném repozitáři je ${remoteChanges.data} ${remoteChanges.data! > 1 ? "nových příspěvků" : "nový příspěvek"}. ${someChanges ? "Přijetím své změny přepíšete." : ""}")
-                      : const Text("Váš repozitář je aktuální"),
+                      ? Text(S(context).fetchedCommits(remoteChanges.data!, someChanges))
+                      : Text(S(context).repoUpToDate),
                     trailing: (remoteChanges.data ?? 0) > 0 ? FilledButton.icon(
                       icon: const Icon(Icons.download_for_offline_outlined),
                       style: someChanges
                         ? FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error)
                         : null,
-                      label: someChanges ? const Text("Zahodit a přijmout") : Text("Přijmout ${remoteChanges.data} ${remoteChanges.data! > 1 ? "příspěvků" : "příspěvek"}"),
+                      label: someChanges ? Text(S(context).overwriteWorktree) : Text(S(context).ffCommits(remoteChanges.data!)),
                       onPressed: () => pullChanges(App.pedigree!.repo),
                     ) : remoteChanges.error is Exception ? TextButton(
-                      child: const Text("Více"),
+                      child: Text(S(context).fetchErrorDetails),
                       onPressed: () => showExceptionPage(context, remoteChanges.error as Exception),
                     ) : null,
                   ),
                 ),
               ),
               const Divider(color: Color.fromARGB(64, 128, 128, 128)),
-              if(App.unchangedPedigree!.version != App.pedigree!.version) const Card(
+              if(App.unchangedPedigree!.version != App.pedigree!.version) Card(
                 child: ListTile(
-                  leading: Icon(Icons.upgrade),
-                  title: Text("Upgrade indexu"),
+                  leading: const Icon(Icons.upgrade),
+                  title: Text(S(context).indexUpgradeChange),
                 ),
               ),
               ...peopleChanges.map((change) {
@@ -198,6 +201,7 @@ class _CommitScreenState extends State<CommitScreen> {
                           textColor: childChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
                           iconColor: childChange is Removal ? Theme.of(context).colorScheme.onErrorContainer : null,
                           leading: const Icon(Icons.child_friendly_outlined),
+                          // TODO: display negative ids properly
                           title: Text(child is Person ? child.name : "id: ${child.id}"),
                           trailing: IconButton(
                             icon: const Icon(Icons.backspace_outlined),
@@ -235,7 +239,7 @@ class _CommitScreenState extends State<CommitScreen> {
                     children: [
                       ListTile(
                         leading: Icon(change is Removal ? Icons.delete_outline : Icons.auto_stories_outlined),
-                        title: Text(changedChronicle?.name ?? "test"),
+                        title: Text(changedChronicle?.name ?? ""),
                         subtitle: authorsDiff?.isEmpty ?? true ? null : Row(
                           // TODO: fix overflow
                           children: [
@@ -349,9 +353,9 @@ class _CommitScreenState extends State<CommitScreen> {
                               await File(absolutePath).delete();
                             }
                           } on Exception catch (e, t) {
-                            showException(context, "nelze smazat soubor", e, t);
+                            showException(context, S(context).changesCouldNotDeleteFile, e, t);
                           }
-                          this.files = changedFiles(App.pedigree!.repo);
+                          this.files = changedFiles(App.pedigree!.repo, S(context));
                           setState(() { });
                         },
                       ) : null,
@@ -382,13 +386,13 @@ class _CommitScreenState extends State<CommitScreen> {
     try {
       loadUnchanged(context, App.pedigree!.dir, App.pedigree!.repo);
     } on Exception catch (e, t) {
-      showException(context, "Nelze porovnat rodokmen s právě zveřejněnou verzí.", e, t);
+      showException(context, S(context).commitCannotReadHead, e, t);
       App.unchangedPedigree = App.pedigree!.clone();
     }
     setState(() { });
   }
   
-  static Future<int> fetchChanges(ffi.Pointer<git_repository> repo) async {
+  static Future<int> fetchChanges(ffi.Pointer<git_repository> repo, S s) async {
     final repoPtr = repo.address;
     return await Isolate.run(() {
       // TODO: free
@@ -401,26 +405,26 @@ class _CommitScreenState extends State<CommitScreen> {
       ffi.Pointer<ffi.Pointer<git_object>> remoteObject = calloc();
       expectCode(
         App.git.git_remote_lookup(remote, repo, "origin".toNativeUtf8().cast()),
-        "nelze zjistit, odkud stáhnout změny",
+        s.fetchCouldNotLookupRemote,
       );
       expectCode(App.git.git_fetch_options_init(options, GIT_FETCH_OPTIONS_VERSION));
       options.ref.callbacks.certificate_check = ffi.Pointer.fromFunction<ffi.Int Function(ffi.Pointer<git_cert>, ffi.Int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Void>)>(_badCertificateCallback, minusOne);
       // TODO: options.ref.callbacks.transfer_progress
       expectCode(
         App.git.git_remote_fetch(remote.value, ffi.nullptr, options, ffi.nullptr),
-        "nelze stáhnout změny",
+        s.fetchCouldNotFetchRemote,
       );
       expectCode(
         App.git.git_reference_name_to_id(localOid, repo, "HEAD".toNativeUtf8().cast()),
-        "nelze najít místní poslední příspěvek",
+        s.fetchCouldNotReadHead,
       );
       expectCode(
         App.git.git_revparse_single(remoteObject, repo, "origin/HEAD".toNativeUtf8().cast()),
-        "nelze najít vzdálený poslední příspěvek",
+        s.fetchCouldNotReadFetchHead,
       );
       expectCode(
         App.git.git_graph_ahead_behind(aheadCount, behindCount, repo, remoteObject.value.cast(), localOid),
-        "nelze porovnat stažené změny mezi",
+        s.fetchCouldNotCompareRemote,
       );
       return aheadCount.value;
     });
@@ -431,6 +435,7 @@ class _CommitScreenState extends State<CommitScreen> {
     try {
       return await Isolate.run(() {
         // TODO: free
+        // TODO: write error messages
         final ffi.Pointer<git_repository> repo = ffi.Pointer.fromAddress(repoPtr);
         ffi.Pointer<git_checkout_options> opts = calloc();
         ffi.Pointer<git_strarray> indexPath = calloc<git_strarray>();
@@ -473,7 +478,7 @@ class _CommitScreenState extends State<CommitScreen> {
   }
 }
 
-Future<List<(File, ChangeType)>> changedFiles(ffi.Pointer<git_repository> repo) async {
+Future<List<(File, ChangeType)>> changedFiles(ffi.Pointer<git_repository> repo, S s) async {
   // TODO: don't share the repo pointer
   // TODO: free memory
   final repoPtr = repo.address;
@@ -482,12 +487,12 @@ Future<List<(File, ChangeType)>> changedFiles(ffi.Pointer<git_repository> repo) 
     final ffi.Pointer<git_status_options> options = calloc();
     expectCode(
       App.git.git_status_options_init(options, GIT_STATUS_OPTIONS_VERSION),
-      "chyba při nastavování zjišťování stavu ostatních souborů"
+      s.changesCouldNotInitDiffOptions,
     );
     options.ref.flags |= git_status_opt_t.GIT_STATUS_OPT_INCLUDE_UNTRACKED;
     expectCode(
       App.git.git_status_list_new(statuslist, ffi.Pointer.fromAddress(repoPtr), options),
-      "nelze získat stav ostatních souborů",
+      s.changesCouldNotDiffNew,
     );
     // git_error_code
     calloc.free(options);

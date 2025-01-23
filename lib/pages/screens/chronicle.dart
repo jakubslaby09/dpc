@@ -12,6 +12,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
+import '../../strings/strings.dart';
+
 class ChronicleScreen extends UniqueWidget implements FABScreen {
   const ChronicleScreen({required super.key});
 
@@ -55,9 +57,9 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                       // child: Text(chronicle.name)
                       child: TextFormField(
                         initialValue: chronicle.name,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: "Pojmenujte kroniku",
+                          hintText: S(context).chronicleNameHint,
                         ),
                         onChanged: (newName) {
                           chronicle.name = newName;
@@ -97,7 +99,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
                     )),
                     if(chronicle.authors.isEmpty) OutlinedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: const Text("Přidat autora"),
+                      label: Text(S(context).chronicleAddAuthor),
                       onPressed: () => addAuthor(chronicle),
                     ),
                     if(chronicle.authors.isNotEmpty) SizedBox(
@@ -144,14 +146,14 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
               }),
               if(chronicle.files.isEmpty) ListTile(
                 iconColor: Theme.of(context).colorScheme.outline,
-                title: const Row(
+                title: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Padding(
+                    const Padding(
                       padding: EdgeInsets.only(right: 8.0),
                       child: Icon(Icons.add),
                     ),
-                    Text("Přidat soubory", textAlign: TextAlign.center),
+                    Text(S(context).chronicleAddFiles, textAlign: TextAlign.center),
                   ],
                 ),
                 onTap: () => addFile(context, chronicle).then((_) => setState(() {})),
@@ -197,7 +199,7 @@ class _ChronicleScreenState extends State<ChronicleScreen> {
 Future<void> addFile(BuildContext context, Chronicle chronicle) async {
   // TODO: use allowedExtensions
   final picked = await FilePicker.platform.pickFiles(
-    dialogTitle: "Vybrat soubory do kroniky",
+    dialogTitle: S(context).chronicleFilePickerTitle,
     allowMultiple: true,
     initialDirectory: App.pedigree?.dir,
   );
@@ -218,7 +220,12 @@ Future<void> addFile(BuildContext context, Chronicle chronicle) async {
     if(p.isWithin(App.pedigree!.dir, sourceFile.path)) {
       file = sourceFile;
     } else {
-      final filePath = await showFileImportSheet(context, sourceFile.path, "Vybrali jste soubor mimo repozitář. Vyberte pro něj v repozitáři umístění", "kronika");
+      final filePath = await showFileImportSheet(
+        context,
+        sourceFile.path,
+        S(context).chronicleFileImportSheetTitle,
+        S(context).chronicleFileImportSheetSuggestedDirectory,
+      );
       if(filePath == null) {
         return;
       }

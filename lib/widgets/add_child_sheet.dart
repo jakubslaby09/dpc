@@ -1,4 +1,5 @@
 import 'package:dpc/main.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:dpc/widgets/person_field.dart';
 import 'package:flutter/material.dart';
 
@@ -29,23 +30,23 @@ class _AddChildSheetState extends State<AddChildSheet> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 24, bottom: 16),
+          padding: const EdgeInsets.only(top: 24, bottom: 16, left: 16, right: 16),
           child: SegmentedButton<AddChildOptions>(
-            segments: const [
+            segments: [
               ButtonSegment(
-                icon: Icon(Icons.child_care_outlined),
+                icon: const Icon(Icons.child_care_outlined),
                 value: AddChildOptions.existingChild,
-                label: Text("Známé dítě"),
+                label: Text(S(context).existingChild),
               ),
               ButtonSegment(
-                icon: Icon(Icons.person_off_outlined),
+                icon: const Icon(Icons.person_off_outlined),
                 value: AddChildOptions.unknownChild,
-                label: Text("Neznámé dítě"),
+                label: Text(S(context).unknownChild),
               ),
               ButtonSegment(
-                icon: Icon(Icons.person_add_disabled_outlined),
+                icon: const Icon(Icons.person_add_disabled_outlined),
                 value: AddChildOptions.unknownChildren,
-                label: Text("Neznámé děti"),
+                label: Text(S(context).unknownChildren),
               ),
             ],
             selected: { selectedOption },
@@ -58,7 +59,7 @@ class _AddChildSheetState extends State<AddChildSheet> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: PersonField(
-            labelText: "Dítě",
+            labelText: S(context).child,
             icon: const Icon(Icons.child_friendly_outlined),
             enabled: selectedOption == AddChildOptions.existingChild,
             onPick: (id) => setState(() {
@@ -70,7 +71,7 @@ class _AddChildSheetState extends State<AddChildSheet> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: PersonField(
-            labelText: widget.parent.sex == Sex.male ? "Matka" : "Otec",
+            labelText: widget.parent.sex == Sex.male ? S(context).mother : S(context).father,
             sex: widget.parent.sex == Sex.male ? Sex.female : Sex.male,
             controller: otherParentIdController,
             enabled: selectedOption == AddChildOptions.unknownChildren,
@@ -80,7 +81,7 @@ class _AddChildSheetState extends State<AddChildSheet> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: FilledButton(
-            child: const Text("Přidat"),
+            child: Text(S(context).addChild),
             onPressed: id == null && selectedOption == AddChildOptions.existingChild ? null : () {
               final num id;
               switch (selectedOption) {

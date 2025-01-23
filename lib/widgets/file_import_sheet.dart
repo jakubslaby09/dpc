@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dpc/main.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -35,10 +36,10 @@ class _FileImportSheetState extends State<FileImportSheet> {
         Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, top: 24),
           child: TextFormField(
-            decoration: const InputDecoration(
-              icon: Icon(Icons.insert_drive_file_outlined),
-              labelText: "Zdrojový soubor",
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              icon: const Icon(Icons.insert_drive_file_outlined),
+              labelText: S(context).importFileSourceFile,
+              border: const OutlineInputBorder(),
             ),
             enabled: false,
             initialValue: widget.sourcePath,
@@ -49,14 +50,14 @@ class _FileImportSheetState extends State<FileImportSheet> {
           child: TextFormField(
             decoration: InputDecoration(
               icon: const Icon(Icons.file_copy_outlined),
-              labelText: "Soubor v repozitáři",
+              labelText: S(context).importFileDestFile,
               errorText: errorText,
               border: const OutlineInputBorder(),
               suffixIcon: Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: IconButton(
                   icon: const Icon(Icons.file_open_outlined),
-                  onPressed: pickPath,
+                  onPressed: () => pickPath(S(context)),
                 ),
               ),
             ),
@@ -78,14 +79,14 @@ class _FileImportSheetState extends State<FileImportSheet> {
                     minimumSize: const Size.fromHeight(40),
                   ),
                   icon: const Icon(Icons.cancel_outlined),
-                  label: const Text("Zahodit"),
+                  label: Text(S(context).importFileCancel),
                 ),
               ),
               const VerticalDivider(),
               Expanded(
                 child: FilledButton.icon(
                   onPressed: () {
-                    validate();
+                    validate(S(context));
                     if(errorText != null) {
                       setState(() {});
                       return;
@@ -96,7 +97,7 @@ class _FileImportSheetState extends State<FileImportSheet> {
                     minimumSize: const Size.fromHeight(40),
                   ),
                   icon: const Icon(Icons.copy_outlined),
-                  label: const Text("Přidat do kroniky"),
+                  label: Text(S(context).importFileConfirm),
                 ),
               ),
             ],
@@ -110,10 +111,10 @@ class _FileImportSheetState extends State<FileImportSheet> {
     return p.join(App.pedigree!.dir, widget.pathController.text);
   }
 
-  void pickPath() async {
+  void pickPath(S s) async {
     final result = await FilePicker.platform.saveFile(
       initialDirectory: App.pedigree!.dir,
-      dialogTitle: "Vybrat umístění pro soubor ${p.basename(widget.sourcePath)}",
+      dialogTitle: s.importFileDialogTitle(p.basename(widget.sourcePath)),
       fileName: p.basename(widget.sourcePath),
       allowedExtensions: [p.extension(widget.sourcePath)],
     );
@@ -125,23 +126,23 @@ class _FileImportSheetState extends State<FileImportSheet> {
     widget.pathController.text = p.relative(result, from: App.pedigree!.dir);
   }
 
-  validate() {
+  validate(S s) {
     final newFile = File(pickedPath);
     if(newFile.existsSync()) {
-      errorText = "Takový soubor již existuje";
+      errorText = s.importFileDestinationAlreadyExists;
       return;
     }
     final sourceFile = File(widget.sourcePath);
     if(!sourceFile.existsSync()) {
-      errorText = "Soubor, který jste vybrali, již neexistuje. Nesmazali jste ho?";
+      errorText = s.importFileSourceDoesNotExist;
       return;
     }
     if(!p.isWithin(App.pedigree!.dir, newFile.path)) {
-      errorText = "Nový soubor se musí nacházet v repozitáři kroniky";
+      errorText = s.importFileDestOutsideRepo;
       return;
     }
     if(p.extension(newFile.path) != p.extension(widget.sourcePath)) {
-      errorText = "Přípona souboru se neshoduje. Zkuste ji změnit na ${p.extension(widget.sourcePath)}";
+      errorText = s.importFileInvalidExt(p.extension(widget.sourcePath));
       return;
     }
 
