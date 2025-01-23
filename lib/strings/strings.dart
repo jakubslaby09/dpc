@@ -47,7 +47,7 @@ class S {
   String ffCommits(int count) => "Download${count > 1 ? "" : " $count commits"}";
   String get fetchErrorDetails => "See details";
   String get indexUpgradeChange => "Indexu version upgrade";
-  String get commitCannotReadHead => "Could not read the commit you just have published";
+  String get commitCannotReadHead => "Could not read the commit you have just published";
   String get fetchCouldNotLookupRemote => "Could not read from which remote repository to download changes";
   String get fetchCouldNotFetchRemote => "Could not download changes from the remote repository";
   String get fetchCouldNotReadHead => "Could not read your latest commit";
