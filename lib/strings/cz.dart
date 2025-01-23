@@ -124,4 +124,6 @@ class Czech implements S {
   @override String get importFileDestOutsideRepo => "Nový soubor se musí nacházet v repozitáři kroniky";
   @override String importFileInvalidExt(String requiredExt) => "Přípona souboru se neshoduje. Zkuste ji změnit na $requiredExt";
   @override String get personFieldSearchHint => "Jméno";
+  @override String get pedigreeSaveMissingFile => "Nelze uložit Vaše úpravy do souboru s rodokmenem. Nesmazali jste ho?";
+  @override String get pedigreeSaveCouldNotSave => "Nelze uložit Vaše úpravy.";
 }

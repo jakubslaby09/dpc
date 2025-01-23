@@ -140,6 +140,8 @@ class S {
   String get importFileDestOutsideRepo => "The destination must be inside the repository";
   String importFileInvalidExt(String requiredExt) => "The file extension is not the same. Try changing it to $requiredExt";
   String get personFieldSearchHint => "Name";
+  String get pedigreeSaveMissingFile => "Could not save your changes to the chronicle file. Did you delete it?";
+  String get pedigreeSaveCouldNotSave => "Could not save your changes.";
 
   factory S(BuildContext context) {
     return Localizations.of<S>(context, S) ?? S.english();

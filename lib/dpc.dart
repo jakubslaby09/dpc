@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:dpc/main.dart';
 import 'package:dpc/pages/log.dart';
+import 'package:dpc/strings/strings.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:git2dart_binaries/git2dart_binaries.dart';
@@ -110,7 +111,7 @@ class Pedigree {
     final index = File(p.join(dir, "index.dpc"));
 
     if(!await index.exists() && !createFile) {
-      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem. Nesmazali jste ho?");
+      showException(context, S(context).pedigreeSaveMissingFile);
     }
 
     try {
@@ -118,7 +119,7 @@ class Pedigree {
       await index.writeAsString(toJson());
     } on Exception catch (e, t) {
       if(createFile) throw Exception("Nelze vytvořit nový soubor s rodokmenem.");
-      showException(context, "Nelze uložit Vaše úpravy do souboru s rodokmenem.", e, t);
+      showException(context, S(context).pedigreeSaveCouldNotSave, e, t);
     }
   }
 
